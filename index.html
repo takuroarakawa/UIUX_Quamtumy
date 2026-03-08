@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DoctorCanvas - Quantumy</title>
+  <style>html { scroll-behavior: smooth; }</style>
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
@@ -13,6 +14,12 @@
   <script type="text/babel">
     const { useState } = React;
 
+    const doctorProfile = {
+      name: '博士漫画家',
+      degree: 'Ph.D. in Physics',
+      field: '量子情報・量子もつれ',
+    };
+
     const mangaPages = [
       { imageUrl: 'https://dummyimage.com/600x900/ebf5fb/333&text=1', pageNumber: 1 },
       { imageUrl: 'https://dummyimage.com/600x900/d6eaf8/333&text=2', pageNumber: 2 },
@@ -20,9 +27,23 @@
     ];
 
     const references = [
-      { title: "Quantum Entanglement and Information", author: "A. Einstein, B. Podolsky, N. Rosen", doi: "10.1103/PhysRev.47.777" },
-      { title: "A New Kind of Science", author: "Stephen Wolfram", doi: "10.5555/nks.123456" },
+      {
+        title: "Quantum Entanglement and Information",
+        author: "A. Einstein, B. Podolsky, N. Rosen",
+        doi: "10.1103/PhysRev.47.777",
+        summary: "量子力学における相関した二粒子系について、局所実在論との矛盾を指摘した古典的論文。のちのEPRパラドックスとして知られ、量子情報の基礎づけに影響を与えた。"
+      },
+      {
+        title: "A New Kind of Science",
+        author: "Stephen Wolfram",
+        doi: "10.5555/nks.123456",
+        summary: "単純なルールから複雑な振る舞いが生まれるセルオートマトン等を扱う。計算論的な視点から自然界の複雑系を探求し、科学の新しい枠組みを提唱している。"
+      },
     ];
+
+    function scrollToManga() {
+      document.getElementById('manga-viewer').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 
     function DoctorCanvas() {
       const [currentPage, setCurrentPage] = useState(0);
@@ -33,10 +54,121 @@
       return (
         <div style={{
           display: 'flex',
+          flexDirection: 'column',
           minHeight: '100vh',
-          background: 'linear-gradient(90deg, #e6f0fa 70%, #192841 100%)',
+          background: 'linear-gradient(180deg, #e6f0fa 0%, #c5d9ed 40%, #192841 100%)',
           fontFamily: 'Inter, "Helvetica Neue", Arial, sans-serif'
         }}>
+          {/* 紹介セクション */}
+          <section style={{
+            padding: '3rem 2rem 2.5rem',
+            maxWidth: '720px',
+            margin: '0 auto',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <h1 style={{
+              fontSize: '1.75rem',
+              color: '#192841',
+              marginBottom: '1.5rem',
+              fontWeight: 700,
+              letterSpacing: '0.02em'
+            }}>
+              博士号所持の漫画家 — 論文と漫画
+            </h1>
+            <div style={{
+              background: 'rgba(255,255,255,0.85)',
+              borderRadius: '1rem',
+              padding: '1.5rem 1.75rem',
+              marginBottom: '1.75rem',
+              boxShadow: '0 4px 20px rgba(25,40,65,0.08)',
+              border: '1px solid rgba(25,40,65,0.06)'
+            }}>
+              <h2 style={{ fontSize: '1.1rem', color: '#253358', marginBottom: '0.5rem', fontWeight: 600 }}>プロフィール</h2>
+              <p style={{ margin: 0, fontSize: '1rem', color: '#3d4f6b', lineHeight: 1.6 }}>
+                <strong>{doctorProfile.name}</strong><br />
+                {doctorProfile.degree} / 研究分野: {doctorProfile.field}
+              </p>
+            </div>
+            <h2 style={{
+              fontSize: '1.15rem',
+              color: '#253358',
+              marginBottom: '1rem',
+              fontWeight: 600
+            }}>
+              論文 Summary
+            </h2>
+            {references.map((ref, i) => (
+              <div
+                key={ref.doi}
+                style={{
+                  background: 'rgba(255,255,255,0.9)',
+                  borderRadius: '0.75rem',
+                  padding: '1rem 1.25rem',
+                  marginBottom: '1rem',
+                  boxShadow: '0 2px 12px rgba(25,40,65,0.06)',
+                  border: '1px solid rgba(25,40,65,0.05)'
+                }}
+              >
+                <div style={{ fontWeight: 600, fontSize: '1rem', color: '#192841', marginBottom: '0.35rem' }}>{ref.title}</div>
+                <div style={{ fontSize: '0.9rem', color: '#5a6c87', marginBottom: '0.5rem' }}>{ref.author}</div>
+                <p style={{ fontSize: '0.95rem', color: '#3d4f6b', lineHeight: 1.6, margin: '0 0 0.75rem 0' }}>
+                  {ref.summary}
+                </p>
+                <a
+                  href={`https://doi.org/${ref.doi}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-block',
+                    padding: '0.5rem 1rem',
+                    background: '#253358',
+                    color: '#e8ecf4',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                    textDecoration: 'none',
+                    fontWeight: 500
+                  }}
+                >
+                  論文へ (DOI)
+                </a>
+              </div>
+            ))}
+            <button
+              onClick={scrollToManga}
+              style={{
+                display: 'block',
+                width: '100%',
+                maxWidth: '360px',
+                margin: '2rem auto 0',
+                padding: '1rem 1.5rem',
+                fontSize: '1.2rem',
+                fontWeight: 700,
+                color: '#fff',
+                background: 'linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%)',
+                border: 'none',
+                borderRadius: '1rem',
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(63,81,181,0.4)',
+                transition: 'transform 0.15s, box-shadow 0.15s'
+              }}
+              onMouseOver={(e) => { e.target.style.transform = 'scale(1.02)'; e.target.style.boxShadow = '0 6px 24px rgba(63,81,181,0.5)'; }}
+              onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; e.target.style.boxShadow = '0 4px 20px rgba(63,81,181,0.4)'; }}
+            >
+              漫画本編へ進む →
+            </button>
+          </section>
+
+          {/* 漫画ビューワー */}
+          <section
+            id="manga-viewer"
+            style={{
+              display: 'flex',
+              flex: 1,
+              minHeight: '100vh',
+              alignItems: 'stretch'
+            }}
+          >
           <div style={{
             flex: 1,
             display: 'flex',
@@ -147,6 +279,7 @@
               <span style={{ color: '#ccffff' }}>Quantumy Doctor Canvas</span> (Phase 1)
             </footer>
           </aside>
+          </section>
         </div>
       );
     }
