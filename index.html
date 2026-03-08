@@ -18,6 +18,7 @@
       name: '博士漫画家',
       degree: 'Ph.D. in Physics',
       field: '量子情報・量子もつれ',
+      avatarUrl: 'https://dummyimage.com/160x160/253358/ffe03a&text=DR', // 作家アイコン（差し替え可）
     };
 
     const mangaPages = [
@@ -47,10 +48,116 @@
 
     function DoctorCanvas() {
       const [currentPage, setCurrentPage] = useState(0);
+      const [viewMode, setViewMode] = useState('intro'); // 'intro' | 'fullscreen'
 
       const nextPage = () => setCurrentPage((prev) => (prev < mangaPages.length - 1 ? prev + 1 : prev));
       const prevPage = () => setCurrentPage((prev) => (prev > 0 ? prev - 1 : prev));
 
+      // 全画面漫画専用ビューワー
+      if (viewMode === 'fullscreen') {
+        return (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: '#0f1419',
+            display: 'flex',
+            flexDirection: 'column',
+            fontFamily: 'Inter, "Helvetica Neue", Arial, sans-serif'
+          }}>
+            <header style={{
+              flex: '0 0 auto',
+              padding: '0.75rem 1rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'rgba(0,0,0,0.5)',
+              borderBottom: '1px solid rgba(255,255,255,0.08)'
+            }}>
+              <button
+                onClick={() => setViewMode('intro')}
+                style={{
+                  padding: '0.5rem 1rem',
+                  fontSize: '0.9rem',
+                  color: '#e8ecf4',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontWeight: 500
+                }}
+              >
+                ← 紹介に戻る
+              </button>
+              <span style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
+                {currentPage + 1} / {mangaPages.length}
+              </span>
+            </header>
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem',
+              minHeight: 0
+            }}>
+              <button
+                aria-label="前のページ"
+                onClick={prevPage}
+                disabled={currentPage === 0}
+                style={{
+                  flex: '0 0 auto',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '2.5rem',
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
+                  opacity: currentPage === 0 ? 0.3 : 0.9,
+                  marginRight: '1rem'
+                }}
+              >
+                ‹
+              </button>
+              <img
+                src={mangaPages[currentPage].imageUrl}
+                alt={`Page ${currentPage + 1}`}
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '4px',
+                  boxShadow: '0 8px 40px rgba(0,0,0,0.4)'
+                }}
+              />
+              <button
+                aria-label="次のページ"
+                onClick={nextPage}
+                disabled={currentPage >= mangaPages.length - 1}
+                style={{
+                  flex: '0 0 auto',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: 'none',
+                  color: '#fff',
+                  fontSize: '2.5rem',
+                  width: '56px',
+                  height: '56px',
+                  borderRadius: '50%',
+                  cursor: currentPage >= mangaPages.length - 1 ? 'not-allowed' : 'pointer',
+                  opacity: currentPage >= mangaPages.length - 1 ? 0.3 : 0.9,
+                  marginLeft: '1rem'
+                }}
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // 紹介ページ
       return (
         <div style={{
           display: 'flex',
@@ -59,7 +166,6 @@
           background: 'linear-gradient(180deg, #e6f0fa 0%, #c5d9ed 40%, #192841 100%)',
           fontFamily: 'Inter, "Helvetica Neue", Arial, sans-serif'
         }}>
-          {/* 紹介セクション */}
           <section style={{
             padding: '3rem 2rem 2.5rem',
             maxWidth: '720px',
@@ -76,7 +182,12 @@
             }}>
               博士号所持の漫画家 — 論文と漫画
             </h1>
+
+            {/* プロフィール: 左に作家アイコン（丸）、右にテキスト */}
             <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1.5rem',
               background: 'rgba(255,255,255,0.85)',
               borderRadius: '1rem',
               padding: '1.5rem 1.75rem',
@@ -84,12 +195,31 @@
               boxShadow: '0 4px 20px rgba(25,40,65,0.08)',
               border: '1px solid rgba(25,40,65,0.06)'
             }}>
-              <h2 style={{ fontSize: '1.1rem', color: '#253358', marginBottom: '0.5rem', fontWeight: 600 }}>プロフィール</h2>
-              <p style={{ margin: 0, fontSize: '1rem', color: '#3d4f6b', lineHeight: 1.6 }}>
-                <strong>{doctorProfile.name}</strong><br />
-                {doctorProfile.degree} / 研究分野: {doctorProfile.field}
-              </p>
+              <div style={{
+                flexShrink: 0,
+                width: '96px',
+                height: '96px',
+                borderRadius: '50%',
+                overflow: 'hidden',
+                border: '3px solid #253358',
+                boxShadow: '0 4px 12px rgba(25,40,65,0.15)'
+              }}>
+                <img
+                  src={doctorProfile.avatarUrl}
+                  alt={doctorProfile.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <h2 style={{ fontSize: '1.1rem', color: '#253358', marginBottom: '0.5rem', fontWeight: 600 }}>プロフィール</h2>
+                <p style={{ margin: 0, fontSize: '1rem', color: '#3d4f6b', lineHeight: 1.6 }}>
+                  <strong>{doctorProfile.name}</strong><br />
+                  {doctorProfile.degree}<br />
+                  研究分野: {doctorProfile.field}
+                </p>
+              </div>
             </div>
+
             <h2 style={{
               fontSize: '1.15rem',
               color: '#253358',
@@ -98,7 +228,7 @@
             }}>
               論文 Summary
             </h2>
-            {references.map((ref, i) => (
+            {references.map((ref) => (
               <div
                 key={ref.doi}
                 style={{
@@ -134,32 +264,57 @@
                 </a>
               </div>
             ))}
+
+            {/* 漫画本編を全画面で読む — 論文Summaryのすぐ下・目立つCTA */}
+            <button
+              onClick={() => setViewMode('fullscreen')}
+              style={{
+                display: 'block',
+                width: '100%',
+                maxWidth: '420px',
+                margin: '0 auto 1.25rem',
+                padding: '1.1rem 1.5rem',
+                fontSize: '1.15rem',
+                fontWeight: 700,
+                color: '#fff',
+                background: 'linear-gradient(135deg, #192841 0%, #253358 50%, #3f51b5 100%)',
+                border: 'none',
+                borderRadius: '1rem',
+                cursor: 'pointer',
+                boxShadow: '0 6px 24px rgba(25,40,65,0.35)',
+                transition: 'transform 0.15s, box-shadow 0.15s'
+              }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.02)'; e.currentTarget.style.boxShadow = '0 8px 28px rgba(25,40,65,0.45)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.boxShadow = '0 6px 24px rgba(25,40,65,0.35)'; }}
+            >
+              漫画本編を全画面で読む
+            </button>
+
             <button
               onClick={scrollToManga}
               style={{
                 display: 'block',
                 width: '100%',
                 maxWidth: '360px',
-                margin: '2rem auto 0',
-                padding: '1rem 1.5rem',
-                fontSize: '1.2rem',
-                fontWeight: 700,
-                color: '#fff',
-                background: 'linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%)',
-                border: 'none',
+                margin: '0 auto',
+                padding: '0.9rem 1.25rem',
+                fontSize: '1rem',
+                fontWeight: 600,
+                color: '#3f51b5',
+                background: 'rgba(255,255,255,0.9)',
+                border: '2px solid #3f51b5',
                 borderRadius: '1rem',
                 cursor: 'pointer',
-                boxShadow: '0 4px 20px rgba(63,81,181,0.4)',
                 transition: 'transform 0.15s, box-shadow 0.15s'
               }}
-              onMouseOver={(e) => { e.target.style.transform = 'scale(1.02)'; e.target.style.boxShadow = '0 6px 24px rgba(63,81,181,0.5)'; }}
-              onMouseOut={(e) => { e.target.style.transform = 'scale(1)'; e.target.style.boxShadow = '0 4px 20px rgba(63,81,181,0.4)'; }}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.01)'; }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
             >
-              漫画本編へ進む →
+              漫画本編へ進む（スクロール） →
             </button>
           </section>
 
-          {/* 漫画ビューワー */}
+          {/* 漫画ビューワー（同一ページ内） */}
           <section
             id="manga-viewer"
             style={{
@@ -169,116 +324,116 @@
               alignItems: 'stretch'
             }}
           >
-          <div style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2rem',
-          }}>
-            <button
-              aria-label="前のページ"
-              onClick={prevPage}
-              disabled={currentPage === 0}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#3f51b5',
-                fontSize: '2rem',
-                cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
-                opacity: currentPage === 0 ? 0.3 : 1,
-                marginRight: '1.5rem'
-              }}
-            >
-              ‹
-            </button>
-            <img
-              src={mangaPages[currentPage].imageUrl}
-              alt={`Manga Page ${currentPage + 1}`}
-              style={{
-                boxShadow: '0 6px 32px 0 rgba(25,40,65,.23)',
-                borderRadius: '1rem',
-                border: '2px solid #b2bec3',
-                maxWidth: '420px',
-                width: '100%',
-                height: 'auto',
-                background: '#fff',
-                transition: 'box-shadow 0.2s'
-              }}
-            />
-            <button
-              aria-label="次のページ"
-              onClick={nextPage}
-              disabled={currentPage >= mangaPages.length - 1}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#3f51b5',
-                fontSize: '2rem',
-                cursor: currentPage >= mangaPages.length - 1 ? 'not-allowed' : 'pointer',
-                opacity: currentPage >= mangaPages.length - 1 ? 0.3 : 1,
-                marginLeft: '1.5rem'
-              }}
-            >
-              ›
-            </button>
-          </div>
-          <aside style={{
-            width: '340px',
-            background: '#253358EF',
-            color: '#f2f6fa',
-            padding: '2.5rem 2rem',
-            boxShadow: '-1px 0 8px 0 rgba(25,40,65,.04)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'flex-start',
-            borderTopLeftRadius: '1.5rem',
-            borderBottomLeftRadius: '1.5rem'
-          }}>
-            <h2 style={{
-              fontSize: '1.3rem',
-              letterSpacing: '0.04em',
-              marginBottom: '1.2rem',
-              fontWeight: 700,
-              color: '#ffe03a'
+            <div style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '2rem',
             }}>
-              📚 論文出典 (References)
-            </h2>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {references.map((ref, i) => (
-                <li
-                  key={ref.doi}
-                  style={{
-                    marginBottom: '1.3rem',
-                    background: i % 2 === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.10)',
-                    borderRadius: '10px',
-                    padding: '0.8rem 1rem',
-                    transition: 'background 0.2s',
-                  }}
-                >
-                  <div style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.1em', color: '#dbeafe' }}>
-                    {ref.title}
-                  </div>
-                  <div style={{ fontSize: '0.96rem', color: '#d2ceee', marginBottom: '0.2em' }}>
-                    <span style={{ fontWeight: 450 }}>{ref.author}</span>
-                  </div>
-                  <div style={{ fontSize: '0.91rem' }}>
-                    <a
-                      href={`https://doi.org/${ref.doi}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ color: '#91d6fe', textDecoration: 'underline dotted' }}
-                    >
-                      DOI: {ref.doi}
-                    </a>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <footer style={{ marginTop: 'auto', fontSize: '13px', color: '#b2bec3', paddingTop: '1.3rem' }}>
-              <span style={{ color: '#ccffff' }}>Quantumy Doctor Canvas</span> (Phase 1)
-            </footer>
-          </aside>
+              <button
+                aria-label="前のページ"
+                onClick={prevPage}
+                disabled={currentPage === 0}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#3f51b5',
+                  fontSize: '2rem',
+                  cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
+                  opacity: currentPage === 0 ? 0.3 : 1,
+                  marginRight: '1.5rem'
+                }}
+              >
+                ‹
+              </button>
+              <img
+                src={mangaPages[currentPage].imageUrl}
+                alt={`Manga Page ${currentPage + 1}`}
+                style={{
+                  boxShadow: '0 6px 32px 0 rgba(25,40,65,.23)',
+                  borderRadius: '1rem',
+                  border: '2px solid #b2bec3',
+                  maxWidth: '420px',
+                  width: '100%',
+                  height: 'auto',
+                  background: '#fff',
+                  transition: 'box-shadow 0.2s'
+                }}
+              />
+              <button
+                aria-label="次のページ"
+                onClick={nextPage}
+                disabled={currentPage >= mangaPages.length - 1}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#3f51b5',
+                  fontSize: '2rem',
+                  cursor: currentPage >= mangaPages.length - 1 ? 'not-allowed' : 'pointer',
+                  opacity: currentPage >= mangaPages.length - 1 ? 0.3 : 1,
+                  marginLeft: '1.5rem'
+                }}
+              >
+                ›
+              </button>
+            </div>
+            <aside style={{
+              width: '340px',
+              background: '#253358EF',
+              color: '#f2f6fa',
+              padding: '2.5rem 2rem',
+              boxShadow: '-1px 0 8px 0 rgba(25,40,65,.04)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'flex-start',
+              borderTopLeftRadius: '1.5rem',
+              borderBottomLeftRadius: '1.5rem'
+            }}>
+              <h2 style={{
+                fontSize: '1.3rem',
+                letterSpacing: '0.04em',
+                marginBottom: '1.2rem',
+                fontWeight: 700,
+                color: '#ffe03a'
+              }}>
+                📚 論文出典 (References)
+              </h2>
+              <ul style={{ listStyle: 'none', padding: 0 }}>
+                {references.map((ref, i) => (
+                  <li
+                    key={ref.doi}
+                    style={{
+                      marginBottom: '1.3rem',
+                      background: i % 2 === 0 ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.10)',
+                      borderRadius: '10px',
+                      padding: '0.8rem 1rem',
+                      transition: 'background 0.2s',
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, fontSize: '1.05rem', marginBottom: '0.1em', color: '#dbeafe' }}>
+                      {ref.title}
+                    </div>
+                    <div style={{ fontSize: '0.96rem', color: '#d2ceee', marginBottom: '0.2em' }}>
+                      <span style={{ fontWeight: 450 }}>{ref.author}</span>
+                    </div>
+                    <div style={{ fontSize: '0.91rem' }}>
+                      <a
+                        href={`https://doi.org/${ref.doi}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ color: '#91d6fe', textDecoration: 'underline dotted' }}
+                      >
+                        DOI: {ref.doi}
+                      </a>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <footer style={{ marginTop: 'auto', fontSize: '13px', color: '#b2bec3', paddingTop: '1.3rem' }}>
+                <span style={{ color: '#ccffff' }}>Quantumy Doctor Canvas</span> (Phase 1)
+              </footer>
+            </aside>
           </section>
         </div>
       );
