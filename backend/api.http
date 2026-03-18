@@ -1,0 +1,21 @@
+### Quantumy Auth API（VS Code REST Client / IntelliJ HTTP Client 用）
+@base = http://localhost:3000
+
+### 登録
+POST {{base}}/api/register
+Content-Type: application/json
+
+{
+  "email": "reader@example.com",
+  "password": "secret123",
+  "display_name": "テスト読者"
+}
+
+### ログイン
+POST {{base}}/api/login
+Content-Type: application/json
+
+{
+  "email": "reader@example.com",
+  "password": "secret123"
+}

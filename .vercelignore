@@ -1,0 +1,6 @@
+backend
+**/target
+**/.env
+**/.env.*
+*.md
+.git

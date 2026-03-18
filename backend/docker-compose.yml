@@ -1,0 +1,27 @@
+# ローカル開発用 PostgreSQL（バックエンドのインストール待ち中に DB だけ先に起動可能）
+#
+#   docker compose up -d
+#
+# .env の DATABASE_URL 例:
+#   postgres://quantumy:quantumy_secret@localhost:5432/quantumy
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: quantumy-postgres
+    environment:
+      POSTGRES_USER: quantumy
+      POSTGRES_PASSWORD: quantumy_secret
+      POSTGRES_DB: quantumy
+    ports:
+      - "5432:5432"
+    volumes:
+      - quantumy_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quantumy -d quantumy"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  quantumy_pgdata:

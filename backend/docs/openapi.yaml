@@ -1,0 +1,83 @@
+openapi: 3.0.3
+info:
+  title: Quantumy Auth API
+  description: ユーザー登録・ログイン（Doctor Canvas バックエンド）
+  version: 0.1.0
+servers:
+  - url: http://localhost:3000
+    description: ローカル
+
+paths:
+  /api/register:
+    post:
+      summary: ユーザー登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: 入力不正
+        '409':
+          description: メール重複
+
+  /api/login:
+    post:
+      summary: ログイン
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 成功（パスワード一致）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: メール不明またはパスワード不一致
+
+components:
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        display_name:
+          type: string
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+    AuthResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        user_id:
+          type: string
+          format: uuid
+          nullable: true
