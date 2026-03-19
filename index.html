@@ -46,9 +46,38 @@
       document.getElementById('manga-viewer').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    function scrollToId(id) {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function scrollToDemo() {
+      scrollToId('demo-section');
+    }
+
+    function scrollToTryAi() {
+      scrollToId('try-ai');
+    }
+
+    function scrollToRegisterViewer() {
+      scrollToId('register-viewer');
+    }
+
+    function scrollToRegisterResearcher() {
+      scrollToId('register-researcher');
+    }
+
+    function scrollToTerms() {
+      scrollToId('terms');
+    }
+
     function DoctorCanvas() {
       const [currentPage, setCurrentPage] = useState(0);
       const [viewMode, setViewMode] = useState('intro'); // 'intro' | 'fullscreen'
+
+      const [tryStage, setTryStage] = useState('idle'); // 'idle' | 'generating' | 'done'
+      const [tryFileName, setTryFileName] = useState('');
+      const [tryResultText, setTryResultText] = useState('');
 
       const nextPage = () => setCurrentPage((prev) => (prev < mangaPages.length - 1 ? prev + 1 : prev));
       const prevPage = () => setCurrentPage((prev) => (prev > 0 ? prev - 1 : prev));
@@ -166,7 +195,204 @@
           background: 'linear-gradient(180deg, #e6f0fa 0%, #c5d9ed 40%, #192841 100%)',
           fontFamily: 'Inter, "Helvetica Neue", Arial, sans-serif'
         }}>
-          <section style={{
+          {/* ホーム */}
+          <section id="home" style={{
+            padding: '4rem 2rem 2.75rem',
+            maxWidth: '960px',
+            margin: '0 auto',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.85)',
+              borderRadius: '1.25rem',
+              padding: '2.25rem 2.1rem',
+              boxShadow: '0 10px 40px rgba(25,40,65,0.10)',
+              border: '1px solid rgba(25,40,65,0.06)'
+            }}>
+              <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 320px', minWidth: 260 }}>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.55rem',
+                    padding: '0.4rem 0.75rem',
+                    borderRadius: '999px',
+                    background: 'rgba(63,81,181,0.10)',
+                    color: '#253358',
+                    fontWeight: 700,
+                    marginBottom: '1rem'
+                  }}>
+                    <span style={{ fontSize: '1.1rem' }}>📚</span>
+                    Dr.CANVAS
+                  </div>
+                  <h1 style={{
+                    fontSize: '2.05rem',
+                    color: '#192841',
+                    margin: '0 0 0.75rem 0',
+                    fontWeight: 900,
+                    letterSpacing: '0.01em'
+                  }}>
+                    研究者の「論文」を、マンガの「コマ」へ。
+                  </h1>
+                  <p style={{
+                    margin: 0,
+                    color: '#3d4f6b',
+                    lineHeight: 1.8,
+                    fontSize: '1.04rem'
+                  }}>
+                    まずは体験。あなたの「知りたい」を、物語として読む。
+                  </p>
+                </div>
+
+                <div style={{ flex: '0 0 320px', maxWidth: 420 }}>
+                  <div style={{
+                    background: 'rgba(25,40,65,0.05)',
+                    borderRadius: '1rem',
+                    padding: '1.25rem 1.15rem',
+                    border: '1px solid rgba(25,40,65,0.06)'
+                  }}>
+                    <h2 style={{ margin: 0, fontSize: '1.05rem', color: '#253358', fontWeight: 800, marginBottom: '0.75rem' }}>
+                      2つの入口
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                      <div style={{
+                        background: '#fff',
+                        borderRadius: '0.9rem',
+                        padding: '0.85rem 0.9rem',
+                        border: '1px solid rgba(25,40,65,0.06)'
+                      }}>
+                        <div style={{ fontWeight: 900, color: '#192841', marginBottom: '0.2rem' }}>
+                          👤 漫画読者
+                        </div>
+                        <div style={{ color: '#5a6c87', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                          未ログインでも閲覧できます。SEOを意識した高速取得。
+                        </div>
+                      </div>
+                      <div style={{
+                        background: '#fff',
+                        borderRadius: '0.9rem',
+                        padding: '0.85rem 0.9rem',
+                        border: '1px solid rgba(25,40,65,0.06)'
+                      }}>
+                        <div style={{ fontWeight: 900, color: '#192841', marginBottom: '0.2rem' }}>
+                          🧑‍🏫 研究者（投稿）
+                        </div>
+                        <div style={{ color: '#5a6c87', fontSize: '0.95rem', lineHeight: 1.6 }}>
+                          学生証/教職員証で本人確認が必要です（モックUI）。
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* メインCTA */}
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginTop: '1.9rem' }}>
+                <button
+                  onClick={scrollToDemo}
+                  style={{
+                    flex: '1 1 240px',
+                    padding: '1rem 1.25rem',
+                    fontSize: '1.15rem',
+                    fontWeight: 900,
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%)',
+                    border: 'none',
+                    borderRadius: '1rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 30px rgba(63,81,181,0.35)'
+                  }}
+                >
+                  デモを見る →
+                </button>
+                <button
+                  onClick={scrollToTryAi}
+                  style={{
+                    flex: '1 1 240px',
+                    padding: '1rem 1.25rem',
+                    fontSize: '1.05rem',
+                    fontWeight: 800,
+                    color: '#253358',
+                    background: 'rgba(37,51,88,0.08)',
+                    border: '2px solid rgba(37,51,88,0.20)',
+                    borderRadius: '1rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  お試しで論文→漫画生成AI（モック） →
+                </button>
+              </div>
+
+              {/* 必須リンク */}
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+                <button
+                  onClick={scrollToRegisterResearcher}
+                  style={{
+                    padding: '0.65rem 0.9rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    color: '#253358',
+                    background: '#fff',
+                    border: '1px solid rgba(37,51,88,0.18)',
+                    borderRadius: '999px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  研究者としてアカウント登録 →
+                </button>
+                <button
+                  onClick={scrollToRegisterViewer}
+                  style={{
+                    padding: '0.65rem 0.9rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    color: '#253358',
+                    background: '#fff',
+                    border: '1px solid rgba(37,51,88,0.18)',
+                    borderRadius: '999px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  漫画読者としてアカウント登録 →
+                </button>
+                <a
+                  href="mailto:hello@quantumy.example"
+                  style={{
+                    padding: '0.65rem 0.9rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    color: '#253358',
+                    background: '#fff',
+                    border: '1px solid rgba(37,51,88,0.18)',
+                    borderRadius: '999px',
+                    textDecoration: 'none',
+                    display: 'inline-block'
+                  }}
+                >
+                  お問い合わせ →
+                </a>
+                <button
+                  onClick={scrollToTerms}
+                  style={{
+                    padding: '0.65rem 0.9rem',
+                    fontSize: '0.95rem',
+                    fontWeight: 800,
+                    color: '#253358',
+                    background: '#fff',
+                    border: '1px solid rgba(37,51,88,0.18)',
+                    borderRadius: '999px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  利用規約 →
+                </button>
+              </div>
+            </div>
+          </section>
+
+          {/* 既存のデモ（博士紹介＋漫画） */}
+          <section id="demo-section" style={{
             padding: '3rem 2rem 2.5rem',
             maxWidth: '720px',
             margin: '0 auto',
@@ -434,6 +660,288 @@
                 <span style={{ color: '#ccffff' }}>Quantumy Doctor Canvas</span> (Phase 1)
               </footer>
             </aside>
+          </section>
+
+          {/* お試し: 論文アップロード→漫画生成AI（モック） */}
+          <section id="try-ai" style={{
+            padding: '3.25rem 2rem 2.5rem',
+            maxWidth: '960px',
+            margin: '0 auto',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.88)',
+              borderRadius: '1.25rem',
+              padding: '1.8rem 1.75rem',
+              boxShadow: '0 10px 40px rgba(25,40,65,0.08)',
+              border: '1px solid rgba(25,40,65,0.06)'
+            }}>
+              <h2 style={{ fontSize: '1.35rem', color: '#253358', margin: '0 0 0.75rem 0', fontWeight: 900 }}>
+                お試し: 論文をアップロードして、漫画にする（生成AIモック）
+              </h2>
+              <p style={{ margin: 0, color: '#5a6c87', lineHeight: 1.8 }}>
+                ここでは遷移・体験導線だけ実装します。実データ/生成AI連携は次フェーズで接続します。
+              </p>
+
+              <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
+                <div style={{ flex: '1 1 300px', minWidth: 260 }}>
+                  <div style={{
+                    background: 'rgba(37,51,88,0.06)',
+                    borderRadius: '1rem',
+                    padding: '1rem 1rem',
+                    border: '1px dashed rgba(37,51,88,0.25)'
+                  }}>
+                    <div style={{ fontWeight: 900, color: '#192841', marginBottom: '0.5rem' }}>
+                      論文ファイル（例: PDF）
+                    </div>
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      onChange={(e) => {
+                        const f = e.target.files && e.target.files[0];
+                        setTryFileName(f ? f.name : '');
+                      }}
+                      style={{ width: '100%' }}
+                    />
+                    <div style={{ marginTop: '0.6rem', color: '#5a6c87', fontSize: '0.95rem' }}>
+                      選択中: <strong style={{ color: '#192841' }}>{tryFileName || 'なし'}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ flex: '0 0 280px', minWidth: 240 }}>
+                  <button
+                    onClick={() => {
+                      if (!tryFileName) return;
+                      setTryStage('generating');
+                      setTryResultText('');
+                      setTimeout(() => {
+                        setTryStage('done');
+                        setTryResultText('生成AIモック: 要点を「導入→対比→解法→余韻」に再構成し、3コマの構成案を作成しました。');
+                      }, 1500);
+                    }}
+                    disabled={!tryFileName || tryStage === 'generating'}
+                    style={{
+                      width: '100%',
+                      padding: '1.05rem 1.25rem',
+                      fontSize: '1.05rem',
+                      fontWeight: 900,
+                      color: '#fff',
+                      background: tryStage === 'generating' ? 'rgba(63,81,181,0.5)' : 'linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%)',
+                      border: 'none',
+                      borderRadius: '1rem',
+                      cursor: (!tryFileName || tryStage === 'generating') ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 8px 30px rgba(63,81,181,0.35)'
+                    }}
+                  >
+                    {tryStage === 'idle' && '生成を開始（モック）'}
+                    {tryStage === 'generating' && '生成中…'}
+                    {tryStage === 'done' && '生成完了'}
+                  </button>
+                </div>
+              </div>
+
+              {tryStage !== 'idle' && (
+                <div style={{
+                  marginTop: '1.25rem',
+                  background: '#fff',
+                  borderRadius: '1rem',
+                  padding: '1rem 1rem',
+                  border: '1px solid rgba(25,40,65,0.06)'
+                }}>
+                  <div style={{ fontWeight: 900, color: '#192841', marginBottom: '0.4rem' }}>
+                    生成結果
+                  </div>
+                  <div style={{ color: '#3d4f6b', lineHeight: 1.8 }}>
+                    {tryResultText || '—'}
+                  </div>
+                  <div style={{ marginTop: '0.85rem' }}>
+                    <button
+                      onClick={() => {
+                        setCurrentPage(0);
+                        setViewMode('fullscreen');
+                      }}
+                      style={{
+                        padding: '0.75rem 1rem',
+                        fontSize: '0.98rem',
+                        fontWeight: 900,
+                        color: '#253358',
+                        background: 'rgba(37,51,88,0.10)',
+                        border: '1px solid rgba(37,51,88,0.25)',
+                        borderRadius: '0.9rem',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      生成結果を漫画として読む（モック） →
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* 登録（モック） */}
+          <section style={{
+            padding: '2.5rem 2rem',
+            maxWidth: '960px',
+            margin: '0 auto',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+              <div style={{
+                flex: '1 1 360px',
+                minWidth: 280,
+                background: 'rgba(255,255,255,0.88)',
+                borderRadius: '1.25rem',
+                padding: '1.6rem 1.45rem',
+                boxShadow: '0 10px 40px rgba(25,40,65,0.08)',
+                border: '1px solid rgba(25,40,65,0.06)'
+              }}>
+                <h3 id="register-viewer" style={{ margin: 0, fontSize: '1.25rem', color: '#253358', fontWeight: 900 }}>
+                  漫画読者として登録（モック）
+                </h3>
+                <p style={{ marginTop: '0.6rem', marginBottom: 0, color: '#5a6c87', lineHeight: 1.8 }}>
+                  未ログインでも閲覧できます。機能拡張時に履歴やお気に入りを紐付けます。
+                </p>
+                <button
+                  onClick={() => alert('読者登録（モック）です。次フェーズで API と接続します。')}
+                  style={{
+                    marginTop: '1rem',
+                    width: '100%',
+                    padding: '0.95rem 1.1rem',
+                    fontSize: '1rem',
+                    fontWeight: 900,
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%)',
+                    border: 'none',
+                    borderRadius: '1rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 30px rgba(63,81,181,0.35)'
+                  }}
+                >
+                  登録する（モック） →
+                </button>
+              </div>
+
+              <div style={{
+                flex: '1 1 360px',
+                minWidth: 280,
+                background: 'rgba(255,255,255,0.88)',
+                borderRadius: '1.25rem',
+                padding: '1.6rem 1.45rem',
+                boxShadow: '0 10px 40px rgba(25,40,65,0.08)',
+                border: '1px solid rgba(25,40,65,0.06)'
+              }}>
+                <h3 id="register-researcher" style={{ margin: 0, fontSize: '1.25rem', color: '#253358', fontWeight: 900 }}>
+                  研究者として登録（本人確認モック）
+                </h3>
+                <p style={{ marginTop: '0.6rem', marginBottom: 0, color: '#5a6c87', lineHeight: 1.8 }}>
+                  学生証/教職員証など研究者の立場を示す証明が必要です（モックUI）。
+                </p>
+                <div style={{ marginTop: '1rem', background: 'rgba(37,51,88,0.06)', borderRadius: '1rem', padding: '1rem' }}>
+                  <div style={{ fontWeight: 900, color: '#192841', marginBottom: '0.5rem' }}>
+                    証明書アップロード（モック）
+                  </div>
+                  <input
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.pdf"
+                    onChange={() => {}}
+                    style={{ width: '100%' }}
+                  />
+                </div>
+                <button
+                  onClick={() => alert('研究者登録（モック）です。次フェーズで本人確認・API と接続します。')}
+                  style={{
+                    marginTop: '1rem',
+                    width: '100%',
+                    padding: '0.95rem 1.1rem',
+                    fontSize: '1rem',
+                    fontWeight: 900,
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #192841 0%, #253358 50%, #3f51b5 100%)',
+                    border: 'none',
+                    borderRadius: '1rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 8px 30px rgba(25,40,65,0.35)'
+                  }}
+                >
+                  登録する（モック） →
+                </button>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '1rem' }}>
+              <div style={{
+                flex: '1 1 360px',
+                minWidth: 280,
+                background: 'rgba(255,255,255,0.88)',
+                borderRadius: '1.25rem',
+                padding: '1.6rem 1.45rem',
+                boxShadow: '0 10px 40px rgba(25,40,65,0.08)',
+                border: '1px solid rgba(25,40,65,0.06)'
+              }}>
+                <h3 id="contact" style={{ margin: 0, fontSize: '1.25rem', color: '#253358', fontWeight: 900 }}>
+                  お問い合わせ
+                </h3>
+                <p style={{ marginTop: '0.6rem', marginBottom: 0, color: '#5a6c87', lineHeight: 1.8 }}>
+                  困ったときはメールで連絡してください（モック）。
+                </p>
+                <a
+                  href="mailto:hello@quantumy.example"
+                  style={{
+                    display: 'inline-block',
+                    marginTop: '1rem',
+                    width: '100%',
+                    padding: '0.95rem 1.1rem',
+                    fontSize: '1rem',
+                    fontWeight: 900,
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #3f51b5 0%, #5c6bc0 100%)',
+                    borderRadius: '1rem',
+                    textDecoration: 'none',
+                    boxShadow: '0 8px 30px rgba(63,81,181,0.35)'
+                  }}
+                >
+                  メールを送る →
+                </a>
+              </div>
+
+              <div style={{
+                flex: '1 1 360px',
+                minWidth: 280,
+                background: 'rgba(255,255,255,0.88)',
+                borderRadius: '1.25rem',
+                padding: '1.6rem 1.45rem',
+                boxShadow: '0 10px 40px rgba(25,40,65,0.08)',
+                border: '1px solid rgba(25,40,65,0.06)'
+              }}>
+                <h3 id="terms" style={{ margin: 0, fontSize: '1.25rem', color: '#253358', fontWeight: 900 }}>
+                  利用規約（モック）
+                </h3>
+                <p style={{ marginTop: '0.6rem', marginBottom: 0, color: '#5a6c87', lineHeight: 1.8 }}>
+                  本サービスは研究者の投稿と、漫画読者の閲覧を扱います。利用条件・免責・権利関係は今後整備します。
+                </p>
+                <button
+                  onClick={() => alert('利用規約（モック）です。実テキストは次フェーズで整備します。')}
+                  style={{
+                    marginTop: '1rem',
+                    width: '100%',
+                    padding: '0.95rem 1.1rem',
+                    fontSize: '1rem',
+                    fontWeight: 900,
+                    color: '#253358',
+                    background: 'rgba(37,51,88,0.10)',
+                    border: '1px solid rgba(37,51,88,0.25)',
+                    borderRadius: '1rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  規約を確認する（モック） →
+                </button>
+              </div>
+            </div>
           </section>
         </div>
       );
