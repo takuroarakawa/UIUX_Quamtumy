@@ -1,0 +1,187 @@
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Native chromatome proﬁling reveals
+hundreds of metabolic enzymes in the
+nucleus across tissues
+S. Kourtis
+1,5,7, A. Gañez Zapater
+1,7, CR Elbæk
+1, A. Schmidt1,2, R. Ghose
+1,6,
+A. Coll Manzano1, L. Espinar Calvo
+1, M. Guirola1, N. Pardo-Lorente1,
+M. Garcia-Cao
+1, M. Pfeiffer1,2, S. Haynes3, F. Fontaine
+4, A. Müller4 &
+S. Sdelci
+1,2
+Metabolic and epigenetic rewiring are hallmarks of cancer, with increasing
+evidence suggesting crosstalk between these processes. While previous studies have hinted at the role of metabolic enzymes in the nucleus, the extent
+and functional relevance of their nuclear localization remain unclear. In this
+study, we present a comprehensive chromatome proteomic analysis across
+cancer lineages and healthy samples, revealing that metabolic enzyme
+moonlighting on chromatin is widespread across various tissues and metabolic pathways. We show that the abundance of metabolic enzymes on chromatin is tissue-speciﬁc, with oxidative phosphorylation proteins notably
+depleted in lung cancer, suggesting a link between nuclear metabolism and
+cell identity. Further, we explore the dynamic chromatin association of onecarbon folate enzymes, demonstrating their involvement in DNA damage and
+repair processes. Finally, we asked whether restricting metabolic enzymes to
+speciﬁc subcellular compartments rewires the transcriptome, thereby
+decoupling the observed transcriptional changes from mere metabolite diffusion. Our ﬁndings propose and validate novel non-canonical nuclear roles
+for several metabolic enzymes, providing new insights into the functional
+relationship between metabolism and chromatin regulation. This study
+underscores the hypothesis that the nucleus is populated by metabolic
+enzymes, offering new avenues for understanding how nuclear metabolism
+impacts chromatin function and cancer progression.
+Broad changes in the epigenetic and metabolic landscapes are both
+recognized hallmarks of cancer1–3. However, the interplay between
+these processes has remained elusive. Cancer transformation involves
+complex metabolic rewiring, which is essential for sustaining tumor
+growth and supporting metastasis. Traditionally, the connection
+between metabolism and epigenetics is mediated by metabolic substrates, such as acetyl-CoA, S-adenosylmethionine (SAM), or adenosine
+triphosphate (ATP), that facilitate epigenetic modiﬁcations4–7. These
+Received: 11 July 2024
+Accepted: 27 January 2026
+Check for updates
+1Centre for Genomic Regulation (CRG), The Barcelona Institute of Science and Technology, Dr. Aiguader 88, Barcelona 08003, Spain. 2Universitat Pompeu
+Fabra (UPF), Barcelona, Spain. 3EPCC – University of Edinburgh (UoE), Edinburgh, Scotland, UK. 4CeMM Research Center for Molecular Medicine of the
+Austrian Academy of Sciences, Vienna, Austria. 5Present address: Centre for Cell Biology, University of Edinburgh, Edinburgh EH9 3BF, UK. 6Present address:
+Breast Cancer Now Toby Robins Research Centre, The Institute of Cancer, Research, London, UK. 7These authors contributed equally: S. Kourtis, A. Gañez
+Zapater.
+e-mail: sara.sdelci@crg.eu
+Nature Communications|   (2026) 17:1655 
+1
+1234567890():,;
+1234567890():,;
+
+modiﬁcations, in turn, can induce transcriptional changes in speciﬁc
+metabolic enzymes, driving further metabolic rewiring. Classic examples, such as the c-Myc oncogene-BRD4 axis driving the transcription
+of folate metabolism enzymes8, or mutations in the enzymes Isocitrate
+dehydrogenase 1 and 2 (IDH1 and IDH2) leading to aberrant genomewide DNA and histone hypermethylation9, illustrate the strong, albeit
+indirect, connection between epigenetics and metabolism. Recent
+evidence, however, suggests a more direct interaction, particularly
+through the nuclear and chromatin translocation of metabolic
+enzymes.
+Metabolic enzymes traditionally associated with cytoplasmic or
+organelle-speciﬁc metabolic reactions have also been shown to carry
+out distinct functions within the nucleus, phenomena often referred
+to as nuclear moonlighting functions10–13. These unexpected nuclear
+involvements often relate to chromatin dynamics and can occur
+independently of the enzyme’s catalytic properties. For example,
+Glyceraldehyde-3-phosphate dehydrogenase (GAPDH) nuclear localization is required to transcriptionally control apoptosis-related
+genes14, but also to facilitate the DNA damage repair by stabilizing
+RAD5115 and promoting the nuclear localization of Nicotinamide
+phosphoribosyltransferase (NAMPT)16. Nuclear fructose-1,6-bisphosphatase 1 (FBP1) interacts with the Polycomb Repressive Complex 2
+(PRC2) to regulate levels of H3K27me317. Moreover, the nuclear
+localization of Pyruvate Kinase M2 (PKM2) is required for the phosphorylation of Histone H3 (T11), which consequently regulates histone acetylation10,11. In other cases, the canonical enzymatic activity
+of certain enzymes is essential for their nuclear function. For
+instance, Acyl-CoA synthetase short chain family member 2 (ACCS2)
+and ATP citrate lyase (ACLY) can both generate acetyl-CoA in the
+nucleus, which directly inﬂuences histone acetylation18–23. In a separate mechanism, the synthesis of nuclear ATP by the enzyme Nudix
+hydrolase 5 (NUDIX5) in breast cancer cells is required for estrogeninduced chromatin remodeling24. Additionally, the nuclear localization of Methylenetetrahydrofolate Dehydrogenase, Cyclohydrolase
+and
+Formyltetrahydrofolate
+Synthetase
+1
+(MTHFD1),
+a
+predominantly cytoplasmic folate metabolic enzyme, boosts the cancerassociated transcriptional landscape promoted by the epigenetic
+reader Bromodomain Containing 4 (BRD4)62. Finally, our most recent
+discoveries highlight a role for nuclear metabolic activities in the
+regulation of correct mitosis progression25, nuclear scavenging of
+reactive oxygen species (ROS)26, and the regulation of nuclear NAD+
+availability during the DNA damage response27. This growing body of
+evidence suggests that nuclear metabolic enzyme activity is a regulated process essential for chromatin function and more widespread
+than previously thought. However, a thorough analysis of metabolic
+enzymes in the nucleus has not been performed, leaving this
+hypothesis unproven.
+With the goal of comprehensively identifying novel moonlighting
+or non-canonical nuclear functions of metabolic enzymes, we optimized a subcellular fractionation protocol that enriches chromatinbound proteins. We tested this protocol across a panel of tissue types
+for both cancer cell lines and healthy primary cells. In addition to
+canonical chromatin proteins, we identiﬁed metabolic enzymes that
+consistently localize to chromatin, many with tissue- and cancerspeciﬁc localization. For shortlisted metabolic enzymes, we validated
+their chromatin and nuclear localization in cell lines and patientderived tissue samples and explored their functional relationships on
+chromatin. Our study provides a unique compendium of chromatinassociated metabolic activities that will serve as the foundation for the
+global analysis of chromatin and nuclear metabolism.
+
+Results
+The chromatome proﬁle of ten different tissues
+To achieve the characterization of chromatin-bound proteins across
+tissue
+types,
+we
+optimized
+a
+previously
+published
+chromatin
+enrichment protocol62, consisting of sequential cytoplasmic and
+nuclear lysis followed by sonication and benzonase-mediated chromatin digestion to extract the chromatin-bound proteome (the chromatome) (Fig. 1A). We applied this new chromatome protocol to ten
+tissue types (Fig. 1B), comparing cancer and healthy cells. In total, we
+processed and analyzed 44 cancer cell lines and ten healthy primary
+cell types in duplicates, which provided a comprehensive collection of
+samples. For each of those samples, the detergent concentrations and
+lysis duration were adjusted to obtain the best puriﬁcation possible
+(Supplementary Data 1). A visual inspection of the fractionation protocol was conducted utilizing immunoﬂuorescence to ascertain that
+non-nuclear proteins were systematically depleted at each step prior
+to nuclear lysis (Fig. 1C and Appendix 1). To accomplish this, samples
+were stained with an antibody directed against mitochondrial Ferredoxin 1 (FDX1), a protein that, according to subcellular fractionation
+data28, exclusively resides in the mitochondria (Fig. S1A) and that has
+not been previously identiﬁed as enriched in chromatome-MS
+experiments conducted by our group26,27. Moreover, at the end of
+the protocol, we performed Western blot of focal adhesion (Vinculin),
+mitochondrial (FDX1) and histone H3 (H3) markers to verify the purity
+of our ﬁnal samples (Fig. 1D and Appendix 2).
+Samples were acquired using data-independent acquisition mass
+spectrometry (DIA-MS) and, as expected, showed strong enrichment
+for nuclear and chromosome-related terms while being depleted of
+mitochondrial and cytoplasmic proteins (Fig. S1B, Source Data 1),
+further validating our protocol. We retrieved ~5100 proteins per
+sample, most quantiﬁed by multiple peptide-to-spectrum matches
+(PSMs), with high reproducibility in the number of retrieved proteins
+between biological replicates (Fig. 1E, Source Data 2). While most
+proteins were identiﬁed and quantiﬁed across the majority of samples
+(Fig. S1C, Source Data 3), some proteins were only sporadically
+detected (Supplementary Data 2).
+Given that we expected most chromatin proteins to be present
+across tissues in our chromatome analysis, we hypothesized that
+proteins with sparse presence in our dataset would likely be nonchromatin proteins. To demonstrate thi
+
+Discussion
+While moonlighting of speciﬁc metabolic enzymes has long been
+recognized, recent evidence suggests that nuclear moonlighting is far
+more widespread than previously appreciated. Here, we provide the
+ﬁrst systematic, high-throughput proﬁling of chromatin-bound proteins across diverse healthy and cancerous cell types, revealing that the
+nuclear presence of metabolic enzymes is a universal, yet tissue- and
+cancer-speciﬁc, feature. This large-scale chromatome atlas challenges
+the traditional cytoplasmic-centric view of metabolism by demonstrating that metabolic enzymes consistently localize to chromatin,
+often in a lineage-speciﬁc manner, and can be dynamically regulated in
+response to cellular stress.
+Notably, we demonstrate that chromatin-associated metabolic
+enzymes vary between cancer types and even across samples from the
+same tissue, as in breast and pancreatic cancers, which are known for
+their heterogeneity. This observation suggests that the nuclear metabolic signature may reﬂect or even reinforce cell identity. In this context, our study suggests the hypothesis that nuclear metabolism may
+be linked to cell state transitions such as differentiation, carcinogenesis, or aging, all of which involve large-scale chromatin remodeling.
+This raises the intriguing possibility that nuclear metabolic composition
+may
+act
+both
+as
+a
+sensor
+and
+effector
+of
+epigenetic
+reprogramming.
+Among the most striking ﬁndings of our study is the widespread
+chromatin
+association
+of
+oxidative
+phosphorylation
+(OXPHOS)
+enzymes. These proteins, classically conﬁned to mitochondria, were
+consistently detected on chromatin in a tissue-speciﬁc manner, particularly enriched in breast cancer cells and depleted in lung cancer
+samples. While this ﬁnding suggests a potentially unexplored dimension of nuclear metabolism, we emphasize that the presence of
+OXPHOS enzymes on chromatin does not necessarily imply enzymatic
+activity in the nuclear compartment. Their precise role, whether
+structural,

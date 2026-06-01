@@ -27,14 +27,40 @@ sqlx = {
   ]
 }
 
+# 日時
+chrono = { version = "0.4", features = ["serde"] }
+
 # 認証・パスワード
-bcrypt = "0.16"
+argon2 = "0.5"
+rand = "0.8"
 uuid = { version = "1", features = ["v4", "serde"] }
 
 # JWT（保護API用の簡易トークン）
 jsonwebtoken = "9"
 
+# セキュリティ（レート制限）
+# 0.6+ は axum 0.8 依存のため、本プロジェクトの axum 0.7 と整合する 0.4 系を使用
+tower_governor = "0.4.3"
+
 # 環境変数・ログ
 dotenvy = "0.15"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# 論文→ネーム案（OpenAI 任意）
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+
+# PDF テキスト抽出（スキャンPDFは非対応）
+pdf-extract = "0.7"
+
+# B1 セクション分割用（軽量正規表現、std のみに依存）
+regex-lite = "0.1"
+
+# Stripe Checkout 用フォーム URL エンコード
+urlencoding = "2"
+
+# Stripe Webhook 署名検証（HMAC-SHA256）
+hmac = "0.12"
+sha2 = "0.10"
+subtle = "2"
+hex = "0.4"

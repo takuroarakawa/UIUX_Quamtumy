@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/manga-name-page.schema.json",
+  "title": "MangaNamePage",
+  "description": "1ページ分のマンガネーム（構成案）",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["page_number", "layout_type", "panels"],
+  "properties": {
+    "page_number": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "ページ番号（1始まり）"
+    },
+    "layout_type": {
+      "type": "string",
+      "description": "コマ割りパターン（レイアウト種別）",
+      "enum": [
+        "single",
+        "vertical_2",
+        "vertical_3",
+        "horizontal_2",
+        "horizontal_3",
+        "grid_2x2",
+        "grid_2x3",
+        "grid_3x2",
+        "top_wide_bottom_two",
+        "left_tall_right_two",
+        "custom"
+      ]
+    },
+    "layout_rationale": {
+      "type": "string",
+      "description": "任意。起承転結や読み順に対して、このlayout_typeを選んだ理由（AI/人間メモ）"
+    },
+    "panels": {
+      "type": "array",
+      "minItems": 1,
+      "description": "読み順（左上→右下など）で並べたコマ配列",
+      "items": { "$ref": "#/$defs/panel" }
+    }
+  },
+  "$defs": {
+    "source_text_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["excerpt"],
+      "description": "掛け合いが根拠とする論文テキストへの参照",
+      "properties": {
+        "excerpt": {
+          "type": "string",
+          "minLength": 1,
+          "description": "論文からの抜粋（短いフレーズでも可）。AI生成時は根拠の可検証性を上げる"
+        },
+        "location_label": {
+          "type": "string",
+          "description": "人間向け位置情報（例: Abstract 2文目、§3.2、Figure 1 キャプション）"
+        },
+        "span": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["start", "end"],
+          "properties": {
+            "start": { "type": "integer", "minimum": 0 },
+            "end": { "type": "integer", "minimum": 0 }
+          },
+          "description": "入力テキスト（正規化後）に対する半開区間 [start,end) などのオフセット。運用で定義"
+        },
+        "link_kind": {
+          "type": "string",
+          "enum": ["verbatim", "paraphrase", "inspired_by"],
+          "description": "excerpt とコマ内容の関係"
+        }
+      }
+    },
+    "panel": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "visual_description",
+        "dialogue",
+        "character_expression"
+      ],
+      "properties": {
+        "narrative_beat": {
+          "type": "string",
+          "enum": ["起", "承", "転", "結"],
+          "description": "1ページ内の起承転結レール上の位置（任意だが推奨）"
+        },
+        "visual_description": {
+          "type": "string",
+          "minLength": 1,
+          "description": "絵の指示（構図・モチーフ・動き・トーンなど）"
+        },
+        "dialogue": {
+          "type": "string",
+          "description": "セリフ（なしの場合は空文字）"
+        },
+        "character_expression": {
+          "type": "string",
+          "description": "キャラクターの表情・感情の指示"
+        },
+        "source_text_ref": {
+          "$ref": "#/$defs/source_text_ref",
+          "description": "博士・助手の掛け合いが参照する論文側の根拠"
+        }
+      }
+    }
+  }
+}

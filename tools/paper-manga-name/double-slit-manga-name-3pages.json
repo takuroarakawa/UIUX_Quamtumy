@@ -1,0 +1,136 @@
+{
+  "title": "量子力学の二重スリット実験（初心者向けネーム）",
+  "pages": [
+    {
+      "page_number": 1,
+      "layout_type": "vertical_3",
+      "layout_rationale": "3コマは上→下の縦割で「起→承→転（量子側への落差）」の加速が読みやすい。",
+      "panels": [
+        {
+          "narrative_beat": "起",
+          "visual_description": "研究室。ホワイトボードに「二重スリット」と粗い図。博士がチョークを握りしめ助手に食ってかかるワイド。背景にサッカーゴールのラフが小さくチラ見え。",
+          "dialogue": "いいか！『二重スリット』は量子の入門の入門だ！ここがわかれば世界がひっくり返るぞ！",
+          "character_expression": "【博士】目に炎。唾飛沫まで描く勢い。白衣の袖まくり。",
+          "source_text_ref": {
+            "excerpt": "The double-slit experiment remains the canonical demonstration of wave-particle duality.",
+            "location_label": "Introduction（導入の要旨）",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "承",
+          "visual_description": "助手がコーヒーカップを置き、ボールの線画（サッカーボール）をスケッチして説明するコマ。博士の肩越し。",
+          "dialogue": "落ち着いて。難しい言葉の『電子』は、まず『とにかく小さなサッカーボール』だと思ってください。普通は一つの穴から、一つの道を通ります。",
+          "character_expression": "【助手】穏やかな目。口角はほんの少し上がる。指先は丁寧。",
+          "source_text_ref": {
+            "excerpt": "We model the incident particle as a wavepacket approaching a barrier with two narrow openings.",
+            "location_label": "§2.1 Classical baseline",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "転",
+          "visual_description": "ゴールネットに穴が二つ空いた比喩イラスト。ボールが「同時に両方を検討するような」点線の分岐で描かれるギャグ寄り。",
+          "dialogue": "だが量子のボールは違う！『二つのスリット』を前にすると、古典の常識だけじゃ説明がつかない『干渉』という観客の波が立つんだ！",
+          "character_expression": "【博士】血管浮き目ギラ。助手は額に手を当てて軽い呆れ。",
+          "source_text_ref": {
+            "excerpt": "An interference pattern emerges even when single quanta are sent one at a time.",
+            "location_label": "§3 Results",
+            "link_kind": "verbatim"
+          }
+        }
+      ]
+    },
+    {
+      "page_number": 2,
+      "layout_type": "grid_2x2",
+      "layout_rationale": "4コマは2×2のZ字読みで「起承転結」を1ページに収めるのに最適。",
+      "panels": [
+        {
+          "narrative_beat": "起",
+          "visual_description": "上段左：スタジアムの俯瞰ラフ。観客が人波（縦じま）で揺れるシルエット。スクリーンに縞模様が投影される比喩。",
+          "dialogue": "まず『観測しない』。ボールをたくさん撃つと……スクリーンには縞が出る。スタジアムで観客が揃って立ち上がるみたいな『山と谷』です。",
+          "character_expression": "【助手】淡々とした眼差し。レーザーポインタで縞を示す。",
+          "source_text_ref": {
+            "excerpt": "Accumulated detection events reproduce a fringe pattern consistent with wave interference.",
+            "location_label": "Figure 2 caption",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "承",
+          "visual_description": "上段右：博士が興奮してホワイトボードを叩く。縞模様のスケッチに「干渉！」の文字。",
+          "dialogue": "それが『干渉縞』だ！波がぶつかって強くなったり弱くなったりする、あのノリだ！",
+          "character_expression": "【博士】歯を見せて笑う。髪が逆立ち気味。",
+          "source_text_ref": {
+            "excerpt": "constructive and destructive interference",
+            "location_label": "§3.2 Interference terminology",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "転",
+          "visual_description": "下段左：二つのスリットの図と、スクリーンの縞を矢印で結ぶ。ナレーション風の小文字。",
+          "dialogue": "論文だと『確率振幅の重ね合わせ』なんて言いますが……今は『二つの道のりが、観客席の拍手みたいに重なる』と覚えれば十分です。",
+          "character_expression": "【助手】眼鏡の位置を直す。冷静。",
+          "source_text_ref": {
+            "excerpt": "The total amplitude is the coherent sum of amplitudes associated with each path.",
+            "location_label": "§4 Discussion",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "結",
+          "visual_description": "下段右：博士と助手が横並びでスクリーンを見上げるシルエット。画面いっぱいに縞が光る。",
+          "dialogue": "つまり『どっちのスリットか』を決め打ちしない限り、世界は“波の計算”をしてるってことさ！",
+          "character_expression": "【博士】胸を張る。【助手】小さく頷く。",
+          "source_text_ref": {
+            "excerpt": "which-path information is absent in this configuration",
+            "location_label": "§4.1 Complementarity（要旨）",
+            "link_kind": "inspired_by"
+          }
+        }
+      ]
+    },
+    {
+      "page_number": 3,
+      "layout_type": "vertical_3",
+      "layout_rationale": "中段で『転』（観測）を置き、最下段で『結』に情緒を回収する縦3分割。",
+      "panels": [
+        {
+          "narrative_beat": "起",
+          "visual_description": "スタジアムに防犯カメラ（どちらのゲートを通ったか判別）を追加した比喩図。赤いRECランプ。",
+          "dialogue": "ここからがミソ。もし『どっちのスリットを通ったか』をカメラみたいに必ず記録すると……",
+          "character_expression": "【助手】真剣。目線は読者へ。",
+          "source_text_ref": {
+            "excerpt": "Introducing a which-path detector destroys the interference fringes.",
+            "location_label": "§5 Measurement",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "転",
+          "visual_description": "スクリーンの縞が消え、左右二つの塊（山）だけになるビフォーアフター対比。",
+          "dialogue": "縞が消えて、二つのまとまりに戻る。いわゆる『波じゃなく粒子っぽく見える』状態へ。",
+          "character_expression": "【博士】一瞬しょんぼり→すぐに燃え直し。「観測が世界を選ぶ！」の勢い。",
+          "source_text_ref": {
+            "excerpt": "The screen distribution converges to a classical two-peak profile.",
+            "location_label": "Figure 4 / §5.2",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "結",
+          "visual_description": "二人が窓際で夕焼け。博士は拳を空に掲げ、助手は微笑み。余白に小さく「初心者は比喩でOK」。",
+          "dialogue": "難しい用語は置いといて、まずは『観客の波』と『防犯カメラ』のイメージで掴もう！次は数式の闘技場だ！",
+          "character_expression": "【博士】熱い背中。【助手】優しい目。安心させる表情。",
+          "source_text_ref": {
+            "excerpt": "These observations motivate the broader framework of complementarity.",
+            "location_label": "Conclusion",
+            "link_kind": "inspired_by"
+          }
+        }
+      ]
+    }
+  ]
+}

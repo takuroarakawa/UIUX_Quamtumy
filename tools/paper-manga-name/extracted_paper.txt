@@ -1,0 +1,2849 @@
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Native chromatome proﬁling reveals
+hundreds of metabolic enzymes in the
+nucleus across tissues
+S. Kourtis
+1,5,7, A. Gañez Zapater
+1,7, CR Elbæk
+1, A. Schmidt1,2, R. Ghose
+1,6,
+A. Coll Manzano1, L. Espinar Calvo
+1, M. Guirola1, N. Pardo-Lorente1,
+M. Garcia-Cao
+1, M. Pfeiffer1,2, S. Haynes3, F. Fontaine
+4, A. Müller4 &
+S. Sdelci
+1,2
+Metabolic and epigenetic rewiring are hallmarks of cancer, with increasing
+evidence suggesting crosstalk between these processes. While previous studies have hinted at the role of metabolic enzymes in the nucleus, the extent
+and functional relevance of their nuclear localization remain unclear. In this
+study, we present a comprehensive chromatome proteomic analysis across
+cancer lineages and healthy samples, revealing that metabolic enzyme
+moonlighting on chromatin is widespread across various tissues and metabolic pathways. We show that the abundance of metabolic enzymes on chromatin is tissue-speciﬁc, with oxidative phosphorylation proteins notably
+depleted in lung cancer, suggesting a link between nuclear metabolism and
+cell identity. Further, we explore the dynamic chromatin association of onecarbon folate enzymes, demonstrating their involvement in DNA damage and
+repair processes. Finally, we asked whether restricting metabolic enzymes to
+speciﬁc subcellular compartments rewires the transcriptome, thereby
+decoupling the observed transcriptional changes from mere metabolite diffusion. Our ﬁndings propose and validate novel non-canonical nuclear roles
+for several metabolic enzymes, providing new insights into the functional
+relationship between metabolism and chromatin regulation. This study
+underscores the hypothesis that the nucleus is populated by metabolic
+enzymes, offering new avenues for understanding how nuclear metabolism
+impacts chromatin function and cancer progression.
+Broad changes in the epigenetic and metabolic landscapes are both
+recognized hallmarks of cancer1–3. However, the interplay between
+these processes has remained elusive. Cancer transformation involves
+complex metabolic rewiring, which is essential for sustaining tumor
+growth and supporting metastasis. Traditionally, the connection
+between metabolism and epigenetics is mediated by metabolic substrates, such as acetyl-CoA, S-adenosylmethionine (SAM), or adenosine
+triphosphate (ATP), that facilitate epigenetic modiﬁcations4–7. These
+Received: 11 July 2024
+Accepted: 27 January 2026
+Check for updates
+1Centre for Genomic Regulation (CRG), The Barcelona Institute of Science and Technology, Dr. Aiguader 88, Barcelona 08003, Spain. 2Universitat Pompeu
+Fabra (UPF), Barcelona, Spain. 3EPCC – University of Edinburgh (UoE), Edinburgh, Scotland, UK. 4CeMM Research Center for Molecular Medicine of the
+Austrian Academy of Sciences, Vienna, Austria. 5Present address: Centre for Cell Biology, University of Edinburgh, Edinburgh EH9 3BF, UK. 6Present address:
+Breast Cancer Now Toby Robins Research Centre, The Institute of Cancer, Research, London, UK. 7These authors contributed equally: S. Kourtis, A. Gañez
+Zapater.
+e-mail: sara.sdelci@crg.eu
+Nature Communications|   (2026) 17:1655 
+1
+1234567890():,;
+1234567890():,;
+
+modiﬁcations, in turn, can induce transcriptional changes in speciﬁc
+metabolic enzymes, driving further metabolic rewiring. Classic examples, such as the c-Myc oncogene-BRD4 axis driving the transcription
+of folate metabolism enzymes8, or mutations in the enzymes Isocitrate
+dehydrogenase 1 and 2 (IDH1 and IDH2) leading to aberrant genomewide DNA and histone hypermethylation9, illustrate the strong, albeit
+indirect, connection between epigenetics and metabolism. Recent
+evidence, however, suggests a more direct interaction, particularly
+through the nuclear and chromatin translocation of metabolic
+enzymes.
+Metabolic enzymes traditionally associated with cytoplasmic or
+organelle-speciﬁc metabolic reactions have also been shown to carry
+out distinct functions within the nucleus, phenomena often referred
+to as nuclear moonlighting functions10–13. These unexpected nuclear
+involvements often relate to chromatin dynamics and can occur
+independently of the enzyme’s catalytic properties. For example,
+Glyceraldehyde-3-phosphate dehydrogenase (GAPDH) nuclear localization is required to transcriptionally control apoptosis-related
+genes14, but also to facilitate the DNA damage repair by stabilizing
+RAD5115 and promoting the nuclear localization of Nicotinamide
+phosphoribosyltransferase (NAMPT)16. Nuclear fructose-1,6-bisphosphatase 1 (FBP1) interacts with the Polycomb Repressive Complex 2
+(PRC2) to regulate levels of H3K27me317. Moreover, the nuclear
+localization of Pyruvate Kinase M2 (PKM2) is required for the phosphorylation of Histone H3 (T11), which consequently regulates histone acetylation10,11. In other cases, the canonical enzymatic activity
+of certain enzymes is essential for their nuclear function. For
+instance, Acyl-CoA synthetase short chain family member 2 (ACCS2)
+and ATP citrate lyase (ACLY) can both generate acetyl-CoA in the
+nucleus, which directly inﬂuences histone acetylation18–23. In a separate mechanism, the synthesis of nuclear ATP by the enzyme Nudix
+hydrolase 5 (NUDIX5) in breast cancer cells is required for estrogeninduced chromatin remodeling24. Additionally, the nuclear localization of Methylenetetrahydrofolate Dehydrogenase, Cyclohydrolase
+and
+Formyltetrahydrofolate
+Synthetase
+1
+(MTHFD1),
+a
+predominantly cytoplasmic folate metabolic enzyme, boosts the cancerassociated transcriptional landscape promoted by the epigenetic
+reader Bromodomain Containing 4 (BRD4)62. Finally, our most recent
+discoveries highlight a role for nuclear metabolic activities in the
+regulation of correct mitosis progression25, nuclear scavenging of
+reactive oxygen species (ROS)26, and the regulation of nuclear NAD+
+availability during the DNA damage response27. This growing body of
+evidence suggests that nuclear metabolic enzyme activity is a regulated process essential for chromatin function and more widespread
+than previously thought. However, a thorough analysis of metabolic
+enzymes in the nucleus has not been performed, leaving this
+hypothesis unproven.
+With the goal of comprehensively identifying novel moonlighting
+or non-canonical nuclear functions of metabolic enzymes, we optimized a subcellular fractionation protocol that enriches chromatinbound proteins. We tested this protocol across a panel of tissue types
+for both cancer cell lines and healthy primary cells. In addition to
+canonical chromatin proteins, we identiﬁed metabolic enzymes that
+consistently localize to chromatin, many with tissue- and cancerspeciﬁc localization. For shortlisted metabolic enzymes, we validated
+their chromatin and nuclear localization in cell lines and patientderived tissue samples and explored their functional relationships on
+chromatin. Our study provides a unique compendium of chromatinassociated metabolic activities that will serve as the foundation for the
+global analysis of chromatin and nuclear metabolism.
+Results
+The chromatome proﬁle of ten different tissues
+To achieve the characterization of chromatin-bound proteins across
+tissue
+types,
+we
+optimized
+a
+previously
+published
+chromatin
+enrichment protocol62, consisting of sequential cytoplasmic and
+nuclear lysis followed by sonication and benzonase-mediated chromatin digestion to extract the chromatin-bound proteome (the chromatome) (Fig. 1A). We applied this new chromatome protocol to ten
+tissue types (Fig. 1B), comparing cancer and healthy cells. In total, we
+processed and analyzed 44 cancer cell lines and ten healthy primary
+cell types in duplicates, which provided a comprehensive collection of
+samples. For each of those samples, the detergent concentrations and
+lysis duration were adjusted to obtain the best puriﬁcation possible
+(Supplementary Data 1). A visual inspection of the fractionation protocol was conducted utilizing immunoﬂuorescence to ascertain that
+non-nuclear proteins were systematically depleted at each step prior
+to nuclear lysis (Fig. 1C and Appendix 1). To accomplish this, samples
+were stained with an antibody directed against mitochondrial Ferredoxin 1 (FDX1), a protein that, according to subcellular fractionation
+data28, exclusively resides in the mitochondria (Fig. S1A) and that has
+not been previously identiﬁed as enriched in chromatome-MS
+experiments conducted by our group26,27. Moreover, at the end of
+the protocol, we performed Western blot of focal adhesion (Vinculin),
+mitochondrial (FDX1) and histone H3 (H3) markers to verify the purity
+of our ﬁnal samples (Fig. 1D and Appendix 2).
+Samples were acquired using data-independent acquisition mass
+spectrometry (DIA-MS) and, as expected, showed strong enrichment
+for nuclear and chromosome-related terms while being depleted of
+mitochondrial and cytoplasmic proteins (Fig. S1B, Source Data 1),
+further validating our protocol. We retrieved ~5100 proteins per
+sample, most quantiﬁed by multiple peptide-to-spectrum matches
+(PSMs), with high reproducibility in the number of retrieved proteins
+between biological replicates (Fig. 1E, Source Data 2). While most
+proteins were identiﬁed and quantiﬁed across the majority of samples
+(Fig. S1C, Source Data 3), some proteins were only sporadically
+detected (Supplementary Data 2).
+Given that we expected most chromatin proteins to be present
+across tissues in our chromatome analysis, we hypothesized that
+proteins with sparse presence in our dataset would likely be nonchromatin proteins. To demonstrate this, we predicted sequencebased nuclear localization signals (NLS) genome-wide and used them
+as a proxy for nuclear proteins (Fig. S1D, Source Data 4) due to their
+agreement with known nuclear proteins29,30. We found that proteins
+with few missing values were enriched for NLS-containing nuclear
+proteins, while proteins detected sparsely lacked NLS signals. (Fig. S1E,
+Source Data 5). After ﬁltering out these sparsely observed proteins, we
+deﬁned a “core chromatome” consisting of 3467 proteins which were
+consistently found on chromatin across the majority of samples analyzed (Supplementary Data 3).
+To benchmark our optimized chromatome protocol and data
+analysis, we compared the results with other publicly available chromatome extraction methods31–33. Our chromatome outperformed
+these approaches (Fig. S1F), even though it is based on native chromatin extraction without the use of ﬁxatives that could increase the
+presence of false-negative chromatin interactions, chemicals that
+would interfere with DNA properties and cell behavior, or expensive
+beads that would make it unaffordable to scale up32,33. When we classiﬁed the chromatin-associated proteins identiﬁed by our newly
+developed protocol according to their subcellular annotation, we
+observed that approximately 42% were not currently annotated as
+nuclear factors (Fig. S1F). However, the intersection of our data with
+the OpenCell resource34 led us to conclude that most of these nonnuclear factors identiﬁed on chromatin have at least one nuclear
+interactor (Fig. S1G), which provides further support for their nuclear
+localization. Finally, given the fact that metabolic enzymes often act in
+complexes to facilitate the execution of stepwise reactions, we
+explored the presence of protein complexes on the chromatome with
+hu.MAP 2.035. As expected, we retrieved well-known chromatin complexes (Fig. 1F, Source Data 6) such as SWI/SNF and HDAC proteins as
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+2
+
+“core chromatome” proteins35,36. Interestingly, we also identiﬁed
+metabolic assemblies such as those involved in oxidative phosphorylation (OXPHOS).
+Together, our annotated core chromatome reveals key chromatin
+regulators and metabolic complexes consistently associated with
+chromatin, strengthening the evidence for the nuclear localization of
+metabolic enzymes.
+Metabolic enzymes on chromatin
+To further identify functional pathways on chromatin, we explored
+‘Biological Processes’ Gene Ontology (GO) terms enriched in the “core
+chromatome”. While we retrieved many well-characterized processes
+on chromatin, such as “DNA repair” and “DNA replication”, we also
+unexpectedly detected “ATP metabolic process”, a term mainly driven
+by proteins constituting the electron transport chain (ETC), such as
+Peptides per protein
+F
+E
+HuMap2 Protein complexes
+ZNF-HDAC complex 06754
+pre-mRNA splicing complex 04055 
+SWI/SNF complex 02763
+SRSF splicing complex 02572
+snRNA-snRNP complex 00104
+ADP/ATP translocase complex O00767
+Mitochondrial Ribosomal complex 01036
+OXPHOS complex 01573
+Ribosomal complex 02207
+Whole
+Cell
+PreNuclei
+Nuclei
+Mammary
+Epithelium
+MCF7
+MDA-MB-231
+BT474
+MDA-MB-468
+Hs578T
+Cal51
+BT549
+SKBR3
+DNA
+Sonication
+Centrifuge
+Sucrose
+gradient
+A
+C
+D
+B
+Cell Lysis
+Nuclear 
+Lysis
+Chromatin 
+Percipitation
+Chromatin-bound
+Proteome
+Lung
+Blood
+Breast
+Skin
+Cervix
+Prostate
+Colon
+Pancreas
+Liver
+Brain
+10+
+<10
+<6
+<3
+BT47bv4
+BT549
+Cal51
+Hs578T
+MCF7
+MCF7 HI
+MDAMB231
+MDAMB468
+SKBR3
+T47D
+Normal
+Hela
+SiHA
+Normal
+HCT116
+HT29
+RKO
+SW620
+Normal
+HEPG2
+SK−HEP1
+Normal
+A549
+EBC1
+H1395
+H1437
+H1975
+H23
+H358
+H522
+H460
+HCC44
+Normal
+MiaPaca
+PANC1
+Suit−2
+Normal
+2
+4
+6
+HL60
+JURK AT
+KBM7
+THP−1
+Normal
+A172
+T98G
+Normal
+LnCap
+PC3
+Normal
+A375
+M14
+SK−MEL−103
+SK−MEL−28
+UACC257
+Normal
+x10³
+Blood
+Brain
+Breast
+Cervix
+Colon
+Liver
+Lung
+Skin
+Prostate
+Pancreas
+DAPI
+FDX1
+CYT
+CHROM
+CYT
+CHROM
+MCF7
+kDa
+H3
+FDX1
+SK-BR-3
+MDA-MB-231
+MDA-MB-468
+Hs 578T
+CAL-51
+Rep1
+Rep2
+CYT
+CHROM
+CYT
+CHROM
+Rep1
+Rep2
+CYT
+CHROM
+CYT
+CHROM
+Rep1
+Rep2
+CYT
+CHROM
+CYT
+CHROM
+Rep1
+Rep2
+CYT
+CHROM
+CYT
+CHROM
+Rep1
+Rep2
+CYT
+CHROM
+CYT
+CHROM
+Rep1
+Rep2
+CYT
+CHROM
+CYT
+CHROM
+Rep1
+Rep2
+CYT
+CHROM
+CYT
+CHROM
+Rep1
+Rep2
+CYT
+CHROM
+CYT
+CHROM
+Rep1
+Rep2
+Mammary
+Epithelium
+BT-474
+BT-549
+5 µm
+130
+15
+10
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+3
+
+members of the NADH:ubiquinone oxidoreductase (NDUF) supernumerary subunits (Fig. S2A, Source Data 7). In total, over 200 metabolic enzymes were identiﬁed within the chromatin environment,
+accounting for more than 7% of the proteins in the core chromatome
+(Fig. 2A and Supplementary Data 3), underscoring the broad integration of metabolic enzymes into nuclear functions. To investigate the
+evolutionary stages at which chromatin proteins emerged, we intersected the known localization of each “core chromatome” protein
+[either nuclear or non-nuclear according to the Human Protein Atlas
+(HPA)] with their evolutionary age (Fig. 2B, Source Data 8). We
+observed that most chromatin-bound proteins were already assigned a
+nuclear HPA annotation. However, many KEGG-related metabolic
+enzymes, excluding those with primarily epigenetic functions37, lacked
+such annotation. One example is NDUF subunit B11 (NDUFB11), which
+lacks a nuclear HPA label despite nuclear staining in HPA immunoﬂuorescence images (Fig. 2B). This is similar to what is observed for
+enzymes such as Acyl-CoA Oxidase 1 (ACOX1) and Sirtuin 6 (SIRT6),
+which also show clear nuclear staining in HPA immunoﬂuorescence
+images. However, unlike NDUFB11, both are annotated as nuclear by
+HPA. Interestingly, most enzymes have an evolutionary age pre-dating
+the eukaryotic branching event, regardless of their HPA annotation.
+This suggests that any nuclear function these proteins may perform on
+chromatin is highly likely to be a moonlighting function, as they did
+not co-evolve with the nuclear compartment.
+To speciﬁcally check which metabolic pathways were present on
+chromatin, we performed an enrichment analysis on our “core chromatome”
+against
+KEGG
+pathways38,39.
+Among
+other
+pathways,
+OXPHOS was found to be the most complete pathway on chromatin,
+with more than 60% of subunits identiﬁed in our entire dataset (Fig. 2C
+and Fig. S2B, Source Data 9 and 10). OXPHOS was followed by lysine
+degradation, which includes lysine methyltransferase family members
+that are well established to be on chromatin, such as the histone lysine
+methyltransferase (KMTs), the nuclear receptor binding SET domain
+protein (NSDs) and the SET domain-containing proteins (SETDs). Following the identiﬁcation of OXPHOS subunits on chromatin, we then
+examined the chromatin presence per complex for the entire ETC (Fig.
+2D, Source Data 11). We observed a high presence of subunits across all
+complexes, with the exception of Complex II, for which less than 50%
+of its protein members were found on chromatin. This may suggest
+that nuclear-encoded components may have acquired additional,
+mitochondria-independent functions in the nucleus, possibly reﬂecting an evolutionary adaptation.
+To explore tissue-speciﬁc pathways on chromatin, we annotated
+“core chromatome” proteins using KEGG pathways and clustered
+proteins based on their detection in each sample. We observed a
+strong tissue-based clustering of samples, with blood, lung, skin, brain
+and cervix showing high consistency across cell lines, while breast and
+pancreas demonstrated high heterogeneity in the chromatome across
+cell lines (Fig. S2C, Source Data 12). Interestingly, proteins belonging to
+the “Thermogenesis” pathway, were consistently detected across
+samples, except in lung, colon and pancreas samples, suggesting their
+near absence from the chromatin environment in these tissues. The
+term “Thermogenesis” consisted primarily of OXPHOS-related proteins, which are generally not expected in the nucleus. This
+unexpected ﬁnding prompted us to explore whether other metabolic
+enzymes might also be enriched in our dataset. While lung samples
+were depleted in OXPHOS proteins, some breast samples appeared to
+be depleted in pyrimidine and pyruvate metabolism proteins (Fig. 2E,
+Source Data 13), suggesting tissue speciﬁcity of chromatin localization
+of these enzymes.
+When looking at the protein abundance of the “core chromatome”, we observed a variation in the degree of chromatin enrichment,
+as quantiﬁed by total histone protein intensity across samples (Fig.
+S2D, Source Data 14). This variability is likely attributable to subtle, cell
+line-speciﬁc differences affecting the efﬁciency of cell lysis and chromatin enrichment. To enable comparison across samples for downstream analysis, we regressed all protein abundances against each
+sample’s relative chromatin enrichment (Fig. S2E, Source Data 15). As
+expected, nuclear proteins showed positive regression coefﬁcients,
+while non-nuclear proteins displayed negative ones. This pattern is
+exempliﬁed by the nuclear protein H3-3 and the primarily non-nuclear
+protein LAMP2, which showed opposite trends in relation to chromatin enrichment, reﬂecting their relative chromatin associations40 (Fig.
+S2F). The effect of the relative chromatin enrichment per sample can
+be observed where the primary subcellular localization of a protein
+(e.g., chromatin or endoplasmic reticulum), is a large driving force on
+the quantiﬁed protein abundance (Fig. S2G, Source Data 16). This
+regression-based normalization removed the compartment-speciﬁc
+separation within our dataset (Fig. S2H 17), with the largest differences
+on normalized chromatome abundances being present between
+blood, lung and skin cell lines, suggesting tissue-speciﬁc chromatin
+proteomic proﬁles (Fig. S2I, Source Data 18). When investigating proteins more enriched on chromatin in blood-derived cell lines compared to skin-derived ones, the GO term “Regulation of DNA
+replication” emerged as one of the top enriched categories in the
+blood samples. This enrichment is primarily driven by components of
+the minichromosome maintenance (MCM) complex, which was
+recently reported to be particularly abundant in blood cell lines41 (Fig.
+S2J). Further conﬁrming our model, regression coefﬁcients of each
+protein, representing relative protein proportion on chromatin,
+strongly agreed with hyperLOPIT subcellular annotations29 and the
+presence of NLS motifs for nuclear proteins (Fig. S2K, L, Source Data 19
+and 20).
+We noticed blood, skin, lung, and pancreas tissues to display
+more homogeneity regarding the abundance of chromatin-bound
+proteins, with the pancreatic cancer cell lines showing similarity to
+their respective non-cancerous tissue (Fig. 2F, Source Data 21).
+Focusing on metabolic pathways, we observed that enzymes on
+chromatin vary in a tissue-speciﬁc manner (Fig. 2G, Source Data 22).
+For instance, several samples, including those of skin, brain and
+breast, showed high levels of chromatin-bound OXPHOS subunits
+compared to lung samples, while blood samples exhibited higher
+chromatin levels of purine metabolism proteins (Fig. 2G and Fig.
+S3A, B). To systematically identify metabolic pathways differentially
+present between tissues, we compared the abundance of enzymes
+across KEGG pathways in tissues for which we analyzed more than
+ﬁve samples (Supplementary Data 4). When evaluating differentially
+present pathways between these tissues, we found OXPHOS to be
+Fig. 1 | Comprehensive chromatin proﬁling across lineages. A Schematic
+representation of the optimized chromatin enrichment protocol used for proteomic proﬁling of chromatin-bound proteins. B Representation of the 10 different
+tissue types, which have undergone chromatin enrichment and chromatome proteomic characterization. C Immunoﬂuorescence images of breast cancer cell lines
+and their nuclei captured at successive stages of the chromatome preparation
+protocol, used here as a quality control step. Images were acquired prior to nuclei
+lysis, with samples processed up to the point of sucrose gradient loading (see
+Methods section for details). DAPI (blue) and FDX1 (green) are shown. The
+experiment was conducted in three biological replicates. Scale bars are 5 µm.
+D Western blots of cytoplasmic and chromatin-enriched samples with cytoplasmic
+(Vinculin), chromatin (Histone 3) and mitochondrial markers (FDX1) across breast
+cancer cell lines, as in (C). The experiment was conducted in three biological
+replicates. E Total number of detected proteins at 1% FDR, with their respective
+PSMs per sample, acquired by DIA-MS and processed in DIA-NN in library-free
+mode. Cell lines are depicted by name, while non-cancerous cells per tissue type are
+annotated as “Normal”. F Known hu.MAP 2.0 complexes detected in chromatin
+samples with more than 20 subunits, with edges representing known
+protein–protein interactions from BioPlex 2.0. Source data are provided as a
+Source Data ﬁle.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+4
+
+preferentially more abundant in skin, colon and breast samples,
+while steroid biosynthesis was more abundant in colon and breast
+samples (Fig. 2H, Source Data 23). Interestingly, only OXPHOSrelated subunits encoded by nuclear DNA were identiﬁed on chromatin, while none of the mitochondrially encoded subunits survived
+the regression workﬂow described above (Data 23). To explore
+whether
+the
+increased
+chromatin
+association
+of
+OXPHOS
+components is consistent across subunits, we compared the average chromatin abundance of ubiquinol-cytochrome c oxidoreductase complex (Complex III) subunits between lung and breast
+cancer cell lines, which conﬁrmed that all detected subunits were
+consistently more enriched on chromatin in breast compared to
+lung (Fig. 2I, Source Data 24). Leveraging CCLE proteomics and
+transcriptomics data, we ascertained that the higher or lower
+Citrate cycle
+Glycolysis/
+Gluconeogenesis
+Lysine
+degradation
+Other
+Oxidative
+phosphorylation
+Purine
+metabolism
+Non-cancer
+Cancer
+Blood
+Brain
+Breast
+Cervix
+Colon
+Liver
+Lung
+Skin
+Prostate
+Pancreas
+Relative abundance
+−2
+0
+2
+A
+B
+E
+F
+G
+H
+I
+D
+UQCRC1
+UQCRC2
+UQCR11
+UQCR10
+CYC1
+UQCRFS1
+MT-CYB
+UQCRH
+UQCRQ
+UQCRB
+Relative abundance
+−2
+−1
+0
+1
+2
+Breast
+Lung
+Colon
+Skin
+Oxidative
+Phosphorylation
+Pyruvate
+metabolism
+Pyrimidine
+Metabolism
+Starch and sucrose
+metabolism
+Various N−glycan
+biosynthesis
+Present
+Absent
+Blood
+Brain
+Breast
+Cervix
+Colon
+Liver
+Lung
+Skin
+Prostate
+Pancreas
+Relative abundance
+−2
+0
+2
+Non-cancer
+Cancer
+Blood
+Brain
+Breast
+Cervix
+Colon
+Liver
+Lung
+Skin
+Prostate
+Pancreas
+Fraction of each pathway on chromatin
+Glycosaminoglycan degradation
+Linoleic acid metabolism
+Vitamin B6 metabolism
+Pentose and glucuronate interconversions
+Ascorbate and aldarate metabolism
+a−Linolenic acid metabolism
+Drug metabolism − cytochrome P450
+Glycerophospholipid metabolism
+Purine metabolism
+Mannose type O−glycan biosynthesis
+Propanoate metabolism
+Galactose metabolism
+Pyruvate metabolism
+Starch and sucrose metabolism
+Glycolysis / Gluconeogenesis
+Glycolysis / Gluconeogenesis
+0.0
+0.2
+0.4
+0.6
+Oxidative phosphorylation
+Lysine degradation
+Cellular
+Eukaryota
+Opisthokonta
+Eumetazoa
+HPA 
+0
+1
+Nuclear
+Non-Nuclear
+2
+3
+Number of proteins (x10³)
+Vertebrata
+Mammalian
+Eukyotes;
+Bacteria
+Euk.; Archaea
+Gene Age
+Enzyme
+Epigenetic enzyme
+Non−enzyme
+TUBULIN
+TUBULIN
+TUBULIN
+SIRT6
+ACOX1
+NDUFB11
+C
+Matrix
+IMS
+IMM
+NADH
+NAD+
+Succinate
+Fumerate
+ATP ADP
+H+
+H+
+H+
+H+
+eeCytC
+x2
+CoQ
+Subunits on chromatin (%)
+100
+0
+Complex I
+Complex II
+Complex III
+Complex IV
+Complex V
+O2 H2
+No PANTHER category
+Other
+RNA metabolism protein (PC00031)
+Gene-specific transcriptional 
+regulator (PC00264)
+Metabolic enzyme (PC00262)
+Protein modifying enzyme (PC00260)
+Translational protein (PC00263)
+Chromatin/chromatin-binding, or
+-regulatory protein (PC00077)
+PANTHER protein class 
+14.3%
+(436)
+5%
+(152)
+8.4%
+(257)
+7.5%
+(229)
+6.5%
+(199)
+6.4%
+(195)
+25.9%
+(784)
+26.2%
+(800)
+−4
+−2
+0
+2
+4
+Breast
+Colon
+Lung
+Skin
+Normalised Protein Abundance
+Oxidative Phosphorylation
+(ANOVA
+)
+****
+Breast
+Colon
+Lung
+Skin
+Normalised Protein Abundance
+−2
+0
+2
+Steroid Biosynthesis
+(ANOVA
+)
+****
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+5
+
+chromatin presence of OXPHOS enzymes on chromatin is not a
+consequence of differential expression of these enzymes across cell
+types (Fig. S3C). To validate our MS data, we performed chromatin
+extraction followed by Western blot analysis in lung (Hcc44 and
+H460) and breast (MDA-MB-231 and MDA-MB-468) cancer cell lines.
+The results conﬁrmed a higher presence of OXPHOS enzymes on
+chromatin in breast cancer cell lines than in lung cancer cell lines,
+Notably, this difference was not mirrored in their cytosolic abundance, suggesting tissue-speciﬁc, active recruitment of OXPHOS
+subunits to chromatin (Fig. S3D).
+We next attempted to computationally explore the mechanisms driving enzyme nuclear localization. Although most of these
+enzymes are smaller than the ~80 kDa size threshold permitted by
+nuclear pore diffusion42,43, and thus would not require active
+transport, only a small fraction of their cellular pool was found on
+chromatin (Fig. S3E, Source Data 25). An exception was observed for
+enzymes with NLS signals and enzymatic functions, such as KMTs,
+which are canonically nuclear and showed high chromatin association. In contrast, enzymes speciﬁc to membrane-bound compartments, such as alpha-1,3-mannosyltransferase (ALG3) and the
+catalytic subunit STT3B of the oligosaccharyltransferase complex,
+were only minimally detected on chromatin. Finally, the presence of
+enzymes larger than 80 kDa that lack an NLS signal on chromatin
+suggests the involvement of alternative active mechanisms mediating their nuclear localization. This evidence, together with the
+uneven distribution of small enzymes between the nucleus and the
+rest of the cell, rules out the possibility that the nuclear localization
+of metabolic enzymes is controlled solely by passive diffusion.
+To further explore the mechanisms of nuclear localization and
+retention, we analyzed the interactome of OXPHOS enzymes
+using the OpenCell database34. Nearly all OXPHOS enzymes were
+found to interact with nuclear factors, with COX5A, a subunit
+of the cytochrome c oxidase complex (Complex IV), exhibiting the
+highest
+number
+of
+interactors.
+Among
+these,
+we
+identiﬁed
+FKBP Prolyl Isomerase 5 (FKBP5) and Lamin B1 (LMNB1) as key
+interactors of COX5A (Fig. S3F). FKBP5 acts as a co-chaperone in
+complex with Heat Shock Protein 90 (HSP90), regulating the
+nuclear trafﬁcking of target proteins44. LMNB1 plays a crucial role in
+maintaining chromatin integrity, nuclear structure and the localization of nuclear proteins45. These interactions may thus provide
+insights into the nuclear shuttling and retention mechanisms
+of COX5A.
+Taken together, our ﬁndings suggest that the nuclear localization
+of metabolic enzymes is more widespread than previously appreciated, with a notable enrichment of OXPHOS proteins. This raises the
+possibility that these enzymes may perform yet unidentiﬁed, moonlighting functions within the nuclear environment.
+Nuclear localization of OXPHOS subunits in human breast and
+lung tissue
+To corroborate the presence of metabolic enzymes in human cells, we
+focused on OXPHOS subunits and their differential localization in
+breast and lung cancer. We ﬁrst performed high-throughput immunoﬂuorescence analysis on breast and lung cancer cell lines to determine whether the differential localization previously observed in the
+chromatin compartment was also reﬂected in their nuclear levels. Our
+ﬁndings demonstrated a signiﬁcant nuclear enrichment of OXPHOS
+subunits CYC1 (Complex III), COX4 (Complex IV), and ATP5A1 (Complex V) in breast cancer cell lines compared to lung cancer cell lines
+(Fig. 3A–C, Source Data 26). Notably, and particularly for COX4 and
+ATP5A1, the observed differences could not be attributed to variations
+in overall protein expression between cell lines, as their cytoplasmic
+abundance did not consistently mirror the nuclear trends (Fig. S4A–C).
+Interestingly, the three OXPHOS subunits exhibited distinct nuclear
+localization patterns, with COX4 showing prominent accumulation in
+nucleolus-like regions, particularly in breast cancer cells. Given that
+cell proliferation rates, cell cycle phase distribution, and phase duration vary across cell lines, and that some metabolic enzymes exhibit
+phase-speciﬁc nuclear localization25–27, we explored whether OXPHOS
+subunit localization is cell cycle-dependent. To address this, we classiﬁed cells into G1, S, and G2/M phases by combining nuclear size
+measurements
+with
+Hoechst
+intensity
+proﬁles
+from
+immunoﬂuorescence imaging, as previously performed46,47. This allowed us to
+quantify nuclear OXPHOS subunit levels in a cell cycle–resolved
+manner. Our results showed that CYC1 nuclear (Fig. S4D) and cytoplasmic (Fig. S4G) abundance increased during cell cycle progression.
+However, cell cycle did not alter the nuclear (Fig. S4E, F) nor cytoplasmic (Fig. S4H, I) abundance of COX4 or ATP5A1. This suggests the
+existence of a distinct regulatory mechanism governing their nuclear
+localization, independent of cell cycle dynamics. To cross-validate the
+differential presence of OXPHOS subunits in the nucleus across different cell lines, we leveraged the HPA image dataset. The use of different antibodies and unrelated cell lines in the HPA database provided
+independent support for our observations. Consistent with our ﬁndings, nuclear staining of CYC1, COX4, and ATP5A1 was evident across
+cell lines, although its intensity and subnuclear distribution varied. The
+nucleolar localization of COX4 was also conﬁrmed (Fig. 3D–F).
+To validate these ﬁndings in human breast and lung tissue, both
+healthy and cancerous, we analyzed commercially available tissue
+microarrays (TMAs) comprising tumor tissue, adjacent tissue (AT), and
+normal adjacent tissue (NAT). The breast TMA (Supplementary Data 5)
+included 20 cases of invasive ductal carcinoma (primarily grade 2), two
+atypical medullary carcinomas, one mucinous adenocarcinoma, and
+one intraductal carcinoma, together with 24 unmatched AT and 24
+unmatched NAT samples. The lung TMA (Supplementary Data 6)
+Fig. 2 | Metabolic pathways on chromatin. A Pie chart showing the distribution of
+protein classes based on PANTHER ontology. Number and percentage of proteins
+are indicated. Protein class annotation was performed using the PANTHER classiﬁcation system (v19.0) with non-redundant UniProt IDs from Supplementary Data
+3, using the PANTHER Protein Class (PANTHER_PC) ontology90,91. Classes representing <5% of proteins were grouped as “Other,” and “Metabolite interconversion
+enzyme” was renamed “Metabolic enzyme” for clarity. Annotations were added to
+Supplementary Data 3. B Left panel: Evolutionary age of “core chromatome” proteins along with their HPA subcellular annotation. Proteins are highlighted by their
+canonical function marking epigenetic metabolic function (in red), metabolic
+function (in orange) or no metabolic function (in gray). Right panel: HPA immunoﬂuorescence images showing subcellular localization of NDFB11, ACOX1 and
+SIRT6 (green), with Tubulin (red). Scale bar, 20 μm. C Percentage of detected
+proteins per KEGG metabolic pathway that are part of the “core chromatome”, for
+most complete and absent pathways. D Representation of the OXPHOS complexes,
+showing the percentage of detected proteins that are classiﬁed as “core chromatome” per complex as color gradient. E Hierarchical clustering of chromatin
+proteomic samples based on detection of metabolic KEGG enzymes, for pathways
+containing more than 10 member proteins. F Hierarchical clustering of chromatin
+proteomics samples based on relative intensity of “core chromatome” proteins
+detected in the samples. G Cell lineage clustering of chromatin proteomics samples
+based on relative intensity of KEGG “core chromatome” enzymes detected in the
+samples, with pathways containing less than10 member proteins labeled as“other”.
+H Relative abundance of members of “oxidative phosphorylation” (left) and “steroid biosynthesis” (right) across tissue with more than four cell line samples. Differentially present pathways were determined by the ANOVA test with adjusted
+p-value (2.13E-17) **** ≤0.0001, and represented by different colors. For “oxidative
+phosphorylation”, number of datapoints is 150 per lineage while for “steroid biosynthesis” 20 datapoints per lineage. Boxplots were generated using ggplot2 with
+default Tukey deﬁnitions: the horizontal line is the median, the box spans the
+interquartile range (IQR), and whiskers extend to the farthest points within 1.5×IQR.
+I Relative abundance of each subunit of ubiquinol-cytochrome c oxidoreductase
+complex (Complex III) across the compared tissues. Source data are provided as a
+Source Data ﬁle.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+6
+
+contained 33 cases of lung adenocarcinoma (mainly grade 2 and grade
+3), each with matched AT and NAT samples. For automated, highthroughput analysis, we mapped nuclei coordinates using DAPI staining (Fig. S5A) and segmented each core with a density-based approach
+(Fig. S5B, C). Since tissue thickness caused some cells to be out of focus
+in single Z-planes, we acquired multiple optical sections and used our
+analysis pipeline to automatically select the optimal focal plane for
+each region based on nuclear edge contrast (Fig. S5D). This enabled
+accurate extraction of nuclear morphology and DAPI intensity from all
+in-focus cells (Fig. S5E). Following nuclei identiﬁcation, we manually
+A
+Nomrlaized mean nuclear intensity
+1.72e−66
+9.96e−05
+9.00e−18
+3.22e−131
+1.95e−228
+1.64e−07
+COX4
+−1.0
+−0.5
+0.0
+0.5
+1.0
+MDA-MB-231
+MDA-MB-468
+Hcc44
+H460
+Nomrlaized mean nuclear intensity
+8.34e−262
+3.55e−08
+2.23e−49
+1.91e−305
+3.62e−248
+5.72e−111
+ATP5A1
+−1.0
+−0.5
+0.0
+0.5
+1.0
+MDA-MB-231
+MDA-MB-468
+Hcc44
+H460
+Nomrlaized mean nuclear intensity
+3.08e−175
+1.47e−153
+3.51e−219
+3.92e−114
+2.84e−101
+2.20e−27
+CYC1
+−0.5
+0.0
+0.5
+1.0
+MDA-MB-231
+MDA-MB-468
+Hcc44
+H460
+B
+C
+D
+E
+F
+Hcc44
+MDA-MB-468
+Hcc44
+MDA-MB-468
+Hcc44
+MDA-MB-468
+U2OS (HPA)
+U251-MG (HPA)
+U2OS (HPA)
+U251-MG (HPA)
+CACO 2 (HPA)
+U2OS (HPA)
+CYC1_FIRE
+Hoechst
+CYC1
+DAPI
+COX4
+DAPI
+ATP5A1
+DAPI
+COX4_FIRE
+Hoechst
+ATP5A1_FIRE
+Hoechst
+Fig. 3 | Differential OXPHOS localization between breast and lung cancer
+cell lines. A–C Immunoﬂuorescence-based quantiﬁcation of nuclear CYC1 (A),
+COX4 (B), and ATP5A1 (C) intensities (log₂ normalized and scaled) in MDA-MB-231
+and MDA-MB-468 (breast cancer cell lines) and Hcc44 and H460 (lung cancer cell
+lines), and experiment was conducted in three biological replicates. Outliers were
+removed (3 SD); statistical signiﬁcance was assessed using unpaired two-tailed
+Wilcoxon test with Bonferroni correction. Three biological replicates were performed. Images were acquired in confocal mode, using a single sagittal z-plane
+through the middle of the nucleus and a 63× water-immersion objective. Data from
+each cell line presented in different color for clarity. Representative
+immunoﬂuorescence images from MDA-MB-468 and Hcc44 cells are shown for
+each marker, displaying the nucleus (Hoechst, blue) and the respective protein (ﬁre
+LUT). Scale bar, 10 µm. Dashed lines indicate nucleus segmentation. Sample size
+depicted on the ﬁgure. Boxplots were generated using ggplot2 with default Tukey
+deﬁnitions: the horizontal line is the median, the box spans the interquartile range
+(IQR), and whiskers extend to the farthest points within 1.5×IQR.
+D–F Representative immunoﬂuorescence images of CYC1 (D), COX4 (E), and
+ATP5A1 (F), downloaded from the Human Protein Atlas (HPA) database. Images
+were adjusted to highlight subcellular localization of each enzyme (green) relative
+to the nucleus (blue, DAPI). Scale bar, 20 µm.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+7
+
+gated classiﬁcation parameters, using nuclear morphology and DAPI
+intensity, to assign epithelial (normal or tumor) and stromal cell labels
+(Fig. S5F). Finally, data were further ﬁltered to exclude artifacts and
+poorly segmented nuclei. We next compared nuclear levels of NDUFV1
+(Complex I, Source Data 27 and 28), ATP5A1 (Complex V, Source Data
+29 and 30) and COX4 (Complex IV, Source Data 31 and 32), across
+breast ductal carcinoma and lung adenocarcinoma samples, along
+with their respective NAT and AT samples (Fig. S6A–F), as these were
+the tumor types most represented in our cohort. For each staining
+round, we quantiﬁed the number of TMA cores passing all quality
+ﬁlters for each tissue condition (Fig. S6G), ensuring downstream analyses included only high-quality, reliably segmented regions. NDUFV1
+showed a marked increase in nuclear localization in both breast ductal
+carcinoma (Fig. 4A) and lung adenocarcinoma samples (Fig. 4B) when
+compared to NAT and AT, across both stromal and epithelial compartments. In both cancerous tissue, epithelial cells exhibited slightly
+higher nuclear NDUFV1 levels than stromal cells. Moreover, nuclear
+NDUFV1 levels were markedly elevated in breast ductal carcinoma
+compared to lung adenocarcinoma, across both epithelial and stromal
+compartments (Fig. 4C), conﬁrming what observed in breast and lung
+cancer cell lines. When analyzing nuclear ATP5A1, we found that its
+nuclear levels in breast ductal carcinoma remained relatively constant
+across epithelial and stromal compartments, as well as between tumor,
+NAT, and AT samples (Fig. 4D). In lung adenocarcinoma, however, a
+reduction in nuclear ATP5A1 was speciﬁcally observed in stromal cells
+within the tumor microenvironment, compared to stroma from NAT
+and AT regions. In contrast, epithelial cells, whether from tumor, NAT,
+or AT, showed no substantial variation (Fig. 4E). Furthermore, breast
+ductal carcinomas exhibited higher nuclear ATP5A1 levels than lung
+adenocarcinomas, in both stromal and tumor epithelial compartments
+(Fig. 4F), in line with the differences observed in cancer cell lines.
+Finally, COX4 analysis in breast tissue revealed that in AT, the nuclear
+localization of COX4 was lower in both stromal and epithelial cells
+compared to breast ductal carcinoma and NAT (Fig. 4G). In contrast,
+lung adenocarcinomas exhibited increased COX4 nuclear localization,
+which correlated with greater tissue aggressiveness in both the stromal
+and epithelial compartments (Fig. 4H). When comparing breast and
+lung samples, we observed a clear increase in COX4 nuclear localization in lung adenocarcinoma samples (Fig. 4I), a trend that differed
+from what was observed in cancer cell lines. However, only breast
+ductal adenocarcinoma samples displayed COX4 nucleolar localization (Fig. 4J), mirroring the pattern seen in breast cancer cell lines. To
+quantify the extent of COX4 nucleolar localization, we selected eight
+cores from each group: breast NAT tissues, breast ductal carcinomas,
+and lung adenocarcinomas. Two ﬁelds per core were analyzed, each
+containing at least 100 epithelial cells. This analysis revealed that COX4
+nucleolar localization was absent in lung adenocarcinoma samples and
+almost undetectable in breast NAT samples. However, all breast ductal
+carcinoma samples exhibited some degree of COX4 nucleolar localization, with an average penetrance of ~10% (Fig. 4K, Source Data 33).
+Overall, these data suggest that the nuclear localization of
+OXPHOS subunits is a widespread phenomenon that depends on both
+the cell and tumor type. This observation raises the possibility that the
+nuclear localization of OXPHOS subunits may be essential for maintaining speciﬁc cellular states, or perhaps a consequence of certain
+cellular phenotypes.
+Functional characterization of metabolic enzymes on chromatin
+Among proteins which we identiﬁed consistently on chromatin, 335
+proteins were differentially present in at least one cancer type, compared to its non-cancerous counterpart (Fig. 5A, Source Data 34).
+Surprisingly, metabolic enzymes, in addition to being present on
+chromatin in a tissue-speciﬁc manner, also seemed to be differentially
+abundant
+in
+cancer.
+For
+instance,
+Acyl-CoA-binding
+domaincontaining protein 5 (ACBD5) was signiﬁcantly more abundant on
+chromatin in liver cancer, while depleted in cervix and prostate cancer
+(Fig. 5B, Source Data 35). Similarly, ATP synthase membrane subunit j
+(ATP5MJ), was more abundant in cervix cancer and depleted from
+brain and skin cancers (Fig. 5B, Source Data 36). Although both proteins showed nuclear localization, further supporting our data of
+OXPHOS subunits being in the nucleus, there was no previous characterization of their nuclear function despite evidence from HPA
+immunoﬂuorescence (Fig. 5C).
+To elucidate protein function on chromatin, we explored protein
+covariation partners in ProteomeHD (ProHD), which had previously
+shown that covarying proteins are functionally related48. Speciﬁcally
+focusing on “core chromatome” enzymes that covary with known
+nuclear proteins, we identify DNA methyltransferase 1 (DNMT1) with
+the highest number of nuclear ‘GO term enrichments’ (Fig. 5D, Source
+Data 37), which were mostly related to chromosome organization (Fig.
+S7A), validating the use of the ProHD dataset to investigate protein
+function via covariation. Additionally, we also identiﬁed numerous
+other enzymes that have known moonlighting localizations within the
+nucleus, including guanosine monophosphate synthetase (GMPS)49,
+glyceraldehyde-3-phosphate dehydrogenase (GAPDH)50, inosine-5’monophosphate dehydrogenase 2 (IMPDH2)27,51, and adenosylhomocysteinase (AHCY)10 (Fig. 5D, Source Data 37), associated with multiple
+nuclear GO terms. We applied the protein covariation workﬂow to our
+“core chromatome” data as a functional characterization approach.
+Proteins already annotated as functionally related by ProHD (Fig. S7B,
+Source Data 38), appeared highly correlated in our dataset (Fig. 5E,
+Source Data 39). Proteins highly covarying on chromatin tended to
+belong to the same chromatin complexes, which is expected since
+complex members are known to be highly regulated at the protein
+level (Fig. S7C, Source Data 40). Further exploiting this covariation
+analysis of our data focusing on metabolic enzymes, we discovered
+that the chromatin localization of ‘one carbon by folate’ metabolic
+enzymes is functionally related to proteins belonging to chromosome
+organization, DNA metabolism, and DNA damage and repair (Fig. 5F).
+Next, we asked whether these proteins are related in a tissue-speciﬁc or
+pan-cancer manner. While trifunctional purine biosynthetic protein
+adenosine-3 (GART) and DNA polymerase delta catalytic subunit
+(POLD1) correlated across tissues, the relationship between serine
+hydroxymethyltransferase (SHMT2) and DNA replication licensing
+factor MCM7 (MCM7) was mainly driven by their high abundance in
+blood chromatin samples (Fig. 5G, Source Data 40). To validate the
+chromatin differential presence of ‘one carbon by folate’ metabolic
+enzymes, we ranked cancer cell lines based on their chromatin abundance, speciﬁcally checking for the enzymes 5-aminoimidazole-4carboxamide ribonucleotide formyltransferase/IMP cyclohydrolase
+(ATIC), GART, MTHFD1, and IMPDH2 (Fig. S7D). Interestingly, HCT116
+colorectal cancer cells ranked among the least for chromatin abundance of these enzymes which are potentially related to DNA damage
+repair mechanism. This is interesting because this cell line is almostdiploid and usually does not show genomic instability. On the other
+hand, HeLa cells, which have a highly abnormal karyotype and often
+present genomic instability, ranked among the top. Western blot
+analysis on chromatin fraction conﬁrmed our chromatome-MS ﬁndings, showing that HeLa cells exhibit higher levels of ‘one-carbon by
+folate’ enzymes compared to HCT116 cells (Fig. S7E).
+By quantitatively detecting moonlighting proteins on chromatin
+and performing covariation analysis across such a large and diverse
+dataset, we were able to propose a functional characterization for
+enzymes that are otherwise hard to conﬁdently detect on chromatin.
+Nuclear dynamics of one carbon by folate metabolic enzymes
+during the DNA damage
+To demonstrate a direct relationship between DNA damage and the
+chromatin localization of one-carbon by folate enzymes, we investigated whether their nuclear association changes during the DNA
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+8
+
+damage response and repair. To this end, HeLa cells were exposed to
+ionizing radiation (10 Gy) and ﬁxed either immediately (0 h post-irradiation) or after 8 and 24 hours of recovery, in order to track the repair
+process over time. High-throughput immunoﬂuorescence for γH2AX,
+a marker of double-strand breaks, was used to quantify DNA damage
+levels at each time point (Data 41). As expected, irradiation induced
+substantial DNA damage, which progressively decreased during
+recovery (Fig. S8A–D). Under these conditions, we examined the
+dynamic chromatin recruitment of MTHFD1 (Fig. 6A), ATIC (Fig. 6B),
+GART (Fig. 6C), and IMPDH2 (Fig. 6D). The early nuclear response
+varied among enzymes: MTHFD1, ATIC, and IMPDH2 levels decreased
+on chromatin immediately after damage but returned to baseline
+(IMPDH2 and ATIC) or increased beyond baseline (MTHFD1) after 8 h
+of recovery. In contrast, GART showed a steady increase in nuclear
+A
+J
+K
+B
+C
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Stroma
+Epithelial
+NDUFV1
+NAT
+AT
+Carcinoma
+NAT
+AT
+Carcinoma
+4.4e-08
+0.0e+00
+7.0e-288
+ns
+3.8e-164
+1.0e-93
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Grade
+2
+Breast
+Lung
+2
+3
+2
+2
+3
+Breast
+Lung
+Stroma
+Epithelial
+NDUFV1
+0.0e+00
+1.3e-14
+0.0e+00
+0.0e+00
+0.0e+00
+0.0e+00
+Carcinoma gr-2
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Stroma
+Epithelial
+NDUFV1
+NAT
+AT
+Carcinoma gr-3
+Carcinoma gr-2
+NAT
+AT
+Carcinoma gr-3
+1.5e-290
+0.0e+00
+2.7e-14
+0.0e+00
+6.9e-115
+7.3e-62
+6.0e-37
+0.0e+00
+0.0e+00
+5.4e-38
+6.2e-258
+ns
+0.008
+0.0043
+0.0
+0.05
+0.1
+0.15
+0.2
+Fraction of nuclei with
+COX4+ nucleoli
+Breast
+Lung
+Breast
+Cancer
+Breast: NAT
+COX4_FIRE
+DAPI
+COX4 DAPI
+Breast: Cancer
+Lung: Cancer
+G
+H
+I
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Grade
+2
+Breast
+Lung
+2
+3
+2
+2
+3
+Breast
+Lung
+Stroma
+Epithelial
+COX4
+0.0e+00 2.04e-06
+0.0e+00
+0.0e+00 1.35e-65
+0.0e+00
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Stroma
+Epithelial
+COX4
+NAT
+AT
+Carcinoma
+NAT
+AT
+Carcinoma
+0.0e+00
+0.0e+00
+1.8e-68
+8.1e-220 0.0e+00
+4.5e-33
+Carcinoma gr-2
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Stroma
+Epithelial
+COX4
+NAT
+AT
+Carcinoma gr-3
+Carcinoma gr-2
+NAT
+AT
+Carcinoma gr-3
+1.0e-10
+0.0e+00
+4.1e-06
+0.0e+00
+0.0e+00
+0.0e+00
+6.5e-51
+0.0+e00
+2.7e-65
+0.0e+00
+0.0e+00
+0.0e+00
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Stroma
+Epithelial
+ATP5A1
+NAT
+AT
+Carcinoma
+NAT
+AT
+Carcinoma
+3.0e-104 8.2e-05
+1.2e-115
+1.7e-257 7.1e-05
+0.0e+00
+D
+E
+F
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Grade
+2
+Breast
+Lung
+2
+3
+2
+2
+3
+Breast
+Lung
+Stroma
+Epithelial
+ATP5A1
+3.8e-159 3.1e-15
+0.0e+00
+0.0e+00
+8.2e-04
+0.0e+00
+Carcinoma gr-2
+0.00
+0.25
+0.50
+0.75
+1.00
+Normalized mean nuclear intensity
+Stroma
+Epithelial
+ATP5A1
+NAT
+AT
+Carcinoma gr-3
+Carcinoma gr-2
+NAT
+AT
+Carcinoma gr-3
+6.8e-13
+5.4e-139
+6.2e-15
+8.9e-254
+8.3e-83
+2.5e-173
+5.0e-06
+3.0e-02
+1.6e-03
+ns
+6.0e-06
+8.6e-15
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+9
+
+recruitment across all time points following irradiation. By 24 h postirradiation, all monitored enzymes exhibited a signiﬁcant nuclear
+increase. To further dissect these dynamics, we stratiﬁed cells by cell
+cycle phase using combined Hoechst intensity and nuclear size measurements. We observed that the temporal pattern of nuclear localization for each enzyme was conserved across G1, S, and G2/M phases
+(Fig. S8E–H). Moreover, γH2AX staining conﬁrmed that double-strand
+breaks were induced to a similar extent regardless of the cell cycle
+phase (Fig. S8I–L), supporting the notion that the observed enzyme
+dynamics are broadly consistent across the proliferative landscape.
+Finally, to directly assess whether nuclear accumulation of one-carbon
+enzymes is linked to the extent of DNA damage at the single-cell level,
+we performed correlation analyses between γH2AX intensity and
+nuclear enzyme abundance within individual cells at each time point
+following damage release (Fig. S8M–P). This approach allowed us to
+determine whether cells with higher levels of DNA damage also
+exhibited stronger nuclear recruitment of enzymes. Across all four
+enzymes, MTHFD1, ATIC, GART, and IMPDH2, we observed a positive
+correlation between γH2AX and nuclear signal, indicating that chromatin association scales with the degree of damage in individual cells.
+However, the strength and persistence of this correlation varied
+among enzymes. GART and IMPDH2 consistently displayed strong
+positive correlations, including at 24 h post-irradiation, when overall
+γH2AX levels declined, suggesting a sustained chromatin association
+even after damage resolution. In contrast, MTHFD1 showed a more
+transient relationship, with moderate correlations at early time points
+that diminished by 24 h. ATIC exhibited intermediate behavior, with
+correlations emerging during recovery but not persisting robustly at
+later stages. These cell-by-cell analyses provide orthogonal evidence
+that nuclear recruitment of one-carbon enzymes is driven by DNA
+damage and further reveal distinct recruitment kinetics among them.
+In particular, the persistent association of GART and IMPDH2 with
+γH2AX-positive cells suggests a tighter functional coupling to the DNA
+damage landscape than observed for MTHFD1 or ATIC.
+Compartmentalized IMPDH2 differentially rewires the
+transcriptome
+To dissect the distinct roles of IMPDH2 in the nucleus and cytoplasm,
+we examined how each compartmental pool rewires the transcriptome. For this, we used previously generated IMPDH2 knockout
+(KO) MDA-MB-231 cells27 reconstituted with either wild-type (WT)
+IMPDH2, a nucleus-restricted variant bearing a nuclear localization
+sequence (NLS), or a cytoplasm-restricted variant bearing a nuclear
+export sequence (NES), and performed RNA sequencing (RNA-seq)
+(Fig. 7A). Additionally, we included a condition in which IMPDH2-KO
+cells were supplemented with guanosine [KO(+G)], the end-product
+of IMPDH2 catalysis that has previously been shown to rescue the
+cell-cycle defect of KO cells27, to distinguish guanosine-dependent
+from guanosine-independent effects of the reconstitutions (Data 42).
+Principal component analysis (PCA) and sample-to-sample Euclidean
+distance clustering revealed clear segregation of biological replicates, with KO cells being the most transcriptionally divergent,
+whereas reconstituted lines (WT, NLS, NES) were more similar to
+each other, with the NLS reconstitution most closely resembling WT
+(Fig. S9A, B). Examination of the principal components revealed that
+PC1 primarily separated KO cells from those reconstituted or cultured in the presence of guanosine, indicating that the biological
+processes represented along this axis are guanosine-availability
+dependent. Consistent with the essential role of guanine nucleotides in DNA synthesis, genes contributing to PC1 were enriched for
+cell-cycle–related Gene Ontology (GO) terms, including chromosome segregation and DNA replication (Fig. S9C and Data 43). In
+contrast, PC2 distinguished reconstituted lines from KO cells and
+contained genes involved in nucleotide biosynthesis as well as
+chromatin-associated processes such as telomere maintenance, RNA
+splicing, and ribosome biogenesis, highlighting IMPDH2 functions
+that may extend beyond nucleotide supply (Fig. S9D and Data 44).
+The comparison of WT-reconstituted cells with KO cells, either
+untreated or supplemented with guanosine, revealed extensive differential gene expression (Fig. S9E, F) with minimal overlap between
+the two comparisons (Fig. S9G), conﬁrming the profound impact of
+guanosine biosynthesis on transcriptional regulation. In contrast,
+reconstitution with either nuclear or cytoplasmic IMPDH2 resulted in
+only minor transcriptional divergence from the WT-reconstituted
+cells (Fig. 7B, C), indicating that under baseline, unstimulated conditions, the predominant role of IMPDH2 in maintaining cellular
+homeostasis is the synthesis of guanosine nucleotides. Nonetheless,
+among the limited set of genes that did change, some exhibited
+opposite expression trends between NLS- and NES-reconstitutions
+relative to WT, revealing that even at steady state, a proper spatial
+balance of IMPDH2 is required for the ﬁne-tuning of basal transcription. Among the oppositely regulated genes, DDB1- and CUL4associated factor 8-like protein 1 (DCAF8L1), an adapter of the cullin4 (CUL4) E3 ubiquitin ligase complex that directs breast cancer type 1
+susceptibility protein (BRCA1) and BRCA1-associated RING domain
+protein 1 (BARD1) for proteasomal degradation52,53, was signiﬁcantly
+upregulated in NES and downregulated in NLS cells when compared
+to WT. Together with our previous ﬁnding that nuclear IMPDH2
+interacts with poly(ADP-ribose) polymerase 1 (PARP1) to promote
+DNA repair27, these data suggest a complementary mechanism by
+which nuclear IMPDH2 supports chromatin integrity by restraining
+DCAF8L1 expression, thereby preserving BRCA1/BARD1 stability. In
+agreement with this model, high-throughput immunoﬂuorescence
+revealed that, although WT-reconstituted cells displayed more
+BRCA1 foci during S and G2 phases (Fig. 7D–F), NLS-reconstituted
+cells showed higher overall BRCA1 protein levels in these phases
+when compared to WT (Fig. 7E, F), consistent with reduced BRCA1
+turnover when DCAF8L1 is suppressed. Further supporting this
+hypothesis, this regulation appeared to be post-transcriptional, as
+BRCA1 mRNA levels were unchanged across conditions (Fig. S9H),
+and it was not attributable to increased DNA damage in NLS cells,
+given γH2AX levels comparable with WT (Fig. 7F, G). Finally, we
+observed a higher fraction of NLS-reconstituted cells in S phase (Fig.
+S9I), suggesting slower replication and sustained replication-stress
+Fig. 4 | Nuclear localization of OXPHOS subunits in breast and lung human
+tissues. A–I Immunoﬂuorescence-based quantiﬁcation of per nucleus-mean
+nuclear intensities (log₂-normalized and scaled) for NDUFV1 (A–C), COX4 (D–F),
+and ATP5A1 (G–I) in tissue microarrays (TMAs) of breast and lung cancer. Panels
+A, D, G: breast TMA across normal adjacent tissue (NAT), adjacent tissue (AT), and
+carcinoma. Panels B, E, H: lung TMA across NAT, AT, and carcinoma grades 2 and 3.
+Panels C, F, I: comparison of nuclear intensities between breast and lung cancer
+TMA cores. For all panels, outliers were removed (3 SD), and statistical signiﬁcance
+was assessed using unpaired two-tailed Wilcoxon test with Bonferroni correction.
+Data from grade presented in different color for clarity. Sample size depicted on
+the ﬁgure. Boxplots were generated using ggplot2 with default Tukey deﬁnitions:
+the horizontal line is the median, the box spans the interquartile range (IQR), and
+whiskers extend to the farthest points within 1.5×IQR. Number of datapoints per
+group are available in the Source Data for all comparisons. J Representative
+immunoﬂuorescence images from breast NAT, breast ductal carcinoma, and lung
+adenocarcinoma. Left panels: merged images stained for DAPI (red) and COX4
+(green). Right panels: COX4 (ﬁre LUT) and DAPI (gray). White arrows indicate COX4
+nucleolar localization. Scale bar, 10 µm. Sample size depicted on the ﬁgure. K Mean
+fraction of segmented nuclei with COX4-positive nucleolar staining (COX4⁺) across
+two representative images from eight different TMA cores per group (breast NAT,
+breast carcinoma, lung carcinoma). Error bars represent standard deviation (SD); p
+values were calculated using unpaired two-tailed Wilcoxon test. Source data are
+provided as a Source Data ﬁle.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+10
+
+signaling, conditions under which BRCA1 accumulation without a
+proportional increase in discrete foci could occur54,55. To further
+explore this connection, we assembled a BRCA/DNA damage
+response (DDR)-focused signature panel by combining curated gene
+sets related to DNA repair and cell-cycle regulation (Fig. 7H). Gene set
+variation analysis (GSVA) across conditions (Data 45) recapitulated
+the global trends described above: KO cells failed to activate DNA
+repair pathways, consistent with impaired recovery and reduced
+viability, whereas guanosine supplementation largely restored this
+phenotype. Interestingly, pathway activities associated with doublestrand break (DSB) repair, such as “double-strand break repair via
+classical nonhomologous end joining”, “meiotic DNA double-strand
+break formation”, “DNA double-strand break processing”, and
+“double-strand break repair via single-strand annealing”, were
+−0.4
+−0.2
+0
+0.2
+0.4
+Correlation
+ACAT1
+ACOT8
+CAD
+CS
+DDOST
+HADHB
+HCCS
+NME1
+RPN1
+RPN2
+SRM
+SUCLG1
+ATIC
+GAPDH
+OGT
+EHMT1
+UMPS
+CTPS1
+GART
+IMPDH2
+PAICS
+NME2
+TPI1
+AHCY
+DUT
+PTGES3
+UCK2
+SETDB1
+DHFR
+GMPS
+DNMT1
+0
+10
+20
+30
+40
+Number of Nuclear GO terms
+A
+B
+D
+E
+G
+F
+Brain
+Breast
+Cervix
+Colon
+Liver
+Lung
+Pancreas
+Prostate
+Skin
+−2
+0
+2
+Relative Abundance
+ACBD5
+−2
+0
+2
+Relative Abundance
+ATP5MJ
+H1-4
+UBA1
+UBA1
+UBA1
+ALB
+ALB
+HBD
+HBD
+TMOD2
+TMOD2
+TMOD2
+TMOD2
+H1-4
+H1-4
+H1-4
+Brain
+Breast
+Cervix
+Colon
+Liver
+Lung
+Pancreas
+Prostate
+Skin
+−3
+0
+3
+Differential chromatin abundance in cancer
+F2
+F2
+H1-4
+ALB
+C
+TUBULIN
+ACBD5
+TUBULIN
+ATP5MJ
+DNA repair
+Toxin transport
+Chromosome organisation
+Regulation of DNA metabolic process
+SHMT2
+ATIC
+GART
+MTHFD1
+Cellular response to DNA damage
+SHMT2 Relative Abundance
+MCM7 Relative Abundance
+GART Relative Abundance
+−2
+0
+2
+−2
+0
+2
+−1
+0
+1
+2
+−1
+0
+1
+2
+3
+POLD1 Relative Abundance
+breast
+brain
+blood
+colon
+cervix
+lung
+liver
+pancreas
+prostate
+skin
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+11
+
+markedly less active in guanosine-treated KO cells compared with
+WT, NLS-, or NES-reconstituted cells. These ﬁndings suggest that
+efﬁcient activation of DSB repair pathways requires both IMPDH2
+catalytic function and its proper spatial regulation within the cell.
+When comparing the NES and NLS reconstitutions, additional differences emerged: NES-reconstituted cells were less able to activate
+pathways involved in “DNA alkylation repair”, “nucleotide excision
+repair”, and “UV-damage excision repair” when compared to WT and
+NLS cells, whereas NLS-reconstituted cells showed less active “singlestrand
+break
+(SSB)
+repair”,
+“pyrimidine
+dimer
+repair”,
+and
+transcription-coupled nucleotide excision repair.
+To extend our analysis beyond the role of compartmentalized
+IMPDH2 in DNA damage repair, we focused on another gene that
+was differentially regulated between NLS and NES reconstitutions
+when compared to WT: chemokine (C–C motif) ligand 2 (CCL2),
+which was upregulated in NLS-reconstituted relative to NESreconstituted cells (Fig. 7B, C). CCL2 has been reported to
+enhance extracellular signal-regulated kinase 1/2 (ERK1/2) signaling
+in breast cancer56–59. Consistent with this, NLS-reconstituted cells
+exhibited elevated activity of an ERK1/2 activation gene signature,
+indicating that nuclear IMPDH2-driven CCL2 upregulation has
+functional consequences for mitogen-activated protein kinase
+(MAPK) pathway activity (Fig. 7I). In contrast, NES-reconstituted
+cells showed increased expression of a phospho-ERK-regulated gene
+signature despite having the lowest CCL2 levels, potentially
+reﬂecting a compensatory transcriptional response to reduced
+ERK1/2 signaling (Data 46). Examination of ERK pathway regulators
+revealed distinct expression patterns between NLS- and NESreconstituted cells: NLS-reconstituted cells showed higher expression of mitogen-activated protein kinase kinase 2 (MAP2K2, MEK2)
+and mitogen-activated protein kinase 3 (MAPK3, ERK1), which form
+the MEK2–ERK1 module, whereas NES-reconstituted cells displayed
+higher levels of mitogen-activated protein kinase kinase 1 (MAP2K1,
+MEK1) and mitogen-activated protein kinase 1 (MAPK1, ERK2), corresponding to the MEK1–ERK2 module (Fig. 7J). Thus, the subcellular
+localization of IMPDH2 appears to inﬂuence the relative activation
+of ERK1 and ERK2 pathways, with potential downstream effects on
+cellular phenotypes such as growth, proliferation, and apoptosis.
+Interestingly,
+while
+guanosine
+supplementation
+rescued
+the
+expression of MAPK1 and MAP2K1 in KO cells, it failed to restore
+MAPK3 and MAP2K2 levels. Because MAPK3 and MAP2K2 were
+upregulated in NLS- and WT-reconstituted cells, this pattern likely
+reﬂects a guanosine-independent nuclear role of IMPDH2. These
+ﬁndings suggest that nuclear IMPDH2 may directly modulate transcription, consistent with previous evidence of its transcriptional
+regulatory role in Drosophila and mouse60,61.
+Together, our data show that, under baseline conditions, IMPDH2
+mainly supports transcription through guanosine nucleotide synthesis, yet its spatial distribution adds a regulatory layer. Nuclear
+IMPDH2 contributes to genome stability by restraining DCAF8L1 and
+modulating BRCA1/BARD1 turnover, and biases MAPK signaling
+toward
+the
+MEK2–ERK1
+axis,
+revealing
+a
+possible
+guanosineindependent nuclear role in transcriptional control.
+Discussion
+While moonlighting of speciﬁc metabolic enzymes has long been
+recognized, recent evidence suggests that nuclear moonlighting is far
+more widespread than previously appreciated. Here, we provide the
+ﬁrst systematic, high-throughput proﬁling of chromatin-bound proteins across diverse healthy and cancerous cell types, revealing that the
+nuclear presence of metabolic enzymes is a universal, yet tissue- and
+cancer-speciﬁc, feature. This large-scale chromatome atlas challenges
+the traditional cytoplasmic-centric view of metabolism by demonstrating that metabolic enzymes consistently localize to chromatin,
+often in a lineage-speciﬁc manner, and can be dynamically regulated in
+response to cellular stress.
+Notably, we demonstrate that chromatin-associated metabolic
+enzymes vary between cancer types and even across samples from the
+same tissue, as in breast and pancreatic cancers, which are known for
+their heterogeneity. This observation suggests that the nuclear metabolic signature may reﬂect or even reinforce cell identity. In this context, our study suggests the hypothesis that nuclear metabolism may
+be linked to cell state transitions such as differentiation, carcinogenesis, or aging, all of which involve large-scale chromatin remodeling.
+This raises the intriguing possibility that nuclear metabolic composition
+may
+act
+both
+as
+a
+sensor
+and
+effector
+of
+epigenetic
+reprogramming.
+Among the most striking ﬁndings of our study is the widespread
+chromatin
+association
+of
+oxidative
+phosphorylation
+(OXPHOS)
+enzymes. These proteins, classically conﬁned to mitochondria, were
+consistently detected on chromatin in a tissue-speciﬁc manner, particularly enriched in breast cancer cells and depleted in lung cancer
+samples. While this ﬁnding suggests a potentially unexplored dimension of nuclear metabolism, we emphasize that the presence of
+OXPHOS enzymes on chromatin does not necessarily imply enzymatic
+activity in the nuclear compartment. Their precise role, whether
+structural, regulatory, or metabolic, remains to be determined.
+Nonetheless, their selective chromatin localization argues against
+passive diffusion and points toward a regulated, potentially functional
+nuclear presence. Moreover, our tissue microarray analysis conﬁrmed
+an additional layer of subnuclear localization: while overall COX4
+nuclear levels were lower in breast than in lung cancer, we observed a
+consistent nucleolar localization of COX4 in breast cancer samples,
+which was absent in lung cancer and in normal breast tissue. This
+evidence proposes that nucleolar localization of COX4 may emerge as
+a feature of breast cell transformation. It is important to note that we
+did not stratify patient samples by mutational status or molecular
+subtype; further work is needed to determine whether speciﬁc oncogenic alterations or tumor contexts drive this phenomenon. While the
+functional relevance of nucleolar localization of OXPHOS subunits
+remains to be elucidated, these observations raise the possibility of
+novel links between subnuclear localization of metabolic enzymes,
+nucleolar function, and cancer biology.
+Our data also challenge the long-standing assumption that size
+exclusion through the nuclear pore and the presence of an NLS strictly
+dictate nuclear residency. Although many metabolic enzymes are
+small enough to diffuse through the nuclear pore, their nuclear,
+Fig. 5 | Differential chromatin localization of metabolic enzymes and onecarbon metabolism networks. A Chromatin-associated proteins differentially
+abundant across cancer lineages relative to healthy counterparts, deﬁned as the 1%
+most extreme z-values per tissue. B ACBD5 and ATP5MJ relative protein abundance
+in chromatin samples, based on lineage, with abundance in healthy counterpart
+represented as a red point, while statistically signiﬁcant samples are highlighted in
+blue (depleted) and brown (enriched). Signiﬁcantly changing proteins were
+determined by taking the top 1% of most differentially abundant proteins between
+respective cancer and normal sample (two-sided). C Immunoﬂuorescence images
+of ACBD5 (top) and ATP5MJ (bottom) (green) within Tubulin-stained cells (red) in
+prostate cancer (PC-3) and skin cancer (A-431) cell lines. Images were obtained from
+the HPA dataset. Scale bar, 20 μm. D Nuclear related GO-terms enriched in ProHD
+interactors of metabolic enzymes, with enzymes functionally associated to one
+signiﬁcant term depicted. E Hierarchical clustering of spearman correlations based
+on normalized protein abundances across chromatin samples with positive relationships indicating covarying proteins across samples. F Network of statistically
+signiﬁcant biological processes correlated with “one-carbon by folate” pathway
+enzymes, based on normalized chromatin-bound protein intensities. Proteins
+positively correlated with “one-carbon by folate” enzymes are represented as
+weighted edges; edge thickness corresponds to correlation strength. G Relative
+protein abundance per sample for GART-POLD1 and SHMT2-MCM7 protein correlation pairs across tissue types. Source data are provided as a Source Data ﬁle.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+12
+
+Fig. 6 | Dynamics of “one-carbon metabolism” during DNA damage repair.
+A–D Immunoﬂuorescence-based quantiﬁcation of nuclear MTHFD1 (A), ATIC (B),
+GART (C), and IMPDH2 (D) in irradiated or control HeLa cells, following recovery
+for 0, 8, or 24 h (log2 mean intensities; hR hour post release). Boxplots were generated using ggplot2 with default Tukey deﬁnitions: the horizontal line is the
+median, the box spans the interquartile range (IQR), and whiskers extend to the
+farthest points within 1.5×IQR. Outliers were removed (3 SD); statistical signiﬁcance
+was assessed using unpaired two-tailed Wilcoxon test with Bonferroni correction.
+Three biological replicates were performed. Images were acquired in confocal
+mode, using a single sagittal z-plane through the middle of the nucleus and a 63×
+water-immersion objective. Representative immunoﬂuorescence images of HeLa
+cells are shown for each condition, displaying the nucleus (Hoechst, blue), γH2AX
+(magenta), and the respective enzyme (green); scale bar, 10 µm. Dashed lines
+indicate nucleus segmentation. Source data are provided as a Source Data ﬁle.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+13
+
+chromatin presence is clearly regulated, as evidenced by both their
+selective enrichment and functional correlations. Furthermore, larger
+enzymes lacking NLS are still detected on chromatin, indicating
+alternative, possibly active import or retention mechanisms. The
+identiﬁcation of nuclear interactors such as LMNB1 and FKBP5 in
+complex with COX5A supports a model in which nuclear residency is
+facilitated by scaffold or transport proteins, potentially offering new
+therapeutic entry points.
+Functionally, we uncover a robust association between nuclear
+folate pathway enzymes and the DNA damage response. We show
+that enzymes such as MTHFD1, ATIC, IMPDH2, and GART are dynamically recruited to chromatin upon ionizing radiation and that their
+nuclear abundance scales with the extent of DNA damage. This
+extends prior work on MTHFD1’s interaction with BRD4 in transcriptional regulation62 and suggests a parallel role in genome
+integrity.
+Notably,
+we
+previously
+demonstrated
+that
+IMPDH2
+localizes to chromatin speciﬁcally during the late stages of the DNA
+damage response27, supporting its direct involvement in damage
+resolution. The persistence of GART and IMPDH2 on chromatin even
+after γH2AX signal decline further hints at roles in post-repair chromatin reconﬁguration or nucleotide replenishment. These ﬁndings
+prompt further investigation into whether these enzymes form
+functional
+nuclear
+complexes
+analogous
+to
+cytoplasmic
+purinosomes63, thereby coordinating localized nucleotide synthesis
+during repair.
+Mechanistically, our covariation analysis, DNA damage assays, and
+transcriptional proﬁling of compartmentalized IMPDH2 cells suggest
+that these enzymes are not randomly associated with chromatin, but
+rather participate in coordinated functional modules. This is consistent with a model in which nuclear metabolism is not merely supportive but structurally integrated with chromatin function. The
+implications of this are signiﬁcant, as the nucleus may harbor
+A
+D
+E
+I
+J
+F
+G
+B
+C
+-log10(adj p-value)
+log2 fold change
+CCL2
+IL13RA2
+IMPDH2
+OLFML1
+DCAF8L1
+0
+50
+100
+150
+200
+−5.0
+−2.5
+0.0
+2.5
+5.0
+NLS vs WT
+-log10(adj p-value)
+log2 fold change
+NES vs WT
+CCL2
+IL13RA2
+IMPDH2
+OLFML1
+DCAF8L1
+0
+50
+100
+150
+−5.0
+−2.5
+0.0
+2.5
+5.0
+WT
+NLS
+BRC1A
+DAPI
+Merge
+H2AX
+BRC1A
+DAPI
+Merge
+H2AX
+0.27
+3.7e−06
+1.3e−07
+NLS
+WT
+NLS
+WT
+NLS
+WT
+2e5
+4e5
+6e5
+Integrated nuclear intensity
+BRCA1
+G1
+S
+G2
+0.69
+0.48
+0.076
+0
+20
+40
+60
+80
+Number of foci
+NLS
+WT
+NLS
+WT
+NLS
+WT
+γH2AX
+G1
+S
+G2
+0.00029
+6.6e−06
+3.2e−05
+0
+10
+20
+30
+40
+Number of foci
+NLS
+WT
+NLS
+WT
+NLS
+WT
+BRCA1
+G1
+S
+G2
+IMPDH2 KO
+WT
+NLS
+NES
+IMPDH2_FIRE
+IMPDH2
+Merge
+DAPI
+H
+DNA alkylation repair
+Nucleotide excision repair DNA gap filling
+Base excision repair AP site formation
+Base excision repair
+Base excision repair gap filling
+Mismatch repair
+DNA synthesis involved in DNA repair
+Postreplication repair
+Double-strand break (DSB) repair via classical NHEJ
+Single-strand break repair
+Pyrimidine dimer repair
+UV damage excision repair
+Nucleotide excision repair
+Transcription-coupled nucleotide excision repair
+DNA repair-dependent chromatin remodeling
+Interstrand crosslink repair
+DSB repair via NHEJ
+DNA repair
+DSB repair
+Recombinational repair
+Protein-DNA covalent crosslinking repair
+Meiotic DNA double-strand break fromation
+DSB repair via break-induced replication
+DSB repair via alternative NHEJ
+DNA DSB processing
+DSB repair via single-strand annealing
+Replication-born DSB repair via sister chromatid exchange
+Homologous recombination
+DSB repair involved in meiotic recombination
+DNA repair complex assembly
+DSB repair via synthesis-dependent strand annealing
+−1.5 −1 −0.5 0
+0.5
+1
+1.5
+KO(+G)
+KO
+NES
+NLS
+WT
+IL6R
+JAK1
+MAPK3
+PTPN11
+MAP2K2
+CDK1
+TYK2
+MAPK1
+JAK2
+MAP2K1
+IL6
+IL6ST
+−1.5 −1 −0.5 0
+0.5
+1
+KO(+G)
+KO
+NES
+NLS
+WT
+ERK1/2 activation
+ERK1/2 cascade and regulation
+ERK/MAPK targets
+PERK regulates gene expression
+Prolonged ERK activation
+Signalling to ERKs
+−1.5 −1 −0.5 0
+0.5
+1
+KO(+G)
+KO
+NES
+NLS
+WT
+Z-Score
+Z-Score
+Z-Score
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+14
+
+compartmentalized pools of metabolic activity that directly inﬂuence
+gene expression, DNA repair, and chromatin architecture.
+From a translational standpoint, our work opens new avenues for
+biomarker discovery and therapeutic intervention. Nuclear levels of
+speciﬁc metabolic enzymes, such as IMPDH2 or MTHFD1, may serve as
+predictive markers of DNA repair capacity, chromatin state, or therapy
+response. Moreover, the machinery mediating nuclear import or
+retention of these enzymes may offer selective vulnerabilities, particularly in cancer cells that rely on aberrant nuclear metabolic
+programs.
+While our study provides the ﬁrst systematic landscape of
+chromatin-bound metabolic enzymes, it is not without limitations. Our
+data capture a static snapshot and cannot resolve temporal dynamics
+or functional causality. Moreover, the precise enzymatic activities and
+metabolic ﬂuxes occurring within the nucleus remain largely unexplored. To address this, future work should combine nuclear-targeted
+metabolic biosensors with genetic perturbations, such as knockdown,
+overexpression, or forced mislocalization, to assess whether these
+enzymes are catalytically active on chromatin. In parallel, emerging
+technologies
+in
+nuclear
+and
+spatial
+metabolomics,
+including
+subcellular-resolution mass spectrometry imaging, will be critical to
+proﬁle local metabolite pools and map their ﬂuxes at the level of
+nuclear microenvironments. Such integrative approaches will be key
+to uncovering the functional consequences of nuclear metabolic
+rewiring and distinguishing structural, regulatory, and enzymatic roles
+of chromatin-bound enzymes, thereby reinforcing the view of nuclear
+metabolism as a regulated and functionally relevant aspect of chromatin biology.
+Methods
+Cell culture
+All cell lines were cultured at 37 °C in 5% CO2. The culture conditions
+are speciﬁed in Supplementary Data 1. Cell cultures were tested every
+month for mycoplasma contamination.
+Chromatome fractionation
+To validate the speciﬁc fractionation conditions for each cell line by
+immunoﬂuorescence (IF), 2.5 × 106 cellular pellets were ﬁrst resuspended in 75 µL of PBS. Immediately, a 15 µL aliquot (whole-cells) was
+taken and ﬁxed in methanol 100% for later IF analysis. About 75 µL of
+CHAPS (3-cholamidopropyl dimethylammonium 1-propane sulfonate)
+buffer (in 1x PBS) was added to the sample to break the cytosolic
+membrane. The concentration and time of lysis for each cell line is
+speciﬁed in Supplementary Data 1. Cell lysates were checked at the
+microscope to verify the correct cell lysis. Then, lysed cells were
+centrifuged for 5 min at 720×g at 4 °C and the supernatant was discarded. The nuclear pellet was resuspended in cytoplasmic lysis buffer
+(IGEPAL 0.1%, NaCl 150 mM, Tris-HCl 10 mM, pH 7 in H2O), where a
+100 µL aliquot (dirty nucleus) was taken and ﬁxed in methanol 100% for
+later IF. The rest of the sample was placed on the top of a sucrose
+gradient buffer (NaCl 150 mM, sucrose 25%, Tris-HCl 10 mM, pH 7 in
+H2O) and centrifuged for 15 min at 10,000×g at 4 °C. Puriﬁed nuclei
+were then washed three times by resuspending in Nuclei Washing
+Buffer (EDTA 1 mM and IGEPAL 0.1% in PBS) and centrifuged for 5 min
+at 1200×g at 4 °C. Finally, the resulting sample (clean nuclei) was
+resuspended in methanol 100% for later IF.
+To obtain the chromatome samples for mass spectrometry,
+5 × 106 cellular pellets were ﬁrst resuspended in 150 µL of CHAPS Buffer
+to break the cytosolic membrane. The concentration and time of lysis
+for each cell line is speciﬁed in Supplementary Data 1. Then, lysed cells
+were centrifuged for 5 min at 720×g at 4 °C and the supernatant was
+harvested as the cytosolic fraction. The nuclear pellet was resuspended in cytoplasmic lysis buffer and placed on the top of a sucrose
+gradient buffer) and centrifuged for 15 min at 10,000×g at 4 °C. Puriﬁed nuclei were then washed three times by resuspending in Nuclei
+Washing Buffer and centrifuged for 5 min at 1200×g at 4 °C. Then, the
+washed nuclear pellet was resuspended in Nuclei Resuspension Buffer
+(EDTA 1 mM, NaCl 75 mM, 50% sucrose, Tris-HCl 20 mM, pH 8 in H2O)
+and the nuclear membrane was lysed by adding Nuclei Lysis Buffer
+(EDTA 0.2 mM, HEPES 20 mM pH 7.5, IGEPAL 0.1%, NaCl 300 mM in
+H2O), vortexing and incubating for 5 min. After centrifugation for
+2 min at 16,000×g at 4 °C, the resulting chromatin was resuspended in
+Benzonase Digestion Buffer (15 mM HEPES, pH 7.5, 0.1% IGEPAL, TPCK
+5 mg/mL in H2O) and sonicated on a Bioruptor Pico (Diagenode) for 15
+cycles 30 s ON/30 s OFF in 1.5 mL Diagenode tubes (Diagenode;
+#C30010016). Finally, sonicated chromatin was digested with benzonase enzyme (VWR; #706643; 2.5U) for 30 min at room temperature
+(RT), and the resulting sample was harvested as chromatome fraction.
+All the steps were performed on ice and all buffers were supplemented
+with proteinase inhibitors (Roche; #4693132001). Cytosolic and
+chromatome extracts were quantiﬁed by MicroBCA™Protein Assay Kit
+(Thermo
+Fisher
+Scientiﬁc;
+#23235)
+according
+to
+manufacturer
+instructions.
+Immunoﬂuorescent imaging of chromatome samples to test
+validity
+Samples collected before lysis, at the pre-nuclear wash, and postnuclear wash phases of the fractionation protocol were used for IF to
+validate the integrity of the fractions. Brieﬂy, samples were ﬁxed in
+methanol overnight, and IF was performed in black 96-well plates for
+Fig. 7 | The effect of IMPDH2 compartmentalization on gene expression.
+A Representative immunoﬂuorescence images showing IMPDH2 (FIRE_Lut and
+Green) and DAPI (Gray) staining in IMPDH2 KO MDA-MB-231 cells reconstituted
+with IMPDH2-WT (WT), NLS and NES. Scale bar, 10 µm. Experiment was conducted
+in three biological replicates. B, C Volcano plots of differential gene expression in
+MDA-MB-231 IMPDH2-KO cells reconstituted with IMPDH2-NES (NES) (B) or
+IMPDH2-NLS (NLS) (C) compared with IMPDH2-WT (WT). Statistical signiﬁcant was
+assessed by a moderated two-sided t-test, and with Benjamini–Hochberg multiple
+testing correction. Signiﬁcantly up- and downregulated genes were deﬁned by
+adjusted P < 0.01 and |log₂ fold-change|>1. Selected genes of interest (IL13RA2,
+CCL2, OLFML1, IMPDH2, DCAF8L1) are labeled. D, E Quantiﬁcation of BRCA1 foci
+per nucleus (D) and nuclear BRCA1 integrated intensity (E) in IMPDH2 KO MDA-MB231 cells reconstituted with IMPDH2-WT or IMPDH2-NLS cells across cell-cycle
+phases (G1, S, G2). Outliers (±5 s.d.) were removed; 1172 cells in D and 1173 cells in E
+were analyzed per phase and condition. Statistical signiﬁcance was assessed by
+unpaired two-tailed Wilcoxon test. Boxplots were generated using ggplot2 with
+default Tukey deﬁnitions: the horizontal line is the median, the box spans the
+interquartile range (IQR), and whiskers extend to the farthest points within 1.5×IQR.
+F Representative immunoﬂuorescence images of BRCA1, γH2AX, and DAPI staining
+in IMPDH2 KO MDA-MB-231 cells reconstituted with IMPDH2-WT (WT) or IMPDH2NLS. Scale bar, 10 µm. G Quantiﬁcation of γH2AX foci per nucleus in MDA-MB-231
+WT and NLS cells across cell-cycle phases (G1, S, G2). Outliers (±5 s.d.) were
+removed; 1184 cells per phase and condition were analyzed. P values were determined by unpaired two-tailed Wilcoxon test. Boxplots were generated using
+ggplot2 with default Tukey deﬁnitions: the horizontal line is the median, the box
+spans the interquartile range (IQR), and whiskers extend to the farthest points
+within 1.5×IQR. H Heatmaps of GO DNA repair signatures showing activity scores in
+IMPDH2 KO MDA-MB-231 cells, and reconstituted with IMPDH2-WT, IMPDH2-NES,
+IMPDH2-NLS, or treated with guanosine [400 µM; KO( + G)]. I Heatmaps of curated
+GO and Reactome ERK signaling signatures showing activity scores in IMPDH2 KO
+MDA-MB-231 cells, and reconstituted with IMPDH2-WT,IMPDH2-NES, IMPDH2-NLS,
+or treated with guanosine [400 µM; KO(+G)]. J Heatmap of genes within the
+REACTOME pathways “REACTOME_MAPK1_ERK2_ACTIVATION” and “REACTOME_MAPK3_ERK1_ACTIVATION” showing differential activity in IMPDH2 KO MDAMB-231 cells, and reconstituted with IMPDH2-WT, IMPDH2-NES, IMPDH2-NLS, or
+treated with guanosine [400 µM; KO(+G)]. Source data are provided as a Source
+Data ﬁle.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+15
+
+microscopy. Fixed samples were spun down at 1000 RCF and resuspended in PBS. Each sample was then placed in one well of the 96-well
+plate and the plate was centrifuged at 4 oC, 1500 RCF for 15 min to
+attach the cells to the bottom. The PBS was then gently aspirated using
+a pipette and samples incubated in TBP (0.1% Triton X-100 in 2% BSA/
+PBS) for 30 min at RT. TBP was then aspirated gently using a pipette
+and samples incubated with the primary antibodies. Staining for
+mitochondria was done using 30 µL of 1:200 dilution (in 0.5% BSA/PBS)
+FDX1 antibody (Thermo Fisher Scientiﬁc, PA559653) for 1 h at RT.
+Samples were washed twice with PBS and further incubated with 30 µL
+of 1:200 Alexa Fluor 488 secondary antibody in 0.5% BSA/PBS. Following two washes with PBS, nuclear staining was done using 1:1000
+dilution (in PBS) of DAPI64 for 5 min at RT. Then, following a PBS wash,
+samples were imaged.
+Imaging was done using confocal microscopy on the LEICA TCS
+SP5 inverted microscope in collaboration with the advanced light
+microscopy unit (ALMU) at CRG, Barcelona. This microscope is
+equipped with Leica inverted confocal system (405, 458, 476, 488, 496,
+514, 561, and 633 nm lasers). The 405 laser and the 488 laser were used
+for excitation of DAPI (Ex: 405 nm/Em: 461 nm) and FDX1 (Ex: 488 nm/
+Em:515 nm). Image acquisition was performed under oil immersion at
+63x magniﬁcation. Visualization and ﬁgure assimilation was done with
+the help of ImageJ65,66.
+Western blot of chromatome samples
+Cytoplasmic and chromatin fractions were quantiﬁed by Micro BCA™
+Protein Assay Kit (Thermo Fisher Scientiﬁc; #23235) according to
+manufacturer instructions. Proteins were resolved on 4–20% gradient
+precast Mini-PROTEAN TGX polyacrylamide gels (BIO-RAD;#4561094)
+and transferred to a 0.45 mm nitrocellulose blotting membrane
+(AmershamTM #10600002) for immunoblotting. Primary antibodies
+used were Vinculin (E1E9V) XP® (Cell Signaling Technology #13901;
+1:1000), NDUFS3 (abcam #ab177471, 1:1000), SDHA (Thermo Fisher
+Scientiﬁc; #PA5-66693; 1:1000), UQCRB (Thermo Fisher Scientiﬁc;
+#PA5-106324; 1:1000), COX4 (Thermo Fisher Scientiﬁc; #PA5-19471;
+1:1000), COX5A (Thermo Fisher Scientiﬁc; #PA5-27432; 1:1000),
+ATP5A1 (abcam; #ab14748; 1:1000), FDX1 (Thermo Fisher Scientiﬁc
+#PA5-59653, 1:1000), Histone H3 (1B1B2) (Cell Signaling Technology
+#14269, 1:10000), MTHFD1 (ProteinTech; #10794-1-AP; 1:1000), ATIC
+(ProteinTech; #11099-1-AP; 1:1000), GART (ProteinTech; #13659-1-AP;
+1:1000), SHMT2 (ProteinTech; #10726-1-AP; 1:1000). Fluorescenceconjugated secondary antibodies Alexa Fluor™Plus 800 goat antirabbit IgG (Thermo Fisher Scientiﬁc; #A32735; 1:10,000); Alexa Fluor™
+Plus 800 goat anti-mouse IgG (Thermo Fisher Scientiﬁc; #A32730;
+1:10,000); Alexa Fluor™680 goat anti-mouse IgG (Thermo Fisher Scientiﬁc; #A21058; 1:10,000) and Alexa Fluor™Plus 680 goat anti-rabbit
+IgG (Thermo Fisher Scientiﬁc; #A32734; 1:10,000) were used for signal
+detection with Odyssey CLx Imaging System (LI-COR Biosciences).
+Liquid chromatography coupled to tandem mass spectrometry
+(LC-MS/MS)
+About 10 μg per chromatome sample was processed using an adapted
+single-pot
+solid-phase-enhanced
+sample
+preparation
+(SP3)
+methodology67. Brieﬂy, equal volumes (125 l containing 6250 µg) of
+two different kinds of paramagnetic carboxylate modiﬁed particles
+(SpeedBeads #45152105050250 and #65152105050250; GE Healthcare) were mixed, washed three times with 250 µl water and reconstituted to a ﬁnal concentration of 50 μg/μL with LC-MS grade water
+(LiChrosolv; MERCK KgaA). Samples were ﬁlled up to 100 µL with stock
+solutions to reach a ﬁnal concentration of 2% SDS, 100 mM HEPES, pH
+8.0.Proteins were reduced by incubation with 10 mM DTT for 1 h at
+56 °C. After cooling down to RT, reduced cysteines were alkylated with
+iodoacetamide at a ﬁnal concentration of 55 mM for 30 min in the dark.
+For tryptic digestion, 400 μg of mixed beads were added to reduced
+and alkylated samples, vortexed gently and incubated for 5 min at RT.
+The formed particles-protein complexes were precipitated by addition
+of acetonitrile to a ﬁnal concentration of 70% [V/V], mixed brieﬂy via
+pipetting before incubating for 18 min at RT. Particles were then
+immobilized using a magnetic rack (DynaMag-2 Magnet; Thermo
+Fisher Scientiﬁc) and the supernatant was discarded. SDS was removed
+by washing two times with 200 μL 70% ethanol and one time with
+180 μL 100% acetonitrile. After removal of organic solvent, particles
+were resuspended in 100 μL of 50 mM NH4HCO3, followed by digestion overnight through incubation with 1 1 μg of Trypsin at 37 °C.
+Samples were acidiﬁed to a ﬁnal concentration of 1% triﬂuoroacetic
+acid (Uvasol; MERCK KgaA) prior to immobilizing the beads on the
+magnetic rack. Peptides were desalted using C18 solid-phase extraction spin columns (Pierce Biotechnology, Rockford, IL). Finally, eluates
+were dried in a vacuum concentrator and reconstituted in 10 µl
+of 0.1% TFA.
+Mass spectrometry was performed on an Orbitrap Fusion Lumos
+mass spectrometer (Thermo Fisher Scientiﬁc, San Jose, CA) coupled to
+an Dionex Ultimate 3000RSLC nano system (Thermo Fisher Scientiﬁc,
+San Jose, CA) via nanoﬂex source interface. Tryptic peptides were
+loaded onto a trap column (Pepmap 100 5 μm, 5 × 0.3 mm, Thermo
+Fisher Scientiﬁc, San Jose, CA) at a ﬂow rate of 10 μL/min using 0.1%
+TFA as loading buffer. After loading, the trap column was switched inline with a 50 cm, 75 µm inner diameter analytical column (packed inhouse with ReproSil-Pur 120 C18-AQ, 3 μm, Dr. Maisch, AmmerbuchEntringen, Germany). Mobile-phase A consisted of 0.4% formic acid in
+water and mobile-phase B of 0.4% formic acid in a mix of 90% acetonitrile and 10% water. The ﬂow rate was set to 230 nL/min and a
+90 min gradient used (4 to 24% solvent B within 82 min, 24 to 36%
+solvent B within 8 min and, 36 to 100% solvent B within 1 min, 100%
+solvent B for 6 min before bringing back solvent B at 4% within 1 min
+and equilibrating for 18 min). Analysis was performed using a dataindependent acquisition (DIA) mode. Full MS scans were acquired with
+a mass range of 375–1250 m/z in the orbitrap, a RF lens set at 40%, and
+at a resolution of 120,000 (200 m/z). The automatic gain control
+(AGC) was set to a target of 4 × 105, and a maximum injection time of
+54 ms was applied, scanning data in proﬁle mode. MS1 scans were
+followed by 41 MS2 customed windows. The MS2 scans were acquired
+in the Orbitrap at a resolution of 30,000 (at 200 m/z), with an AGC set
+to target 2 × 105, for a maximum injection timeof 54 ms.Fragmentation
+was achieved with higher energy collision induced dissociation (HCD)
+at a ﬁxed normalized collision energy (NCE) of 35%. A single lock mass
+at m/z 445.12002468 was employed. Xcalibur version 4.3.73.11 and Tune
+3.4.3072.18 were used to operate the instrument. The mass spectrometry data has been deposited to the ProteomeXchange Consortium
+via the PRIDE partner repository69 with the dataset identiﬁer
+PXD047504.
+Data analysis
+Chromatin data were analyzed using DIA-NN software70 which were
+subsequently
+normalized
+using
+the
+normalize_vsn
+and
+median_normalisation functions from the DEP71 and proDA72 packages,
+respectively73. The rest of the pipeline was followed according to the
+DEP package, with the inclusion of impute.mi function for proteinimputation from the imp4p package74. Relative enrichment of each
+sample was estimated as the average relative abundances of known
+nuclear proteins in each sample75. These were then used to perform a
+robust linear regression correction of detected protein intensity across
+samples against their respective nuclear enrichment, in order to
+remove any effect that might arise from differential chromatin
+enrichment, using the rlm function76,77. Known subcellular localizations for proteins were obtained from the pRoloc R package
+hyperLOPITU2OS201878. FDX1 protein abundance across subcellular
+compartments was also derived from the same source, with its subcellular proﬁle compared against marker proteins belonging to either
+mitochondria or chromatin subcellular compartments.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+16
+
+Protein
+complex
+membership
+was
+obtained
+from
+HuMAP.235,41.Here, protein complexes were ﬁltered to contain at least
+20 subunits in the “core chromatome” data. Next, they were arranged
+using the ggraph R package (https://ggraph.data-imaginist.com), with
+the “dh” layout option. For a more accurate and curated set of mitochondrial complexes, which was used to separate between OXPHOS
+complexes, we utilized the annotation provided by MitoCarta3.079.
+ANOVA comparison between OXPHOS proteins across cancer lineages
+were performed using the aov R function (http://www.R-project.org/)
+and all PCA analysis was performed using the prcomp function from
+the same resource. Annotation of proteins according to the metabolic
+KEGG pathway they participate in was done using the MetaboSignal
+resource80.
+Comparison to other chromatome extraction protocols was performed by categorizing the proteins annotated as “chromatin proteins” by each study, as having or not a nuclear main localization on
+HPA. Subsequently, to demonstrate that even “core chromatome”
+proteins that do not have a main nuclear localization annotated on
+HPA, may still have a protein pool on chromatin, we classiﬁed them
+based on their physical interaction with at least one exclusively nuclear
+protein in OpenCell34.
+For the comparison of relative protein abundances of OXPHOS
+proteins to their respective expression in whole-cell extract, proteomics and transcriptomics in the matching cancer cell lines, we used
+the
+protein
+abundances
+from
+dataset:
+Table_S2_Protein_
+Quant_Normalized.xlsx81
+and
+transcripts
+expression
+levels
+from
+DepMap82 (dataset: CCLE_RNAseq_rsem_genes_tpm_20180929.txt).
+Analysis was facilitated by the tidyverse83 and data.table84 collection of packages with the protein determined as differentially
+expressed in cancer samples compared to non-cancerous samples by
+averaging the normalized abundances of the two populations and
+calculating the difference between them. The most extreme differences (1%) across all lineages combined were considered signiﬁcant.
+Prediction of nuclear localization signals was performed on the input
+fasta ﬁle using PredictNLS30. Evolutionary ages of proteins were
+derived from Gene-Ages85, while annotation of enzymes, as epigenetic,
+was obtained from Epifactors37. Heatmaps for relative chromatin
+abundance and protein detection were produced using the pheatmap
+R package with default settings (https://github.com/raivokolde/
+pheatmap).
+Supporting immunoﬂuorescence images for proteins across various cancer cell lines were obtained from the image library of the
+HPA40, while Protein covariation partners were obtained from
+ProteomeHD48.
+Ionizing radiation treatment
+For ionizing radiation-induced DNA damage experiments, HeLa cells
+were seeded in 96-well plates and incubated for 48 hours to allow
+stabilization of cellcycle progression. Cells were then exposed to 10 Gy
+of ionizing radiation and subsequently incubated for 0-, 8-, or 24-h
+post-irradiation. Non-irradiated control plates were maintained under
+the same incubation conditions. Following the speciﬁed incubation
+periods, cells were ﬁxed with 4% formaldehyde (ﬁnal concentration)
+for 10 min at RT.
+High-throughput immunoﬂuorescence sample preparation and
+image acquisition
+Immunoﬂuorescence experiments were performed by seeding cells
+(MDA-MB-231, MDA-MB-468, Hcc44, H460 for OXPHOS experiments
+and HeLa for DNA damage experiments) into transparent, ﬂatbottom 96- or 384-well plates (Revvity; #6055302, #6057302) and
+incubating them for at least 48 h prior to ﬁxation. Cells were ﬁxed by
+adding 37% formaldehyde (Sigma-Aldrich; # 252549) directly to the
+culture medium to achieve a ﬁnal concentration of 4%, followed by
+incubation for 10 min at RT. After ﬁxation, cells were washed three
+times with 1× PBS, then permeabilized with 0.2% Triton X-100 in 1×
+PBS for 20 min.
+Blocking was carried out using 5% bovine serum albumin (BSA) in
+1× PBS for 40 min. Cells were then incubated with primary antibodies
+for 2.5 h, followed by one wash with 0.05% Tween-20 in 1× PBS and two
+washes with 1× PBS. Secondary antibodies were applied for 45 min,
+followed by the same washing procedure. Finally, nuclear DNA was
+stained by incubating with Hoechst 33342 (Thermo Fisher Scientiﬁc;
+#H3570) diluted in 1× PBS for 10 min at RT.
+The following primary antibodies were used: BRCA1 (Cell Signalling, #50799); CYC1 (Thermo Fisher Scientiﬁc; #PA5-72170; 1:200),
+COX4 (Thermo Fisher Scientiﬁc; #PA5-19471; 1:200), ATP5A1 (Thermo,
+43-9700, 1:100), MTHFD1 (ProteinTech; #10794-1-AP; 1:400), ATIC
+(ProteinTech; #11099-1-AP; 1:400), GART (ProteinTech; #13659-1-AP;
+1:50), IMPDH2 (Abcam; #ab131158; 1:200), and γH2AX (Merck; #05636; 1:500). The following secondary antibodies were used: Alexa Fluor
+488 donkey anti-rabbit (Thermo Fisher Scientiﬁc; #A21206; 1:1000),
+Alexa Fluor 647 goat anti-rabbit (Thermo Fisher Scientiﬁc; #A21244;
+1:1000) and Alexa Fluor 633 goat anti-mouse (Thermo Fisher Scientiﬁc;
+#A21050; 1:1000).
+Immunoﬂuorescent images were acquired using the Operetta
+High-Content Screening System (PerkinElmer) with a 63× objective in
+confocal mode. Image analysis was performed using Harmony software (version 4.9), and quantitative data were further processed using
+the R programming environment (version 4.4).
+Cell cycle phase determination via immunoﬂuorescence
+To determine cell cycle phase distribution based on Hoechst staining,
+we used the Operetta High-Content Imager and Harmony software,
+following a strategy adapted from previously published methods46,47.
+Brieﬂy, the Hoechst signal was measured using an excitation ﬁlter of
+355–385 nm and an emission ﬁlter of 430–500 nm. Nuclei were segmented using the Find Nuclei building block, and those intersecting
+image borders were excluded using the Select Population tool with the
+Remove Border Objects option. Nuclear roundness and area were
+quantiﬁed using the Calculate Morphology Properties function.
+Poorly segmented or low-quality nuclei were identiﬁed by visual
+inspection and excluded based on roundness and size thresholds
+applied via the Select Population tool. To measure the background
+signal, an 8-pixel-wide ring region surrounding each nucleus was
+deﬁned using the Select Cell Region building block. The extracted
+data were exported as a tab-separated values (TSV) ﬁle and analyzed
+using a custom R script. A histogram of nuclear mean Hoechst
+intensity was generated with the ggplot286 package, with intensity
+values plotted along the X-axis. The histogram was visually inspected to identify characteristic G1 and G2 peaks, and corresponding
+Hoechst intensity thresholds were deﬁned. These thresholds were
+used to classify nuclei into cell cycle phases using the mutate
+function from the dplyr package.
+Immunoﬂuorescence staining of tissue microarrays
+Commercially available breast (Tissue Array LLC; BR725) and lung
+(Tissue Array LLC; LC992a) cancer TMAs were used to assess the
+nuclear localization of metabolic enzymes. Slides were baked at
+60 °C for 1 h, then deparafﬁnized in xylene and rehydrated through a
+graded ethanol series (10, 9, and 70%) followed by a ﬁnal rinse in
+distilled water. Antigen retrieval was performed by immersing slides
+in citrate buffer (Vector Lab, H-330o-250) and heating at 95–98 °C for
+20 min using a pressure cooker. After cooling to RT, slides were
+washed in 1x PBS. Blocking was performed in 5% BSA in 1x PBS for 1 h
+at RT. TMAs were incubated overnight at 4 °C with primary antibodies against selected OXPHOS subunits (COX4 (Thermo; #PA519471, 1:100), ATP5A1 (Thermo; #43-9700, 1:100), NDUFV1 (Thermo;
+#PA5-67373, 1:100) 1% BSA in PBS. After PBS washes, slides were
+incubated for 1 h at RT with ﬂuorophore-conjugated secondary
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+17
+
+antibodies (Alexa Fluor 555 (Thermo; #A-21429, 1:200, Alexa Fluor
+555 (Thermo; #A-21424, 1:200) diluted in 1% BSA in PBS. After PBS
+washes, slides were mounted using Fluoromount-G with DAPI (Invitrogen; #00-4959-52). Slides were imaged on a high-content imaging
+system (PerkinElmer Operetta) in confocal mode with acquisition of
+multiple z-planes per spot (9 planes, 2 µm intervals). Segmentation,
+nuclear intensity quantiﬁcation, and epithelial/stromal classiﬁcation
+were performed using Harmony software and downstream R-based
+pipelines as described.
+Computational analysis of TMA imaging data
+For quantitative analysis of the immunoﬂuorescence images, segmentation and cell classiﬁcation were performed in Harmony software
+(v4.9). Nuclei were segmented, and cells were classiﬁed based on
+manually gated parameters for each slide, including nucleus area, DAPI
+intensity, and width-to-length ratio. Segmentation and classiﬁcation
+data were exported for downstream processing in R. Cells were
+assigned to TMA cores using kernel density estimation and peak
+detection of cell coordinates, with adaptive ﬁltering to exclude outliers
+and edge artifacts. For each ﬁeld of view, the optimal z-plane was
+determined by maximizing the “SER Edge” nuclear edge contrast
+metric to select the best-focused plane. Additional quality control
+included ﬁltering based on nucleus area, width, length, DAPI intensity,
+image sharpness, and core-wise quantile outlier removal. Single-cell
+data were integrated with TMA vendor metadata to map each nucleus
+to its respective core, tissue type, and marker. Marker intensities were
+log2-transformed and rescaled, and composite groupings (tissue, type,
+grade) were incorporated for stratiﬁed analysis. Statistical comparisons of normalized marker intensities between tissue types, histological
+grades,
+and
+compartments
+(epithelial
+vs.
+stromal)
+were
+performed using Wilcoxon tests with Bonferroni correction for multiple comparisons.
+Sample preparation for RNA sequencing
+Samples were prepared as described previously27. Brieﬂy, total RNA
+was extracted on day 4 from WT (IMPDH2 KO reconstituted with
+IMPDH2-WT), KO (IMPDH2 KO), KO + G (IMPDH2 KO with 400 µM
+guanosine), NES (IMPDH2 KO reconstituted with IMPDH2-NES), and
+NLS (IMPDH2 KO reconstituted with IMPDH2-NLS) using the PureLink
+RNA Mini Kit (Thermo Fisher, #12183018 A). From 500 ng input,
+poly(A) + RNA was isolated by two rounds of oligo-dT capture, fragmented at elevated temperature, and reverse-transcribed with random
+hexamers (SuperScript II). Second-strand synthesis incorporated dUTP
+to preserve strandedness, followed by A-tailing, ligation of TruSeq
+adapters with unique dual indexes, and limited-cycle PCR (TruSeq
+Stranded mRNA Library Prep, Illumina #20020595). Libraries were
+puriﬁed with AMPure XP beads, QC’d by Bioanalyzer DNA1000 or
+Fragment Analyzer, quantiﬁed by qPCR (KAPA KK4835) and sequenced
+1 * 51 + 10 + 10 bp on Illumina’s NextSeq2000.
+RNA sequencing data analysis
+RNA-sequencing data were processed as described previously27.
+Brieﬂy, 51-bp single-end reads were quality-ﬁltered (>20), and adapter
+sequences were trimmed using TrimGalore (v0.6.10). Transcript
+quantiﬁcation was performed with Salmon (v1.10.0) using a decoyaware index of the Homo sapiens hg19 reference genome (k-mer = 19)
+and summarized to the gene level with the tximport package. Differential expression analysis between each condition and WT (three
+biological replicates per group) was conducted in R using Deseq287 with
+log₂ fold-change shrinkage implemented via apeglm88. Gene annotation was performed using EnsDb.Hsapiens.v86. Gene set enrichment
+analysis (GSEA) of principal component–derived gene rankings
+employed fgsea with gene sets retrieved from msigdbr. GO terms
+associated with PC1 were clustered using rrvgo, and pathway activity
+scores were computed using GSVA89.
+Reporting summary
+Further information on research design is available in the Nature
+Portfolio Reporting Summary linked to this article.
+Data availability
+Proteomics data were available at PRIDE under the project identiﬁer
+PXD047504 https://www.ebi.ac.uk/pride/archive/projects/PXD047504.
+The Source data generated in this study are provided in the Source
+Data ﬁle as well as in the Zenodo repository under identiﬁer 17349179
+https://zenodo.org/records/17349179.
+Code
+availability
+at
+https://
+github.com/SdelciLab/Chromatome with a permanent record available through Zenodo, doi: 10.5281/zenodo.17610559 at https://zenodo.
+org/records/17610560. Source data are provided with this paper.
+References
+1.
+De Berardinis, R. J. & Chandel, N. S. Fundamentals of cancer
+metabolism. Sci. Adv. 2, e1600200 (2016).
+2.
+Flavahan, W. A., Gaskell, E. & Bernstein, B. E. Epigenetic plasticity
+and the hallmarks of cancer. Science 357, eaal2380 (2017).
+3.
+Pavlova, N. N. & Thompson, C. B. The emerging hallmarks of cancer
+metabolism. Cell Metab. 23, 27 (2016).
+4.
+Gapa, L., Alfardus, H. & Fischle, W. Unconventional metabolites in
+chromatin regulation. Biosci. Rep. 42, BSR20211558 (2022).
+5.
+Kinnaird, A., Zhao, S., Wellen, K. E. & Michelakis, E. D. Metabolic
+control of epigenetics in cancer. Nat. Rev. Cancer 16,
+694–707 (2016).
+6.
+Lu, C. & Thompson, C. B. Metabolic regulation of epigenetics. Cell
+Metab. 16, 9 (2012).
+7.
+Wong, C. C., Qian, Y. & Yu, J. Interplay between epigenetics and
+metabolism in oncogenesis: mechanisms and therapeutic approaches. Oncogene 36, 3359–3374 (2017).
+8.
+Muhar, M. et al. SLAM-seq deﬁnes direct gene-regulatory functions
+of the BRD4-MYC axis. Science 360, 800–805 (2018).
+9.
+Yan, H. et al. IDH1 and IDH2 mutations in gliomas. N. Engl. J. Med.
+360, 765 (2009).
+10.
+Gupta, M. N. & Uversky, V. N. Moonlighting enzymes: when cellular
+context deﬁnes speciﬁcity. Cell. Mol. Life Sci. 80, 1–23 (2023).
+11.
+Jeffery, C. The use of proteomics studies in identifying moonlighting proteins. Methods Mol. Biol. 1871, 437–443 (2019).
+12.
+Pardo-Lorente, N. & Sdelci, S. MTHFD2 in healthy and cancer cells:
+canonical and non-canonical functions. NPJ Metab. Health Dis. 2,
+3 (2024).
+13.
+Lin, J.-M. G. et al. Metabolic modulation of transcription: the role of
+one-carbon metabolism. Cell Chem. Biol. https://doi.org/10.1016/j.
+chembiol.2022.11.009 (2022).
+14.
+Sirover, M. A. The role of posttranslational modiﬁcation in moonlighting glyceraldehyde-3-phosphate dehydrogenase structure
+and function. Amino Acids 53, 507–515 (2021).
+15.
+Shi, M. et al. GAPDH facilitates homologous recombination repair
+by stabilizing RAD51 in an HDAC1-dependent manner. EMBO Rep.
+24, e56437 (2023).
+16.
+Grolla, A. A. et al. A nicotinamide
+phosphoribosyltransferase–GAPDH interaction sustains the stressinduced NMN/NAD+ salvage pathway in the nucleus. J. Biol. Chem.
+https://doi.org/10.1074/jbc.RA119.010571(2020).
+17.
+Bian, X. et al. Regulation of gene expression by glycolytic and
+gluconeogenic enzymes. Trends Cell Biol. 32, 786–799 (2022).
+18.
+Sivanand, S. et al. Nuclear acetyl-CoA production by ACLY promotes homologous recombination. Mol. Cell 67, 252–265.e6
+(2017).
+19.
+Linder, S. J. & Mostoslavsky, R. Put your mark where your damage
+is: acetyl-CoA production by ACLY promotes DNA repair. Mol. Cell
+67, 165–167 (2017).
+20. Dai, M. et al. Nuclear-translocation of ACLY induced by obesityrelated factors enhances pyrimidine metabolism through
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+18
+
+regulating histone acetylation in endometrial cancer. Cancer Lett.
+513, 36–49 (2021).
+21.
+Willnow, P. & Teleman, A. A. Nuclear position and local acetyl-CoA
+production regulate chromatin state. Nature https://doi.org/10.
+1038/s41586-024-07471-4 (2024).
+22. Li, X. et al. Nucleus-translocated ACSS2 promotes gene transcription for lysosomal biogenesis and autophagy. Mol. Cell 66,
+684–697.e9 (2017).
+23. Bulusu, V. et al. Acetate recapturing by nuclear acetyl-CoA synthetase 2 prevents loss of histone acetylation during oxygen and
+serum limitation. Cell Rep. 18, 647 (2017).
+24. Wright, R. H. G. et al. ADP-ribose-derived nuclear ATP synthesis by
+NUDIX5 is required for chromatin remodeling. Science 352,
+1221–1225 (2016).
+25. Pardo-Lorente, N. et al. Nuclear localization of MTHFD2 is required
+for correct mitosis progression. Nat. Commun. 15, 9529 (2024).
+26. Moretton, A. et al. A metabolic map of the DNA damage response
+identiﬁes PRDX1 in the control of nuclear ROS scavenging and
+aspartate availability. Mol. Syst. Biol. 19, e11267 (2023).
+27.
+Espinar, L. et al. Nuclear IMPDH2 controls the DNA damage
+response by modulating PARP1 activity. Nat. Commun. 15,
+9515 (2024).
+28. Geladaki, A. et al. Combining LOPIT with differential ultracentrifugation for high-resolution spatial proteomics. Nat. Commun. 10, 331 (2019).
+29. Mulvey, C. M. et al. Using hyperLOPIT to perform high-resolution
+mapping of the spatial proteome. Nat. Protocols 12,
+1110–1135 (2017).
+30. Cokol, M., Nair, R. & Rost, B. Finding nuclear localization signals.
+EMBO Rep. 1, 411–415 (2000).
+31.
+Dutta, B., Yan, R., Lim, S. K., Tam, J. P. & Sze, S. K. Quantitative
+proﬁling of chromatome dynamics reveals a novel role for HP1BP3
+in hypoxia-induced oncogenesis. Mol. Cell. Proteomics 13,
+3236–3249 (2014).
+32. Aranda, S. et al. Chromatin capture links the metabolic enzyme
+AHCY to stem cell proliferation. Sci. Adv. 5,
+eaav2448–eaav2448 (2019).
+33. Raﬁee, M.-R. et al. Chromatin-contact atlas reveals disordermediated protein interactions and moonlighting chromatinassociated RBPs. Nucleic Acids Res. 49, 13092–13107 (2021).
+34. Cho, N. H. et al. OpenCell: endogenous tagging for the cartography of human cellular organization. Science 375,
+eabi6983 (2022).
+35. Drew, K., Wallingford, J. B. & Marcotte, E. M. hu.MAP 2.0: integration
+of over 15,000 proteomic experiments builds a global compendium of human multiprotein assemblies. Mol. Syst. Biol. 17,
+e10016 (2021).
+36. Huttlin, E. L. et al. Architecture of the human interactome deﬁnes
+protein communities and disease networks. Nature 545,
+505–509 (2017).
+37. Medvedeva, Y. A. et al. EpiFactors: a comprehensive database of
+human epigenetic factors and complexes. Database 2015,
+bav067 (2015).
+38. Kanehisa, M. & Goto, S. KEGG: Kyoto encyclopedia of genes and
+genomes. Nucleic Acids Res. 28, 27 (2000).
+39. Kanehisa, M., Furumichi, M., Sato, Y., Kawashima, M. & IshiguroWatanabe, M. KEGG for taxonomy-based analysis of pathways and
+genomes. Nucleic Acids Res. 51, D587 (2023).
+40. Thul, P. J. et al. A subcellular map of the human proteome. Science
+356, eaal3321 (2017).
+41.
+Fischer, S. N. et al. hu.MAP3.0: atlas of human protein
+complexes by integration of >25,000 proteomic experiments.
+Mol. Syst. Biol. https://doi.org/10.1038/s44320-025-001215 (2025).
+42. Bano, D. et al. Alteration of the nuclear pore complex in Ca2+mediated cell death. Cell Death Differ. 17, 119–133 (2010).
+43. Wang, R. & Brattain, M. G. The maximal size of protein to diffuse
+through the nuclear pore is larger than 60kDa. FEBS Lett. 581,
+3164–3170 (2007).
+44. Ebong, I., Beilsten-Edmands, V., Patel, N. A., Morgner, N. & Robinson, C. V. The interchange of immunophilins leads to parallel
+pathways and different intermediates in the assembly of Hsp90
+glucocorticoid receptor complexes. Cell Discov. 2, 16002 (2016).
+45. Camps, J., Erdos, M. R. & Ried, T. The role of lamin B1 for the
+maintenance of nuclear structure and function. Nucleus 6,
+8–14 (2015).
+46. Roukos, V., Pegoraro, G., Voss, T. C. & Misteli, T. Cell cycle staging
+of individual cells by ﬂuorescence microscopy. Nat. Protoc. 10,
+334–348 (2015).
+47. Massey, A. J. Multiparametric cell cycle analysis using the operetta
+high-content imager and harmony software with PhenoLOGIC.
+PLoS ONE 10, e0134306 (2015).
+48. Kustatscher, G. et al. Co-regulation map of the human proteome
+enables identiﬁcation of protein functions. Nat. Biotechnol. 37,
+1361 (2019).
+49. Reddy, B. A. et al. Nucleotide biosynthetic enzyme GMP synthase is
+a TRIM21-controlled relay of p53 stabilization. Mol. Cell 53,
+458–470 (2014).
+50. Shi, M. et al. GAPDH facilitates homologous recombination repair
+by stabilizing RAD51 in an HDAC1 -dependent manner. EMBO Rep.
+24, e56437 (2023).
+51.
+Juda, P., Šmigová, J., Kováčik, L., Bártová, E. & Raška, I. Ultrastructure of cytoplasmic and nuclear inosine-5’-monophosphate
+dehydrogenase 2 “rods and rings” inclusions. J. Histochem. Cytochem. 62, 739–750 (2014).
+52. Liu, F. et al. CRL4-DCAF8L1 regulates BRCA1 and BARD1 protein
+stability. Int. J. Biol. Sci. 18, 1434–1450 (2022).
+53. Deng, J. et al. CRL4-DCAF8L2 E3 ligase promotes ubiquitination and
+degradation of BARD1. Biochem. Biophys. Res. Commun. 611,
+107–113 (2022).
+54. Mok, M. T. S. & Henderson, B. R. A comparison of BRCA1
+nuclear localization with 14 DNA damage response proteins
+and domains: Identiﬁcation of speciﬁc differences between
+BRCA1 and 53BP1 at DNA damage-induced foci. Cell Signal 22,
+47–56 (2010).
+55. Scully, R. et al. Dynamic changes of BRCA1 subnuclear location and
+phosphorylation state are initiated by DNA damage. Cell 90,
+425–435 (1997).
+56. Huang, C. et al. Phosphoproteomic characterization of the signaling
+network resulting from activation of the chemokine receptor CCR2.
+J. Biol. Chem. 295, 6518–6531 (2020).
+57. Brummer, G. et al. Chemokine signaling facilitates early-stage
+breast cancer survival and invasion through ﬁbroblast-dependent
+mechanisms. Mol. Cancer Res. 16, 296–308 (2018).
+58. Li, S. et al. MCP-1-induced ERK/GSK-3β/Snail signaling facilitates
+the epithelial–mesenchymal transition and promotes the migration
+of MCF-7 human breast carcinoma cells. Cell Mol. Immunol. 14,
+621–630 (2017).
+59. Fang, W. B. et al. CCL2/CCR2 chemokine signaling coordinates
+survival and motility of breast cancer cells through Smad3 proteinand p42/44 mitogen-activated protein kinase (MAPK)-dependent
+mechanisms. J. Biol. Chem. 287, 36593–36608 (2012).
+60. Kozhevnikova, E. N. et al. Metabolic enzyme IMPDH is also a transcription factor regulated by cellular state. Mol. Cell 47, 133–139
+(2012).
+61.
+Xu, C. et al. Nuclear cytoophidia assembly represses transcriptional
+activity to control skeletal development and homeostasis. Preprint
+at bioRxiv https://doi.org/10.1101/2023.12.10.571026 (2023).
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+19
+
+62. Sdelci, S. et al. MTHFD1 interaction with BRD4 links folate metabolism to transcriptional regulation. Nat. Genet. 51, 990–998
+(2019).
+63. An, S., Kumar, R., Sheets, E. D. & Benkovic, S. J. Reversible compartmentalization of de novo purine biosynthetic complexes in living cells. Science 320, 103–106 (2008).
+64. Sabnis, R. in Handbook of Fluorescent Dyes and Probes Ch. 55
+(John Wiley & Sons 2015).
+65. Schindelin, J. et al. Fiji: an open-source platform for biologicalimage analysis. Nat. Methods 9, 676–682 (2012).
+66. Schneider, C. A., Rasband, W. S. & Eliceiri, K. W. NIH image to
+ImageJ: 25 years of image analysis. Nat. Methods 9, 671–675
+(2012).
+67. Hughes, C. S. et al. Ultrasensitive proteome analysis using paramagnetic bead technology. Mol. Syst. Biol. 10, 757 (2014).
+68. Olsen, J. V. et al. Parts per million mass accuracy on an Orbitrap
+mass spectrometer via lock mass injection into a C-trap. Mol. Cell.
+Proteomics 4, 2010–2021 (2005).
+69. Perez-Riverol, Y. et al. The PRIDE database and related tools and
+resources in 2019: improving support for quantiﬁcation data.
+Nucleic Acids Res. 47, D442 (2019).
+70. Demichev, V., Messner, C. B., Vernardis, S. I., Lilley, K. S. &
+Ralser, M. DIA-NN: neural networks and interference correction
+enable deep proteome coverage in high throughput. Nat.
+Methods 17, 41 (2020).
+71.
+Zhang, X. et al. Proteome-wide identiﬁcation of ubiquitin interactions using UbIA-MS. Nat. Protoc. 13, 530–550 (2018).
+72.
+Ahlmann-Eltze, C. proDA: differential abundance analysis of labelfree mass spectrometry data. https://github.com/const-ae/
+proDA (2022).
+73. R Core Team. R: a language and environment for statistical computing. https://www.R-project.org/ (2022).
+74. Gianetto, Q. G. imp4p: imputation for proteomics. https://CRAN.Rproject.org/package=imp4p (2021).
+75. Orre, L. M. et al. SubCellBarCode: proteome-wide mapping of
+protein localization and relocalization. Mol. Cell 73,
+166–182.e7 (2019).
+76. Venables, W. N. & Ripley, B. D. Modern Applied Statistics with S
+(Springer, 2002).
+77.
+Wu, T. et al. clusterProﬁler 4.0: a universal enrichment tool for
+interpreting omics data. Innovation 2, 100141 (2021).
+78. Gatto, L., Breckels, L. M., Mulvey, C. M. & Lilley, K. S. A Bioconductor
+workﬂow for processing and analysing spatial proteomics data.
+F1000Res. 5, 2926 (2018). 2926.
+79. Rath, S. et al. MitoCarta3.0: an updated mitochondrial proteome
+now with sub-organelle localization and pathway annotations.
+Nucleic Acids Res. 49, D1541–D1547 (2021).
+80. Rodriguez-Martinez, A. et al. MetaboSignal: a network-based
+approach for topological analysis of metabotype regulation via
+metabolic and signaling pathways. Bioinformatics 33,
+773–775 (2017).
+81.
+Nusinow, D. P. et al. Quantitative proteomics of the cancer cell line
+encyclopedia. Cell 180, 387–402.e16 (2020).
+82. Ghandi, M. et al. Next-generation characterization of the cancer cell
+line encyclopedia. Nature 569, 503–508 (2019).
+83. Wickham, H. et al. Welcome to the tidyverse. J. Open. Source Softw.
+4, 1686 (2019).
+84. Dowle, M. & Srinivasan, A. data.table: extension of ‘data.frame‘.
+https://CRAN.R-project.org/package=data.table (2022).
+85. Liebeskind, B. J., Mcwhite, C. D. & Marcotte, E. M. Towards consensus gene ages. Genome Biol. Evol. 8, 1812–1823 (2016).
+86. Wickham, H. Ggplot2: Elegant Graphics for Data Analysis
+(Springer, 2016).
+87. Love, M. I., Huber, W. & Anders, S. Moderated estimation of fold
+change and dispersion for RNA-seq data with DESeq2. Genome Biol.
+15, 550 (2014).
+88. Zhu, A., Ibrahim, J. G. & Love, M. I. Heavy-tailed prior distributions for sequence count data: removing the noise and
+preserving large differences. Bioinformatics 35,
+2084–2092 (2019).
+89. Hänzelmann, S., Castelo, R. & Guinney, J. GSVA: gene set variation
+analysis for microarray and RNA-Seq data. BMC Bioinformatics 14,
+7 (2013).
+90. Mi, H. et al. PANTHER version 16: a revised family
+classiﬁcation, tree-based classiﬁcation tool, enhancer
+regions and extensive API. Nucleic Acids Res. 49,
+D394–D403 (2021).
+91.
+Kourtis, S. et al. Native chromatome proﬁling reveals hundreds of
+metabolic enzymes in the nucleus across tissues. Zenodo https://
+doi.org/10.5281/zenodo.17610559 (2025).
+Acknowledgements
+We acknowledge support from the Spanish Ministry of Science and
+Innovation through the Centro de Excelencia Severo Ochoa
+(CEX2020-001049-S, MCIN/AEI /10.13039/501100011033), and the
+Generalitat de Catalunya through the CERCA program and to the EMBL
+partnership. A.S. acknowledges ﬁnancial support of a fellowship from
+the Marie Sklodowska-Curie Doctoral Network NUCLEAR (grant
+agreement no. 101166838). M.P. acknowledges ﬁnancial support of a
+fellowship from the “la Caixa” Foundation (ID 100010434). The fellowship code is LCF/BQ/DI23/11990062. S.S. acknowledges ﬁnancial
+support from the Spanish Ministry of Science and Innovation through
+the Plan Nacional (grant agreement no. PID2022-141740NB-I00), the
+European Research Council (ERC) under the European Union’s Horizon
+2020 research and innovation program (grant agreement no. 852343).
+R.G. acknowledges ﬁnancial support of a Severo Ochoa predoctoral
+fellowship. N.P.L. acknowledges ﬁnancial support of a fellowship from
+the Boehringer Foundation. We thank Queralt Tolosa Ramon for
+creating the illustrations for OXPHOS complexes in Fig. 2, which are
+subject to a CC BY-NC-SA (Attribution-NonCommercial-ShareAlike)
+4.0 International license.
+Author contributions
+S.K. and S.S. designed the study and wrote the manuscript. S.K.
+performed proteomics data analysis. G.-C.M. and P.-L.N. optimized
+the chromatin extraction protocol by deﬁning sample-speciﬁc conditions for each cell type. G.R. conducted immunoﬂuorescence validation for all samples. G.-C.M. performed Western blot validation
+across samples. G.Z.A. contributed to the optimization of the chromatome protocol, prepared samples for mass spectrometry, and
+carried out validation experiments and data analysis for the highthroughput immunoﬂuorescence in both cell lines and TMAs. E.C.R.
+analyzed TMA datasets. C.M.A. performed immunoﬂuorescence
+staining of OXPHOS proteins in cell lines and TMAs. S.A. performed
+the analysis of the RNA-seq experiment. P.M. contributed to the
+analysis of OXPHOS subunits in cell lines. E.C.L. performed Western
+blot validation of differential chromatin recruitment of enzymes
+across cell lines, produced the IMPDH2 KO cell line and performed
+mRNA extraction for the RNA-seq experiment. H.S. contributed to
+mass spectrometry data analysis. F.F. and M.A. performed mass
+spectrometry acquisition. S.S. acquired funding and supervised the
+study. S.K., S.S., G.Z.A., E.C.R., S.A., and C.M.A. contributed to data
+representation.
+Competing interests
+The authors declare no competing interests.
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+20
+
+Additional information
+Supplementary information The online version contains
+supplementary material available at
+https://doi.org/10.1038/s41467-026-69217-2.
+Correspondence and requests for materials should be addressed to
+S. Sdelci.
+Peer review information Nature Communications thanks the anonymous reviewer(s) for their contribution to the peer review of this work. A
+peer review ﬁle is available.
+Reprints and permissions information is available at
+http://www.nature.com/reprints
+Publisher’s note Springer Nature remains neutral with regard to jurisdictional claims in published maps and institutional afﬁliations.
+Open Access This article is licensed under a Creative Commons
+Attribution-NonCommercial-NoDerivatives 4.0 International License,
+which permits any non-commercial use, sharing, distribution and
+reproduction in any medium or format, as long as you give appropriate
+credit to the original author(s) and the source, provide a link to the
+Creative Commons licence, and indicate if you modiﬁed the licensed
+material. You do not have permission under this licence toshare adapted
+material derived from this article or parts of it. The images or other third
+party material in this article are included in the article’s Creative
+Commons licence, unless indicated otherwise in a credit line to the
+material. If material is not included in the article’s Creative Commons
+licence and your intended use is not permitted by statutory regulation or
+exceeds the permitted use, you will need to obtain permission directly
+from the copyright holder. To view a copy of this licence, visit http://
+creativecommons.org/licenses/by-nc-nd/4.0/.
+© The Author(s) 2026
+Article
+https://doi.org/10.1038/s41467-026-69217-2
+Nature Communications|   (2026) 17:1655 
+21

@@ -8,6 +8,24 @@ servers:
     description: ローカル
 
 paths:
+  /health:
+    get:
+      summary: 生存確認（DB 非依存）
+      responses:
+        '200':
+          description: プロセス正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: quantumy-api
+
   /api/register:
     post:
       summary: ユーザー登録
@@ -48,6 +66,42 @@ paths:
         '401':
           description: メール不明またはパスワード不一致
 
+  /api/works/{work_key}/progress:
+    parameters:
+      - name: work_key
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: 作品進捗（最後のスプレッド）取得
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkProgressResponse'
+        '401':
+          description: 認証エラー
+    post:
+      summary: 作品進捗（最後のスプレッド）保存
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkProgressUpdateRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkProgressResponse'
+        '400':
+          description: リクエスト不正
+
 components:
   schemas:
     RegisterRequest:
@@ -62,6 +116,7 @@ components:
           minLength: 8
         display_name:
           type: string
+
     LoginRequest:
       type: object
       required: [email, password]
@@ -70,6 +125,7 @@ components:
           type: string
         password:
           type: string
+
     AuthResponse:
       type: object
       properties:
@@ -81,3 +137,29 @@ components:
           type: string
           format: uuid
           nullable: true
+        access_token:
+          type: string
+          nullable: true
+        expires_in_secs:
+          type: integer
+          format: int64
+          description: ログイン成功時のみ。アクセストークンの有効秒数。
+
+    WorkProgressUpdateRequest:
+      type: object
+      required: [last_spread_index]
+      properties:
+        last_spread_index:
+          type: integer
+          minimum: 0
+
+    WorkProgressResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        work_key:
+          type: string
+        last_spread_index:
+          type: integer
+

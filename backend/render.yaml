@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: drcanvas-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    region: singapore      # 東京に近い無料リージョン
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        sync: false        # Render ダッシュボードで手入力
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_ORIGIN
+        sync: false        # 例: https://xxxx.vercel.app
+      - key: RUST_LOG
+        value: info
+      # Stripe（任意）
+      # - key: STRIPE_SECRET_KEY
+      #   sync: false
+      # - key: STRIPE_WEBHOOK_SECRET
+      #   sync: false
+    healthCheckPath: /health

@@ -1,0 +1,21 @@
+{
+  "page_number": 1,
+  "layout_type": "vertical_3",
+  "panels": [
+    {
+      "visual_description": "研究室のホワイトボード前。論文の図表が投影され、指差しながら説明する研究者の肩越し構図。背景はややボカし。",
+      "dialogue": "ここが今回のポイントだ。既存手法との差分はこのグラフで一目瞭然だ。",
+      "character_expression": "自信に満ちた笑み。目線は読者（カメラ）に向けず同僚側。"
+    },
+    {
+      "visual_description": "同僚が眉をひそめ、メモを取りながら図の一部を拡大イメージで見ている。コマ内に小さな拡大枠。",
+      "dialogue": "待てよ……この前提、データセットが違うんじゃないか？",
+      "character_expression": "疑いと警戒。口元は引き締め、目は鋭い。"
+    },
+    {
+      "visual_description": "ホワイトボードの「Limitations」の文字が大きくクローズアップ。ペン先が震えて止まっている。",
+      "dialogue": "",
+      "character_expression": "（オフ）沈黙の緊張。次ページへの「間」を作る無表情の手元のみ。"
+    }
+  ]
+}

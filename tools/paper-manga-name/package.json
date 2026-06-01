@@ -1,0 +1,19 @@
+{
+  "name": "paper-manga-name",
+  "private": true,
+  "description": "Dr. CANVAS — 論文→マンガネーム変換ツール群",
+  "scripts": {
+    "start": "serve . -l tcp://127.0.0.1:5174 -C --no-port-switching",
+    "serve": "serve . -l tcp://127.0.0.1:5174 -C --no-port-switching"
+  },
+  "devDependencies": {
+    "serve": "^14.2.4"
+  },
+  "_usage": {
+    "1_start_server": "npm start  →  http://127.0.0.1:5174/viewer.html",
+    "2_generate": "python paper_to_name.py --file paper.txt --pages 3 --title マンガタイトル",
+    "2_generate_quality": "python paper_to_name.py --file paper.txt --quality  (llama3.1 高品質)",
+    "3_watch": "生成後に current_story.json が更新→viewer.html が3秒周期でポーリング自動反映",
+    "port_note": "5173=Quantumy メインUI / 5174=Dr.CANVAS paper-manga ツール（衝突しない）"
+  }
+}

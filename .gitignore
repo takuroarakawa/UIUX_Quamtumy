@@ -1,0 +1,14 @@
+.vercel
+tools/ai-orchestrator/.env
+tools/ai-orchestrator/generated/
+tools/ai-orchestrator/.venv/
+
+# paper-manga-name tool
+tools/paper-manga-name/node_modules/
+tools/paper-manga-name/test_output*.json
+
+# Rust build artifacts
+backend/target/
+
+# ローカル専用（本番 secrets はここに書かない）
+backend/.env

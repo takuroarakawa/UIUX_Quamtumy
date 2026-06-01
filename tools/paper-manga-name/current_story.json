@@ -1,0 +1,159 @@
+{
+  "title": "Metabolic Enzymes in the Nucleus — Nature Comm. 2026",
+  "lang": "en",
+  "pages": [
+    {
+      "page_number": 1,
+      "layout_type": "grid_2x2",
+      "layout_rationale": "Four panels to show the four key findings of this study.",
+      "panels": [
+        {
+          "narrative_beat": "setup",
+          "visual_description": "Lab setting. Dr. Kenji stands at the whiteboard, looking at a chromatome proteomic analysis result.",
+          "dialogue": "[Dr. Kenji] Look at this! Hundreds of metabolic enzymes in the nucleus across tissues.",
+          "character_expression": "eyes wide, gripping the marker",
+          "source_text_ref": {
+            "excerpt": "Native chromatome proﬁling reveals hundreds of metabolic enzymes in the nucleus across tissues",
+            "location_label": "Introduction",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "development",
+          "visual_description": "Lab setting. Dr. Kenji stands at the whiteboard, looking at a chromatome proteomic analysis result on a computer screen.",
+          "dialogue": "[Dr. Kenji] We're finding that metabolic enzymes are tissue-speciﬁc, with oxidative phosphorylation proteins notably depleted in lung cancer.",
+          "character_expression": "nodding, pointing to the data",
+          "source_text_ref": {
+            "excerpt": "We show that the abundance of metabolic enzymes on chromatin is tissue-speciﬁc, with oxidative phosphorylation proteins notably depleted in lung cancer",
+            "location_label": "Results",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "twist",
+          "visual_description": "Lab setting. Dr. Kenji looks surprised, with a thought bubble above their head.",
+          "dialogue": "[Dr. Kenji] But what about the dynamic chromatin association of one-carbon folate enzymes? They're involved in DNA damage and repair processes!",
+          "character_expression": "surprised, raising an eyebrow",
+          "source_text_ref": {
+            "excerpt": "Further, we explore the dynamic chromatin association of onecarbon folate enzymes, demonstrating their involvement in DNA damage and repair processes",
+            "location_label": "Results",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "resolution",
+          "visual_description": "Lab setting. Dr. Kenji smiles, looking at a chromatome proteomic analysis result on the whiteboard.",
+          "dialogue": "[Dr. Kenji] This study proposes and validates novel non-canonical nuclear roles for several metabolic enzymes.",
+          "character_expression": "smiling, nodding",
+          "source_text_ref": {
+            "excerpt": "This study proposes and validate novel non-canonical nuclear roles for several metabolic enzymes, providing new insights into the functional relationship between metabolism and chromatin regulation",
+            "location_label": "Conclusion",
+            "link_kind": "verbatim"
+          }
+        }
+      ]
+    },
+    {
+      "page_number": 2,
+      "layout_type": "grid_2x2",
+      "layout_rationale": "To effectively visualize the multiple examples and mechanisms of metabolic enzymes' nuclear functions.",
+      "panels": [
+        {
+          "narrative_beat": "setup",
+          "visual_description": "Lab setting. Dr. Kenji stands at a whiteboard, with various diagrams of cells and enzymes on it.",
+          "dialogue": "[Asst. Rei] The connection between epigenetics and metabolism is complex and has been studied extensively.",
+          "character_expression": "Dr. Kenji's eyes widen as he points to the diagram.",
+          "source_text_ref": {
+            "excerpt": "Classic examples, such as the c-Myc oncogene-BRD4 axis driving the transcription of folate metabolism enzymes8, or mutations in the enzymes Isocitrate dehydrogenase 1 and 2 (IDH1 and IDH2) leading to aberrant genomewide DNA and histone hypermethylation9.",
+            "location_label": "Classic examples",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "development",
+          "visual_description": "A detailed illustration of the nucleus, showing various metabolic enzymes at work.",
+          "dialogue": "[Dr. Kenji] Recent evidence suggests a more direct interaction between epigenetics and metabolism, particularly through nuclear and chromatin translocation of metabolic enzymes.",
+          "character_expression": "Dr. Kenji's hands gesture emphatically as he speaks.",
+          "source_text_ref": {
+            "excerpt": "Metabolic enzymes traditionally associated with cytoplasmic or organelle-specific metabolic reactions have also been shown to carry out distinct functions within the nucleus, phenomena often referred to as nuclear moonlighting functions10–13.",
+            "location_label": "Nuclear moonlighting functions",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "twist",
+          "visual_description": "A diagram showing the specific example of Glyceraldehyde-3-phosphate dehydrogenase (GAPDH) nuclear localization.",
+          "dialogue": "[Asst. Rei] For instance, GAPDH nuclear localization is required to transcriptionally control apoptosis-related genes14, but also to facilitate DNA damage repair by stabilizing RAD5115 and promoting the nuclear localization of Nicotinamide phosphoribosyltransferase (NAMPT)16.",
+          "character_expression": "Dr. Kenji's eyes narrow in thought as he studies the diagram.",
+          "source_text_ref": {
+            "excerpt": "Glyceraldehyde-3-phosphate dehydrogenase (GAPDH) nuclear localization is required to transcriptionally control apoptosis-related genes14, but also to facilitate DNA damage repair by stabilizing RAD5115 and promoting the nuclear localization of Nicotinamide phosphoribosyltransferase (NAMPT)16.",
+            "location_label": "GAPDH nuclear localization",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "resolution",
+          "visual_description": "A summary diagram showing the overall connection between epigenetics, metabolism, and the nucleus.",
+          "dialogue": "[Dr. Kenji] Our study provides a unique compendium of chromatin-associated metabolic activities that will serve as the foundation for the global analysis of chromatin and nuclear metabolism.",
+          "character_expression": "Dr. Kenji smiles, satisfied with his work.",
+          "source_text_ref": {
+            "excerpt": "Our study provides a unique compendium of chromatin-associated metabolic activities that will serve as the foundation for the global analysis of chromatin and nuclear metabolism.",
+            "location_label": "Study results",
+            "link_kind": "paraphrase"
+          }
+        }
+      ]
+    },
+    {
+      "page_number": 3,
+      "layout_type": "grid_2x2",
+      "layout_rationale": "To display the results and discussion sections side-by-side while maintaining a clear narrative flow.",
+      "panels": [
+        {
+          "narrative_beat": "setup",
+          "visual_description": "Lab setting. Dr. Kenji stands at the whiteboard, facing Asst. Rei, who sits at a nearby bench.",
+          "dialogue": "[Dr. Kenji]: 'We optimized a previously published chromatin enrichment protocol to analyze chromatin-bound proteins across diverse tissue types.'",
+          "character_expression": "Dr. Kenji's hands gesture emphatically as he writes on the whiteboard.",
+          "source_text_ref": {
+            "excerpt": "we optimized a previously published chromatin enrichment protocol62, consisting of sequential cytoplasmic and nuclear lysis followed by sonication and benzonase-mediated chromatin digestion to extract the chromatome",
+            "location_label": "Supplementary Data 1",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "development",
+          "visual_description": "Dr. Kenji and Asst. Rei examine a microscope slide with an antibody against mitochondrial Ferredoxin 1 (FDX1). The sample is stained, and FDX1 is visible as a bright spot.",
+          "dialogue": "[Asst. Rei]: 'The antibody targets proteins that exclusively reside in the mitochondria, ensuring systematic depletion of non-nuclear proteins before nuclear lysis.'",
+          "character_expression": "Asst. Rei's eyes are narrowed in focus as she examines the microscope slide.",
+          "source_text_ref": {
+            "excerpt": "a protein that, according to subcellular fractionation data28, exclusively resides in the mitochondria (Fig. S1A) and that has not been previously identiﬁed as enriched in chromatome-MS experiments conducted by our group26,27",
+            "location_label": "Fig. S1A",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "twist",
+          "visual_description": "Dr. Kenji and Asst. Rei stand in front of a data-independent acquisition mass spectrometry (DIA-MS) machine, with samples displayed on the screen.",
+          "dialogue": "[Dr. Kenji]: 'We retrieved ~5100 proteins per sample using DIA-MS, most quantiﬁed by multiple peptide-to-spectrum matches.'",
+          "character_expression": "Dr. Kenji's expression turns thoughtful as he gazes at the data on the screen.",
+          "source_text_ref": {
+            "excerpt": "~5100 proteins per sample, most quantiﬁed by multiple peptide-to-spectrum matches (Fig. 1E, Source Data 2)",
+            "location_label": "Fig. 1E",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "resolution",
+          "visual_description": "Dr. Kenji and Asst. Rei sit at a table with papers, looking through the results together.",
+          "dialogue": "[Asst. Rei]: 'We found that nuclear moonlighting is far more widespread than previously appreciated.'",
+          "character_expression": "Asst. Rei's eyes light up as she turns to Dr. Kenji with excitement.",
+          "source_text_ref": {
+            "excerpt": "recent evidence suggests that nuclear moonlighting is far more widespread than previously appreciated.",
+            "location_label": "Discussion",
+            "link_kind": "paraphrase"
+          }
+        }
+      ]
+    }
+  ]
+}

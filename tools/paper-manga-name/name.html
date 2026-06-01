@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Dr. CANVAS — ネームビューア</title>
+<style>
+:root{
+  --bg:#111; --surface:#1a1a1a; --surface2:#222; --border:#2e2e2e;
+  --accent:#6ee7f0; --violet:#a78bfa; --green:#4ade80; --red:#f87171;
+  --text:#e8e8e8; --muted:#666; --gap:4px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Hiragino Sans','Yu Gothic','Meiryo',sans-serif;min-height:100vh;display:flex;flex-direction:column;font-size:14px;}
+
+/* ── Top Header ── */
+.top-bar{display:flex;align-items:center;gap:.6rem;padding:.4rem 1rem;background:#0a0a0a;border-bottom:1px solid var(--border);flex-shrink:0;flex-wrap:wrap;}
+.app-logo{font-size:.82rem;font-weight:700;color:var(--accent);letter-spacing:.05em;white-space:nowrap;}
+#storyTitleEl{font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px;flex:1;}
+.top-right{display:flex;align-items:center;gap:.4rem;margin-left:auto;flex-shrink:0;}
+.btn-back{color:var(--muted);text-decoration:none;font-size:.76rem;border:1px solid var(--border);padding:.22rem .6rem;border-radius:4px;transition:color .15s,border-color .15s;}
+.btn-back:hover{color:var(--accent);border-color:var(--accent);}
+.sd-pill{font-size:.68rem;padding:.15rem .5rem;border-radius:8px;border:1px solid var(--border);cursor:default;}
+.sd-pill.on{border-color:#4ade80;color:#4ade80;}
+.sd-pill.off{color:var(--muted);}
+
+/* ── Phase Tabs ── */
+.phase-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;}
+.ph-tab{flex:1;display:flex;align-items:center;justify-content:center;gap:.35rem;padding:.55rem .5rem;font-size:.8rem;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .18s;border:none;background:none;white-space:nowrap;}
+.ph-tab .ph-num{width:18px;height:18px;border-radius:50%;background:var(--border);color:var(--muted);font-size:.65rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ph-tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.ph-tab.active .ph-num{background:var(--accent);color:#000;}
+.ph-tab.done .ph-num{background:var(--green);color:#000;}
+.ph-tab.done{color:var(--green);}
+.ph-tab:hover:not(.active){color:var(--text);}
+
+/* ── Common util ── */
+.phase{display:none;flex:1;overflow:hidden;}
+.phase.active{display:flex;flex-direction:column;}
+.btn{font:inherit;font-size:.78rem;background:none;border:1px solid var(--border);color:var(--muted);padding:.3rem .8rem;border-radius:5px;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn:hover{border-color:var(--accent);color:var(--accent);}
+.btn.primary{border-color:var(--accent);color:#000;background:var(--accent);}
+.btn.primary:hover{background:#50d8e8;}
+.btn.violet{border-color:var(--violet);color:var(--violet);}
+.btn.violet:hover{background:var(--violet)22;}
+.btn.green{border-color:var(--green);color:var(--green);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.field{margin-bottom:.55rem;}
+.field label{display:block;font-size:.7rem;color:var(--muted);margin-bottom:.2rem;}
+.field input,.field textarea,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.3rem .5rem;font:inherit;font-size:.78rem;resize:vertical;}
+.field textarea{min-height:52px;}
+.field input:focus,.field textarea:focus,.field select:focus{outline:none;border-color:var(--accent);}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin:.4rem 0;}
+.progress-bar .fill{height:100%;background:var(--accent);transition:width .3s;}
+.log-box{font-size:.72rem;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:.4rem .6rem;height:80px;overflow-y:auto;font-family:monospace;}
+
+/* ═══════════════════════════════════════
+   PHASE 1 — 脚本エディタ
+═══════════════════════════════════════ */
+.script-layout{display:grid;grid-template-columns:260px 1fr;height:100%;overflow:hidden;}
+.script-sidebar{display:flex;flex-direction:column;background:var(--surface);border-right:1px solid var(--border);overflow-y:auto;}
+.script-sidebar-head{padding:.6rem .8rem;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:.5rem;flex-shrink:0;}
+.beat-list{flex:1;overflow-y:auto;padding:.3rem 0;}
+.beat-item{display:flex;align-items:center;gap:.5rem;padding:.45rem .8rem;cursor:pointer;transition:background .12s;border-left:3px solid transparent;}
+.beat-item:hover{background:var(--surface2);}
+.beat-item.active{background:var(--surface2);border-left-color:var(--accent);}
+.beat-item.filled{border-left-color:var(--green);}
+.beat-num{font-size:.65rem;color:var(--muted);width:18px;text-align:right;flex-shrink:0;}
+.beat-label{font-size:.75rem;font-weight:600;}
+.beat-hint{font-size:.65rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.beat-check{font-size:.7rem;color:var(--green);margin-left:auto;flex-shrink:0;}
+
+.script-main{display:flex;flex-direction:column;overflow:hidden;}
+.script-main-head{padding:.6rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
+.beat-title-display{font-size:.95rem;font-weight:700;flex:1;}
+.beat-hint-display{font-size:.74rem;color:var(--muted);}
+.script-main-body{flex:1;overflow-y:auto;padding:1rem;}
+.script-actions{padding:.6rem 1rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.5rem;flex-shrink:0;flex-wrap:wrap;}
+.premise-bar{padding:.5rem 1rem;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;font-size:.76rem;flex-shrink:0;}
+.premise-bar strong{color:var(--accent);}
+
+/* ═══════════════════════════════════════
+   PHASE 2 — ネームエディタ
+═══════════════════════════════════════ */
+.name-layout{display:flex;flex-direction:column;height:100%;overflow:hidden;}
+.page-strip-wrap{flex-shrink:0;background:var(--surface);border-bottom:1px solid var(--border);}
+.page-strip-head{display:flex;align-items:center;gap:.5rem;padding:.45rem .8rem;border-bottom:1px solid var(--border);}
+.page-strip{display:flex;gap:.4rem;padding:.4rem .8rem;overflow-x:auto;}
+.page-thumb{width:90px;flex-shrink:0;border:2px solid var(--border);border-radius:4px;overflow:hidden;cursor:pointer;transition:border-color .15s;background:white;}
+.page-thumb.active{border-color:var(--accent);}
+.page-thumb:hover:not(.active){border-color:var(--text);}
+.page-thumb img,.page-thumb svg{width:100%;height:60px;object-fit:cover;display:block;}
+.page-thumb .pt-lbl{font-size:.6rem;text-align:center;padding:.15rem;background:var(--surface2);color:var(--muted);}
+.page-thumb .pt-beats{font-size:.5rem;text-align:center;padding:0 .15rem .15rem;background:var(--surface2);color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* 名前エディタ: キャンバス全画面 + 右パネル + AIチャット */
+.name-editor{flex:1;overflow:hidden;display:grid;grid-template-columns:1fr 300px 280px;}
+.name-canvas{overflow-y:auto;padding:.8rem;display:flex;flex-direction:column;gap:.5rem;align-items:center;background:#333;}
+.name-panel-editor{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.npe-head{padding:.5rem .8rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
+.npe-body{flex:1;overflow-y:auto;padding:.7rem .8rem;}
+.npe-actions{padding:.5rem .8rem;border-top:1px solid var(--border);display:flex;gap:.4rem;flex-wrap:wrap;flex-shrink:0;}
+
+/* AI チャットパネル */
+.ai-chat-panel{background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.ai-chat-head{padding:.5rem .8rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.4rem;flex-shrink:0;}
+.ai-chat-head-title{font-size:.78rem;font-weight:700;flex:1;}
+.ai-chat-toggle{font-size:.68rem;padding:.15rem .45rem;background:none;border:1px solid var(--border);border-radius:4px;color:var(--muted);cursor:pointer;}
+.ai-chat-msgs{flex:1;overflow-y:auto;padding:.5rem .7rem;display:flex;flex-direction:column;gap:.5rem;}
+.ai-chat-msg{max-width:90%;border-radius:8px;padding:.45rem .65rem;font-size:.77rem;line-height:1.5;word-break:break-word;}
+.ai-chat-msg.user{align-self:flex-end;background:var(--accent);color:#0a0a1a;}
+.ai-chat-msg.assistant{align-self:flex-start;background:var(--elevated);color:var(--fg);}
+.ai-chat-msg.system{align-self:center;color:var(--muted);font-size:.68rem;text-align:center;background:none;}
+.ai-chat-msg.thinking{align-self:flex-start;color:var(--muted);font-style:italic;}
+.ai-chat-input-row{display:flex;gap:.35rem;padding:.4rem .5rem;border-top:1px solid var(--border);flex-shrink:0;}
+.ai-chat-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--fg);font:inherit;font-size:.78rem;padding:.35rem .55rem;resize:none;overflow:hidden;max-height:100px;}
+.ai-chat-send{padding:.35rem .7rem;background:var(--accent);color:#0a0a1a;border:none;border-radius:6px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+.ai-chat-send:disabled{opacity:.5;cursor:default;}
+.ai-chat-ctx{font-size:.62rem;color:var(--muted);padding:.15rem .5rem;border-top:1px solid var(--border);flex-shrink:0;}
+
+/* Manga page canvas - SVG-based B4 page */
+.manga-canvas-page{background:#222;display:grid;gap:var(--gap);padding:var(--gap);border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.5);width:100%;max-width:600px;}
+.layout-grid_2x2{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;}
+.layout-vertical_3{grid-template-columns:1fr;}
+.layout-vertical_2{grid-template-columns:1fr;}
+.layout-horizontal_2{grid-template-columns:1fr 1fr;}
+.layout-single{grid-template-columns:1fr;}
+.layout-top_wide_bottom_two{grid-template-columns:1fr 1fr;grid-template-rows:auto auto;}
+.layout-top_wide_bottom_two .cv-panel:first-child{grid-column:1/-1;}
+.layout-left_tall_right_two{grid-template-columns:2fr 3fr;grid-template-rows:auto auto;}
+.layout-left_tall_right_two .cv-panel:first-child{grid-row:1/-1;}
+.cv-panel{position:relative;background:white;overflow:hidden;aspect-ratio:4/3;min-height:120px;cursor:pointer;border:2px solid transparent;transition:border-color .12s;}
+.cv-panel:hover{border-color:#4a9eff66;}
+.cv-panel.selected{border-color:var(--accent) !important;}
+.cv-panel svg,.cv-panel img{display:block;width:100%;height:100%;object-fit:cover;}
+.cv-panel .beat-tag{position:absolute;bottom:3px;right:3px;background:#111b;color:white;font-size:.58rem;padding:.1rem .3rem;border-radius:2px;}
+.cv-panel .ai-overlay{position:absolute;inset:0;background:rgba(167,139,250,.08);display:flex;align-items:flex-start;justify-content:flex-end;padding:.25rem;opacity:0;transition:opacity .12s;}
+.cv-panel:hover .ai-overlay{opacity:1;}
+.cv-panel .sp-aibtn{background:var(--violet);color:white;font-size:.62rem;border:none;padding:.15rem .35rem;border-radius:3px;cursor:pointer;}
+
+/* B4 manga page SVG wrapper */
+.b4-page-wrap{display:flex;justify-content:center;align-items:flex-start;padding:1rem;background:#444;border-radius:4px;overflow:auto;}
+.b4-page-wrap svg{filter:drop-shadow(0 4px 16px rgba(0,0,0,.7));cursor:default;}
+.b4-spread-wrap{display:flex;justify-content:center;align-items:flex-start;padding:1rem;background:#444;border-radius:4px;gap:0;overflow:auto;}
+.b4-spread-wrap .b4-spine{width:6px;background:linear-gradient(to right,#333,#666,#333);flex-shrink:0;align-self:stretch;}
+
+/* Manga settings bar */
+.manga-settings-bar{display:flex;align-items:center;gap:.6rem;padding:.4rem .8rem;border-bottom:1px solid var(--border);background:var(--surface2);flex-wrap:wrap;flex-shrink:0;}
+.msb-label{font-size:.7rem;font-weight:700;color:var(--muted);letter-spacing:.04em;white-space:nowrap;}
+.msb-group{display:flex;align-items:center;gap:.25rem;}
+.msb-lbl{font-size:.7rem;color:var(--muted);white-space:nowrap;}
+.msb-sel{font-size:.72rem;padding:.15rem .4rem;background:var(--bg);border:1px solid var(--border);border-radius:3px;color:var(--fg);}
+.msb-toggle{display:flex;align-items:center;gap:.25rem;font-size:.72rem;color:var(--fg);cursor:pointer;white-space:nowrap;}
+.msb-toggle input{accent-color:var(--accent);cursor:pointer;}
+
+/* Layout picker */
+.layout-picker{display:flex;gap:.3rem;flex-wrap:wrap;}
+.lp-opt{width:40px;height:30px;border:1px solid var(--border);border-radius:3px;cursor:pointer;display:grid;gap:1px;padding:2px;background:var(--surface2);}
+.lp-opt:hover,.lp-opt.active{border-color:var(--accent);}
+.lp-cell{background:var(--border);border-radius:1px;}
+.lp-opt.active .lp-cell{background:var(--accent)44;}
+
+/* Panel count selector */
+.panel-count-row{display:flex;align-items:center;gap:.4rem;font-size:.76rem;}
+.panel-count-row button{width:24px;height:24px;border:1px solid var(--border);background:none;color:var(--text);border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.panel-count-row button:hover{border-color:var(--accent);}
+
+/* Panel detail editor card */
+.panel-card{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.6rem .7rem;margin-bottom:.4rem;cursor:pointer;transition:border-color .12s;}
+.panel-card:hover,.panel-card.selected{border-color:var(--accent);}
+.panel-card-head{display:flex;align-items:center;gap:.4rem;margin-bottom:.4rem;font-size:.74rem;font-weight:600;}
+.panel-card-beat{font-size:.65rem;background:var(--surface);border:1px solid var(--border);border-radius:3px;padding:.1rem .3rem;color:var(--muted);}
+
+/* ═══════════════════════════════════════
+   PHASE 3 — イラスト生成
+═══════════════════════════════════════ */
+.img-layout{display:flex;flex-direction:column;height:100%;overflow:hidden;}
+.img-toolbar{padding:.5rem .8rem;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;flex-shrink:0;}
+.sd-settings-row{padding:.4rem .8rem;background:var(--surface2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;flex-shrink:0;}
+.sd-settings-row.hidden{display:none;}
+.sdr-field{display:flex;align-items:center;gap:.3rem;font-size:.73rem;color:var(--muted);}
+.sdr-field input{background:var(--surface);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.22rem .45rem;font:inherit;font-size:.73rem;}
+.sdr-field input:focus{outline:none;border-color:var(--accent);}
+
+.img-grid{flex:1;overflow-y:auto;padding:.8rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:.6rem;}
+.img-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;}
+.img-card-label{font-size:.68rem;color:var(--muted);padding:.3rem .5rem;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between;}
+.img-card-canvas{aspect-ratio:4/3;background:white;position:relative;}
+.img-card-canvas svg,.img-card-canvas img{width:100%;height:100%;object-fit:cover;display:block;}
+.img-card-actions{padding:.35rem .5rem;display:flex;gap:.3rem;flex-wrap:wrap;}
+.gen-spinner{position:absolute;inset:0;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#555;}
+.gen-spinner.hidden{display:none;}
+.spin{width:22px;height:22px;border:3px solid #ddd;border-top-color:var(--violet);border-radius:50%;animation:spin .7s linear infinite;margin-right:.4rem;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── Misc ── */
+.empty-hint{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.6rem;height:100%;color:var(--muted);font-size:.82rem;text-align:center;padding:2rem;}
+.err-banner{background:#3a1515;border:1px solid #7a2525;color:#ffaaaa;padding:.5rem .8rem;border-radius:5px;font-size:.76rem;margin:.5rem;}
+.toast{position:fixed;bottom:1.2rem;right:1.2rem;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:.5rem 1rem;font-size:.78rem;z-index:200;animation:fadeIn .2s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+</style>
+</head>
+<body>
+
+<!-- ── Top bar ── -->
+<div class="top-bar">
+  <span class="app-logo">Dr. CANVAS</span>
+  <span id="storyTitleEl">ネームを読み込み中…</span>
+  <div class="top-right">
+    <span class="sd-pill off" id="sdPill">SD未接続</span>
+    <a href="viewer.html" class="btn-back">← 設定に戻る</a>
+  </div>
+</div>
+
+<!-- ── Phase Tabs ── -->
+<div class="phase-bar">
+  <button class="ph-tab active" data-phase="script">
+    <span class="ph-num">1</span>脚本
+  </button>
+  <button class="ph-tab" data-phase="name">
+    <span class="ph-num">2</span>ネーム
+  </button>
+  <button class="ph-tab" data-phase="image">
+    <span class="ph-num">3</span>イラスト生成
+  </button>
+</div>
+
+<!-- ════════════════════════════════════════
+     PHASE 1: 脚本エディタ
+════════════════════════════════════════ -->
+<div class="phase active" id="phase-script">
+  <div class="premise-bar" id="premiseBar" style="display:none">
+    <strong>あらすじ：</strong>
+    <span id="premiseText"></span>
+  </div>
+  <div class="script-layout">
+
+    <!-- Sidebar: beat list + generate controls -->
+    <div class="script-sidebar">
+      <div class="script-sidebar-head">
+        <div class="field" style="margin:0">
+          <label>ページ数</label>
+          <select id="scriptPages">
+            <option value="3">3ページ</option>
+            <option value="4">4ページ</option>
+            <option value="5">5ページ</option>
+            <option value="6" selected>6ページ（標準）</option>
+            <option value="8">8ページ</option>
+            <option value="10">10ページ</option>
+            <option value="12">12ページ</option>
+            <option value="14">14ページ</option>
+            <option value="16">16ページ</option>
+            <option value="18">18ページ</option>
+            <option value="20">20ページ</option>
+            <option value="24">24ページ</option>
+            <option value="28">28ページ</option>
+            <option value="31">31ページ</option>
+          </select>
+        </div>
+        <div class="field" style="margin:0">
+          <label>構成テンプレート</label>
+          <select id="scriptTemplate">
+            <option value="stc15">構成（15ビート・詳細）</option>
+            <option value="stc8">構成（8ビート・標準）</option>
+            <option value="kishotenketsu">起承転結（4ビート・シンプル）</option>
+          </select>
+        </div>
+        <button class="btn primary" id="btnGenerateScript">🤖 AIで脚本を生成</button>
+        <div class="progress-bar" id="scriptProgress" style="display:none"><div class="fill" id="scriptFill" style="width:0%"></div></div>
+        <div class="log-box" id="scriptLog" style="display:none"></div>
+      </div>
+      <div class="beat-list" id="beatList"></div>
+    </div>
+
+    <!-- Main: beat detail editor -->
+    <div class="script-main">
+      <div class="script-main-head">
+        <div>
+          <div class="beat-title-display" id="beatTitleDisplay">ビートを選択してください</div>
+          <div class="beat-hint-display" id="beatHintDisplay"></div>
+        </div>
+      </div>
+      <div class="script-main-body" id="beatEditor">
+        <div class="empty-hint">← 左のビートリストからビートを選択してください</div>
+      </div>
+      <div class="script-actions">
+        <button class="btn green" id="btnScriptToName">ネームを生成 →</button>
+        <div class="progress-bar" id="nameProgress" style="display:none;flex:1"><div class="fill" id="nameFill" style="width:0%"></div></div>
+        <span id="scriptActionNote" style="font-size:.72rem;color:var(--muted)"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PHASE 2: ネームエディタ
+════════════════════════════════════════ -->
+<div class="phase" id="phase-name">
+  <div class="name-layout">
+
+    <!-- Manga page settings -->
+    <div class="manga-settings-bar" id="mangaSettingsBar">
+      <span class="msb-label">原稿設定</span>
+      <div class="msb-group">
+        <label class="msb-lbl">用紙</label>
+        <select id="paperSize" class="msb-sel">
+          <option value="B4" selected>B4 (364×257mm)</option>
+          <option value="A4">A4 (297×210mm)</option>
+          <option value="B5">B5 (257×182mm)</option>
+          <option value="weekly">週刊誌判 (245×182mm)</option>
+        </select>
+      </div>
+      <div class="msb-group">
+        <label class="msb-lbl">綴じ</label>
+        <select id="bindingDir" class="msb-sel">
+          <option value="left" selected>左開き</option>
+          <option value="right">右開き（日本語標準）</option>
+        </select>
+      </div>
+      <div class="msb-group">
+        <label class="msb-lbl">表示</label>
+        <select id="spreadMode" class="msb-sel">
+          <option value="single" selected>単ページ</option>
+          <option value="spread">見開き 2P</option>
+        </select>
+      </div>
+      <label class="msb-toggle"><input type="checkbox" id="showGuides" checked/>ガイド</label>
+      <label class="msb-toggle"><input type="checkbox" id="showTrimMarks"/>トンボ</label>
+    </div>
+
+    <!-- Page film strip -->
+    <div class="page-strip-wrap">
+      <div class="page-strip-head">
+        <span style="font-size:.76rem;font-weight:600;">ページ一覧</span>
+        <button class="btn" id="btnAddPage" style="font-size:.7rem;padding:.2rem .55rem;">+ ページ追加</button>
+        <button class="btn" id="btnDelPage" style="font-size:.7rem;padding:.2rem .55rem;color:var(--red);border-color:var(--red)">× 削除</button>
+        <button class="btn green" id="btnGenAllPages">▶ 全ページを生成</button>
+        <div class="progress-bar" id="genAllProgress" style="display:none;flex:1;min-width:100px"><div class="fill" id="genAllFill" style="width:0%"></div></div>
+        <span id="genAllNote" style="font-size:.7rem;color:var(--muted)"></span>
+      </div>
+      <div class="page-strip" id="pageStrip"></div>
+    </div>
+
+    <!-- Page editor -->
+    <div class="name-editor" id="nameEditor">
+      <div class="name-canvas" id="nameCanvas">
+        <div class="empty-hint">← 上のページを選択してください</div>
+      </div>
+      <div class="name-panel-editor">
+        <div class="npe-head">
+          <span style="font-size:.78rem;font-weight:600;" id="npeTitle">コマ詳細</span>
+          <div class="panel-count-row" style="margin-left:auto;">
+            <button id="btnPanelDec">−</button>
+            <span id="panelCountLbl" style="min-width:50px;text-align:center;font-size:.76rem;">4 コマ</span>
+            <button id="btnPanelInc">＋</button>
+          </div>
+        </div>
+        <div class="npe-body" id="npeBody">
+          <div style="font-size:.75rem;color:var(--muted);padding:.5rem;">コマをクリックして編集</div>
+        </div>
+        <div class="npe-actions">
+          <div class="field" style="margin:0;flex:1">
+            <label>レイアウト</label>
+            <select id="layoutSelect">
+              <option value="grid_2x2">2×2グリッド</option>
+              <option value="single">1コマ（全面）</option>
+              <option value="horizontal_2">2コマ横並び</option>
+              <option value="vertical_2">2コマ縦並び</option>
+              <option value="vertical_3">3コマ縦</option>
+              <option value="top_wide_bottom_two">上1下2</option>
+              <option value="left_tall_right_two">左縦1右2</option>
+              <option value="right_tall_left_two">右縦1左2</option>
+              <option value="diagonal_3">斜め3分割</option>
+            </select>
+          </div>
+          <button class="btn violet" id="btnRegenPage">↻ このページ再生成</button>
+          <button class="btn" id="btnSavePage">💾 保存</button>
+        </div>
+      </div>
+
+      <!-- AI チャットパネル -->
+      <div class="ai-chat-panel" id="aiChatPanel">
+        <div class="ai-chat-head">
+          <span class="ai-chat-head-title">🤖 AIアシスタント</span>
+          <button class="ai-chat-toggle" id="btnChatCtx" title="現在のページ情報をAIに共有">📄 コンテキスト共有</button>
+        </div>
+        <div class="ai-chat-msgs" id="chatMsgs">
+          <div class="ai-chat-msg system">ネームの相談・構成の提案・台詞の改善など、何でも聞いてください。</div>
+        </div>
+        <div class="ai-chat-ctx" id="chatCtxLabel">コンテキスト: なし</div>
+        <div class="ai-chat-input-row">
+          <textarea class="ai-chat-input" id="chatInput" rows="1" placeholder="AIに質問・相談…" maxlength="1000"></textarea>
+          <button class="ai-chat-send" id="btnChatSend">送信</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     PHASE 3: イラスト生成
+════════════════════════════════════════ -->
+<div class="phase" id="phase-image">
+  <div class="img-layout">
+    <div class="img-toolbar">
+      <button class="btn" id="btnSDToggle">⚙ SD設定</button>
+      <button class="btn violet" id="btnGenAllImg" disabled>🎨 全パネルAI生成</button>
+      <span id="imgNote" style="font-size:.72rem;color:var(--muted);flex:1"></span>
+    </div>
+    <div class="sd-settings-row hidden" id="sdSettingsRow">
+      <div class="sdr-field"><label>SD URL</label><input id="sdUrl" value="http://127.0.0.1:7860" style="width:200px"/></div>
+      <div class="sdr-field"><label>LoRA名</label><input id="loraName" placeholder="style_lora_v1" style="width:140px"/></div>
+      <div class="sdr-field"><label>スタイル補助プロンプト</label><input id="stylePrompt" placeholder="manga, ink art, black and white" style="width:250px"/></div>
+      <button class="btn" id="btnSDSave">保存</button>
+      <button class="btn" id="btnSDTest">接続テスト</button>
+    </div>
+    <div class="img-grid" id="imgGrid">
+      <div class="empty-hint">Phase 2でネームを完成させてからここでAIイラストを生成できます</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════════════
+// SVG Body Templates (viewBox 0 0 60 90)
+// ════════════════════════════════════════════════════════════════════
+const B={
+  "prof":`<circle cx="30" cy="12" r="9"/><path d="M21 7 Q25 2 30 5 Q35 2 39 7"/><line x1="25" y1="11" x2="27" y2="11"/><line x1="33" y1="11" x2="35" y2="11"/><path d="M27 15 Q30 17 33 15"/><path d="M20 56 L20 22 Q30 18 40 22 L40 56 Z"/><path d="M30 22 L28 34 M30 22 L32 34"/><line x1="20" y1="32" x2="9" y2="48"/><line x1="40" y1="32" x2="51" y2="46"/><rect x="49" y="44" width="4" height="2" rx="1" fill="currentColor"/><line x1="26" y1="56" x2="22" y2="80"/><line x1="34" y1="56" x2="38" y2="80"/>`,
+  "asst":`<circle cx="30" cy="12" r="8"/><path d="M22 7 Q30 2 38 7"/><circle cx="26" cy="12" r="3.5"/><circle cx="34" cy="12" r="3.5"/><path d="M28 15 Q30 17 32 15"/><path d="M21 52 L20 24 Q30 20 40 24 L39 52 Z"/><line x1="20" y1="30" x2="10" y2="46"/><line x1="40" y1="30" x2="50" y2="46"/><line x1="25" y1="52" x2="22" y2="80"/><line x1="35" y1="52" x2="38" y2="80"/>`,
+  "cas-m":`<circle cx="30" cy="12" r="9"/><path d="M21 7 Q30 3 39 7"/><line x1="25" y1="11" x2="28" y2="11"/><line x1="32" y1="11" x2="35" y2="11"/><path d="M27 15 Q30 17 33 15"/><path d="M22 54 L20 24 Q30 20 40 24 L38 54 Z"/><line x1="20" y1="30" x2="10" y2="48"/><line x1="40" y1="30" x2="50" y2="48"/><line x1="26" y1="54" x2="23" y2="80"/><line x1="34" y1="54" x2="37" y2="80"/>`,
+  "cas-f":`<circle cx="30" cy="12" r="8"/><path d="M22 7 Q30 3 38 7 Q42 16 38 22 Q30 26 22 22 Q18 16 22 7"/><line x1="25" y1="11" x2="28" y2="11"/><line x1="32" y1="11" x2="35" y2="11"/><path d="M28 15 Q30 17 32 15"/><path d="M22 54 Q18 30 20 24 Q30 20 40 24 Q42 30 38 54 Z"/><line x1="20" y1="34" x2="10" y2="50"/><line x1="40" y1="34" x2="50" y2="50"/><line x1="26" y1="54" x2="23" y2="80"/><line x1="34" y1="54" x2="37" y2="80"/>`,
+  "doc":`<circle cx="30" cy="12" r="8"/><path d="M22 7 Q30 2 38 7"/><line x1="25" y1="11" x2="28" y2="11"/><line x1="32" y1="11" x2="35" y2="11"/><path d="M28 16 Q30 17 32 16"/><path d="M20 54 L20 22 Q30 18 40 22 L40 54 Z"/><path d="M28 22 L28 35 M32 22 L32 35"/><path d="M24 38 Q30 44 36 38"/><line x1="20" y1="30" x2="10" y2="48"/><line x1="40" y1="30" x2="50" y2="48"/><line x1="25" y1="54" x2="22" y2="80"/><line x1="35" y1="54" x2="38" y2="80"/>`,
+  "armor":`<circle cx="30" cy="12" r="8"/><path d="M22 9 Q30 5 38 9"/><line x1="25" y1="11" x2="28" y2="11"/><line x1="32" y1="11" x2="35" y2="11"/><path d="M27 15 Q30 16 33 15"/><rect x="19" y="22" width="22" height="32" rx="3"/><path d="M24 22 L22 30 M36 22 L38 30 M24 40 L36 40 M22 45 L38 45"/><line x1="19" y1="34" x2="8" y2="48"/><rect x="5" y="46" width="6" height="4" rx="1"/><line x1="41" y1="34" x2="52" y2="48"/><rect x="49" y="46" width="6" height="4" rx="1"/><line x1="26" y1="54" x2="23" y2="80"/><line x1="34" y1="54" x2="37" y2="80"/>`,
+};
+
+// ════════════════════════════════════════════════════════════════════
+// 構成テンプレート ビート定義（15ビート）
+// ════════════════════════════════════════════════════════════════════
+const STC15=[
+  {id:"opening_image",  ja:"オープニングイメージ", en:"Opening Image",    hint:"世界観の最初の一コマ・研究の舞台を印象的に"},
+  {id:"theme_stated",   ja:"テーマ表明",          en:"Theme Stated",      hint:"論文の核心的問いや仮説を示すセリフ"},
+  {id:"setup",          ja:"セットアップ",         en:"Set-Up",            hint:"キャラクターと研究背景を紹介"},
+  {id:"catalyst",       ja:"カタリスト",           en:"Catalyst",          hint:"研究の引き金となった発見や問題が発生"},
+  {id:"debate",         ja:"ディベート",           en:"Debate",            hint:"挑戦への葛藤・本当に解決できるのか？"},
+  {id:"break_into_2",   ja:"研究への突入",         en:"Break into Two",    hint:"本格的な研究・実験へのコミット"},
+  {id:"b_story",        ja:"Bストーリー",          en:"B Story",           hint:"サポートキャラとの重要な会話・ヒントが得られる"},
+  {id:"fun_and_games",  ja:"実験と展開",           en:"Fun & Games",       hint:"実験プロセス・データ収集・新発見が続く"},
+  {id:"midpoint",       ja:"中間の発見",           en:"Midpoint",          hint:"重要な中間発見・仮説が正しそうと確認"},
+  {id:"bad_guys",       ja:"困難・障壁",           en:"Bad Guys Close In", hint:"予期しない困難・矛盾するデータが出現"},
+  {id:"all_is_lost",    ja:"危機",                 en:"All Is Lost",       hint:"最大の困難・研究が行き詰まる瞬間"},
+  {id:"dark_night",     ja:"内省・再考",           en:"Dark Night of Soul",hint:"振り返り・根本的な問い直し"},
+  {id:"break_into_3",   ja:"解決の糸口",           en:"Break into Three",  hint:"新たな視点・突破口の発見"},
+  {id:"finale",         ja:"フィナーレ",           en:"Finale",            hint:"研究成果を証明・問題が解決される"},
+  {id:"final_image",    ja:"最終イメージ",         en:"Final Image",       hint:"未来への展望・変化した世界観を示す締めのコマ"},
+];
+const STC8=[
+  {id:"hook",        ja:"フック",      en:"Hook",       hint:"掴みの第一コマ"},
+  {id:"setup",       ja:"設定",        en:"Setup",      hint:"世界観・キャラクターを紹介"},
+  {id:"catalyst",    ja:"きっかけ",   en:"Catalyst",   hint:"物語を動かす出来事"},
+  {id:"development", ja:"展開",        en:"Development",hint:"研究プロセスの詳細"},
+  {id:"midpoint",    ja:"中間点",      en:"Midpoint",   hint:"中間の発見・転換"},
+  {id:"crisis",      ja:"危機",        en:"Crisis",     hint:"最大の困難"},
+  {id:"climax",      ja:"クライマックス",en:"Climax",  hint:"研究成果の証明"},
+  {id:"resolution",  ja:"解決",        en:"Resolution", hint:"まとめと未来への展望"},
+];
+const KIS4=[
+  {id:"ki",   ja:"起", en:"Setup",       hint:"状況説明・世界観と問題の提示"},
+  {id:"sho",  ja:"承", en:"Development", hint:"問題への取り組みと展開"},
+  {id:"ten",  ja:"転", en:"Twist",       hint:"意外な展開・転換点"},
+  {id:"ketsu",ja:"結", en:"Resolution",  hint:"解決・まとめ・未来への展望"},
+];
+const TEMPLATES={stc15:STC15, stc8:STC8, kishotenketsu:KIS4};
+
+// ════════════════════════════════════════════════════════════════════
+// SVG Panel Renderer
+// ════════════════════════════════════════════════════════════════════
+const esc = s => String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+function guessBody(app,name,isB){
+  const a=((app||"")+" "+(name||"")).toLowerCase();
+  if(a.match(/白衣|lab.?coat|doctor|医|doc/)) return "doc";
+  if(a.match(/眼鏡|glasses|asst/)) return "asst";
+  if(a.match(/鎧|armor|knight|space/)) return "armor";
+  if(a.match(/professor|教授|博士/)) return "prof";
+  return isB?"cas-f":"cas-m";
+}
+
+function makeBG(visual,world,W,H){
+  const d=((visual||"")+" "+(world||"")).toLowerCase();
+  const fl=`<line x1="0" y1="${H*.72}" x2="${W}" y2="${H*.72}" stroke="#bbb" stroke-width="1.5"/>`;
+  if(d.match(/lab|white.?board|bench|experiment|research|chroma|enzyme|nucleus|protocol/)){
+    return `${fl}
+      <rect x="${W*.06}" y="${H*.06}" width="${W*.42}" height="${H*.34}" fill="white" stroke="#bbb" stroke-width="1.5" rx="2"/>
+      <line x1="${W*.1}" y1="${H*.14}" x2="${W*.43}" y2="${H*.14}" stroke="#ccc" stroke-width=".8"/>
+      <line x1="${W*.1}" y1="${H*.2}"  x2="${W*.38}" y2="${H*.2}"  stroke="#ccc" stroke-width=".8"/>
+      <line x1="${W*.28}" y1="${H*.13}" x2="${W*.28}" y2="${H*.32}" stroke="#ccc" stroke-width=".8"/>
+      <rect x="${W*.55}" y="${H*.5}" width="${W*.38}" height="${H*.18}" fill="none" stroke="#bbb" stroke-width="1.2" rx="1"/>
+      <ellipse cx="${W*.62}" cy="${H*.49}" rx="${W*.025}" ry="${W*.055}" fill="none" stroke="#bbb" stroke-width="1"/>`;
+  }
+  return `${fl}
+    <line x1="${W*.3}" y1="0" x2="0" y2="${H*.32}" stroke="#eee" stroke-width=".5"/>
+    <line x1="${W*.7}" y1="0" x2="${W}" y2="${H*.32}" stroke="#eee" stroke-width=".5"/>`;
+}
+
+function placeBody(type,x,y,cW,cH,flip){
+  const inner=B[type]||B["cas-m"];
+  const sx=(flip?-1:1)*(cW/60),sy=cH/90;
+  const tx=flip?x+cW:x;
+  return `<g transform="translate(${tx.toFixed(1)},${y.toFixed(1)}) scale(${sx.toFixed(4)},${sy.toFixed(4)})" stroke="#111" fill="none" stroke-width="2.2" stroke-linecap="round">${inner}</g>`;
+}
+
+function makeBubble(dlg,cfg,beat,W,H){
+  if(!dlg)return"";
+  const raw=dlg.replace(/^\[.*?\]\s*/,"").replace(/^【.*?】\s*/,"").trim();
+  if(!raw)return"";
+  const sp2=dlg.includes("["+(cfg.char2_name||"_")+"]")||dlg.includes("【"+(cfg.char2_name||"_")+"】");
+  const spX=sp2?W*.82:W*.2;
+  const isJa=/[\u3040-\u9FFF]/.test(raw),max=isJa?13:26;
+  const lines=[];
+  if(isJa){for(let i=0;i<raw.length;i+=max)lines.push(raw.slice(i,i+max));}
+  else{const ws=raw.split(/\s+/);let cur="";for(const w of ws){if(cur.length+w.length>max){if(cur)lines.push(cur.trim());cur=w;}else cur=cur?cur+" "+w:w;}if(cur.trim())lines.push(cur.trim());}
+  if(lines.length>5)lines.length=5;
+  const fs=isJa?10:9,lh=fs*1.55,pad=9;
+  const bw=Math.max(55,Math.min(W*.65,Math.max(...lines.map(l=>l.length))*(isJa?fs:fs*.58)+pad*2));
+  const bh=lines.length*lh+pad*1.8;
+  let bx=spX<W*.5?W*.52-bw*.3:W*.04;
+  bx=Math.max(4,Math.min(W-bw-4,bx));
+  const by=H*.03,tbx=bx+bw*.5,tby=by+bh,ttx=spX,tty=Math.min(H*.62,by+bh+H*.17);
+  return `<polygon points="${(tbx-5).toFixed(1)},${tby.toFixed(1)} ${(tbx+5).toFixed(1)},${tby.toFixed(1)} ${ttx.toFixed(1)},${tty.toFixed(1)}" fill="white" stroke="#111" stroke-width="1.5"/>
+    <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" rx="8" ry="8" fill="white" stroke="#111" stroke-width="2"/>
+    ${lines.map((l,i)=>`<text x="${(bx+pad).toFixed(1)}" y="${(by+pad+lh*(i+.82)).toFixed(1)}" font-size="${fs}" fill="#111" font-family="'Hiragino Sans','Yu Gothic',Arial,sans-serif">${esc(l)}</text>`).join("")}`;
+}
+
+function makePanelSVG(panel,cfg,W=320,H=240){
+  const beat=panel.narrative_beat||"setup",visual=panel.visual_description||"",world=(cfg&&cfg.world_setting)||"";
+  const c1b=guessBody(cfg.char1_appearance||"",cfg.char1_name||"",false);
+  const c2b=guessBody(cfg.char2_appearance||"",cfg.char2_name||"",true);
+  const CH=H*.56,CW=CH*(60/90),yBase=H*.72;
+  let c1x,c2x,c1s=1,c2s=1;
+  if(beat==="setup"){c1x=W*.08;c2x=W*.92-CW;}
+  else if(beat==="development"){c1x=W*.12;c1s=1.1;c2x=W*.84-CW*.85;c2s=.85;}
+  else if(beat==="twist"||beat==="all_is_lost"||beat==="crisis"){c1x=W*.44-CW*.5;c1s=1.12;c2x=W*.76;c2s=.65;}
+  else{c1x=W*.18;c2x=W*.58;}
+  const bg=makeBG(visual,world,W,H);
+  const sp=(beat==="twist"||beat==="all_is_lost"||beat==="crisis")?
+    Array.from({length:12},(_,i)=>{const a=(i/12)*Math.PI*2,r1=Math.min(W,H)*.08,r2=Math.min(W,H)*.52;return`<line x1="${(W*.5+Math.cos(a)*r1).toFixed(1)}" y1="${(H*.45+Math.sin(a)*r1).toFixed(1)}" x2="${(W*.5+Math.cos(a)*r2).toFixed(1)}" y2="${(H*.45+Math.sin(a)*r2).toFixed(1)}" stroke="#e8e0e0" stroke-width=".7"/>`;}).join(""):"";
+  const ch1=placeBody(c1b,c1x,yBase-CH*c1s,CW*c1s,CH*c1s,false);
+  const ch2=placeBody(c2b,c2x,yBase-CH*c2s,CW*c2s,CH*c2s,true);
+  const bub=makeBubble(panel.dialogue,cfg||{},beat,W,H);
+  const BL={setup:"起",development:"承",twist:"転",resolution:"結",opening_image:"OI",theme_stated:"TS",catalyst:"CA",debate:"DB",break_into_2:"B2",b_story:"BS",fun_and_games:"FG",midpoint:"MP",bad_guys:"BG",all_is_lost:"AL",dark_night:"DN",break_into_3:"B3",finale:"FN",final_image:"FI",hook:"HK",ki:"起",sho:"承",ten:"転",ketsu:"結",climax:"CL",crisis:"CR"};
+  const lbl=`<rect x="${W-26}" y="${H-19}" width="24" height="16" rx="2" fill="#111" fill-opacity=".75"/><text x="${W-14}" y="${H-8}" font-size="9" fill="white" text-anchor="middle" font-family="sans-serif">${esc(BL[beat]||beat.slice(0,3))}</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;height:100%"><rect width="${W}" height="${H}" fill="white"/>${sp}${bg}${ch1}${ch2}${bub}${lbl}</svg>`;
+}
+
+// ════════════════════════════════════════════════════════════════════
+// State
+// ════════════════════════════════════════════════════════════════════
+let story = null;
+let currentPage = 0;
+let selectedPanel = -1;
+let currentBeats = STC15;
+let sdAvailable = false;
+
+// ════════════════════════════════════════════════════════════════════
+// Phase switching
+// ════════════════════════════════════════════════════════════════════
+function switchPhase(id){
+  document.querySelectorAll(".ph-tab").forEach(t=>{
+    t.classList.toggle("active", t.dataset.phase===id);
+  });
+  document.querySelectorAll(".phase").forEach(p=>{
+    p.classList.toggle("active", p.id===`phase-${id}`);
+  });
+  if(id==="name") renderPageStrip();
+  if(id==="image") renderImgGrid();
+}
+document.querySelectorAll(".ph-tab").forEach(t=>
+  t.addEventListener("click",()=>switchPhase(t.dataset.phase))
+);
+
+// ════════════════════════════════════════════════════════════════════
+// Phase 1: Script Editor
+// ════════════════════════════════════════════════════════════════════
+function getBeatsForTemplate(tpl){
+  return TEMPLATES[tpl] || STC15;
+}
+
+function renderBeatList(beats){
+  const list = document.getElementById("beatList");
+  list.innerHTML = "";
+  beats.forEach((b,i)=>{
+    const filled = story && story.script && (story.script.beats||[]).find(x=>x.id===b.id && x.scene);
+    const item = document.createElement("div");
+    item.className = `beat-item${filled?" filled":""}`;
+    item.dataset.id = b.id;
+    item.innerHTML = `
+      <span class="beat-num">${i+1}</span>
+      <div style="flex:1;min-width:0">
+        <div class="beat-label">${b.ja}</div>
+        <div class="beat-hint">${b.hint}</div>
+      </div>
+      ${filled?'<span class="beat-check">✓</span>':""}
+    `;
+    item.addEventListener("click",()=>openBeatEditor(b, beats));
+    list.appendChild(item);
+  });
+}
+
+let activeBeat = null;
+function openBeatEditor(beat, beats){
+  activeBeat = beat;
+  document.querySelectorAll(".beat-item").forEach(el=>
+    el.classList.toggle("active", el.dataset.id===beat.id)
+  );
+  document.getElementById("beatTitleDisplay").textContent = `${beat.ja} (${beat.en})`;
+  document.getElementById("beatHintDisplay").textContent  = beat.hint;
+
+  const scriptBeat = (story && story.script && (story.script.beats||[]).find(x=>x.id===beat.id)) || {};
+  const body = document.getElementById("beatEditor");
+  body.innerHTML = `
+    <div class="field"><label>シーン説明（場所・構図・キャラ配置）</label>
+      <textarea id="beScene" rows="3">${esc(scriptBeat.scene||"")}</textarea></div>
+    <div class="field"><label>台詞</label>
+      <textarea id="beDialogue" rows="2">${esc(scriptBeat.dialogue||"")}</textarea></div>
+    <div class="field"><label>ビジュアル演出（感情・アクション・効果）</label>
+      <textarea id="beVisual" rows="2">${esc(scriptBeat.visual||"")}</textarea></div>
+    <div class="field"><label>論文参照箇所</label>
+      <input id="bePaperRef" value="${esc(scriptBeat.paper_ref||"")}"/></div>
+    <button class="btn" id="btnSaveBeat" style="margin-top:.3rem">💾 このビートを保存</button>
+  `;
+  document.getElementById("btnSaveBeat").onclick = ()=>saveBeat(beat.id);
+}
+
+function saveBeat(beatId){
+  if(!story) story = {title:"Untitled",script:{beats:[]},pages:[]};
+  if(!story.script) story.script = {beats:[]};
+  if(!story.script.beats) story.script.beats = [];
+
+  const existing = story.script.beats.findIndex(b=>b.id===beatId);
+  const updated  = {
+    id: beatId,
+    scene:     document.getElementById("beScene").value,
+    dialogue:  document.getElementById("beDialogue").value,
+    visual:    document.getElementById("beVisual").value,
+    paper_ref: document.getElementById("bePaperRef").value,
+  };
+  if(existing>=0) story.script.beats[existing] = updated;
+  else story.script.beats.push(updated);
+
+  // Persist
+  fetch("/api/story",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(story)}).catch(()=>{});
+  toast("保存しました");
+  renderBeatList(currentBeats);
+}
+
+// Template change
+document.getElementById("scriptTemplate").onchange = function(){
+  currentBeats = getBeatsForTemplate(this.value);
+  renderBeatList(currentBeats);
+};
+
+// AI script generation
+document.getElementById("btnGenerateScript").onclick = async()=>{
+  if(!story){toast("先に論文PDFをviewer.htmlで生成してください","warn");return;}
+  const tpl   = document.getElementById("scriptTemplate").value;
+  const pages = parseInt(document.getElementById("scriptPages").value);
+  currentBeats = getBeatsForTemplate(tpl);
+
+  const btn = document.getElementById("btnGenerateScript");
+  btn.disabled = true;
+  const prog = document.getElementById("scriptProgress");
+  const fill = document.getElementById("scriptFill");
+  const log  = document.getElementById("scriptLog");
+  prog.style.display="block"; log.style.display="block";
+  fill.style.width="5%"; log.textContent="";
+
+  try{
+    const payload={
+      total_pages: pages,
+      panels:      parseInt(story.char_config?(story.pages||[{panels:[]}])[0]?.panels?.length||4:4),
+      lang:        story.lang||"ja",
+      ...(story.char_config||{}),
+    };
+    if(story.script_text) payload.text = story.script_text;
+
+    const res=await fetch("/api/generate-script",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    let buf="",pct=5;
+    while(true){
+      const{value,done}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const blocks=buf.split(/\n\n+/);buf=blocks.pop();
+      for(const block of blocks){
+        const em=block.match(/^event:\s*(.+)/m),dm=block.match(/^data:\s*(.+)/m);
+        if(!em||!dm)continue;
+        const ev=em[1].trim(),d=JSON.parse(dm[1]);
+        if(ev==="log"){log.textContent+=d+"\n";log.scrollTop=log.scrollHeight;pct=Math.min(90,pct+5);fill.style.width=pct+"%";}
+        else if(ev==="done"){
+          story.script=d.script;
+          fill.style.width="100%";
+          if(story.script.title){story.title=story.script.title;document.getElementById("storyTitleEl").textContent=story.title;}
+          if(story.script.premise){document.getElementById("premiseBar").style.display="flex";document.getElementById("premiseText").textContent=story.script.premise;}
+          renderBeatList(currentBeats);
+          toast("脚本生成完了！");
+        }
+        else if(ev==="error"){log.textContent+="❌ "+d+"\n";toast("エラー: "+d,"err");}
+      }
+    }
+  }catch(e){toast("生成エラー: "+e.message,"err");}
+  finally{btn.disabled=false;}
+};
+
+// Convert script to name pages
+document.getElementById("btnScriptToName").onclick = async()=>{
+  if(!story||!story.script||!(story.script.beats||[]).length){toast("脚本を先に生成してください","warn");return;}
+  const btn  = document.getElementById("btnScriptToName");
+  const prog = document.getElementById("nameProgress");
+  const fill = document.getElementById("nameFill");
+  const note = document.getElementById("scriptActionNote");
+  const pages = parseInt(document.getElementById("scriptPages").value);
+  btn.disabled=true; prog.style.display="flex"; note.textContent="ネーム生成中…";
+
+  try{
+    const res=await fetch("/api/script-to-name",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      script: story.script,
+      total_pages: pages,
+      panels: 4,
+      lang: story.lang||"ja",
+      char_config: story.char_config||{},
+    })});
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    let buf="",total=pages,done_cnt=0;
+    while(true){
+      const{value,done}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const blocks=buf.split(/\n\n+/);buf=blocks.pop();
+      for(const block of blocks){
+        const em=block.match(/^event:\s*(.+)/m),dm=block.match(/^data:\s*(.+)/m);
+        if(!em||!dm)continue;
+        const ev=em[1].trim(),d=JSON.parse(dm[1]);
+        if(ev==="progress"){note.textContent=`P${d.page}/${d.total} 生成中...`;fill.style.width=`${Math.round(d.page/d.total*90)}%`;}
+        else if(ev==="page_done"){done_cnt++;fill.style.width=`${Math.round(done_cnt/total*90)}%`;}
+        else if(ev==="done"){
+          fill.style.width="100%";
+          await loadStory(); // reload story with generated pages
+          switchPhase("name");
+          document.querySelectorAll(".ph-tab[data-phase='script']").forEach(t=>t.classList.add("done"));
+          toast(`${d.pages}ページのネームを生成しました！`);
+        }
+        else if(ev==="error"){toast("エラー: "+d,"err");}
+      }
+    }
+  }catch(e){toast("エラー: "+e.message,"err");}
+  finally{btn.disabled=false;note.textContent="";}
+};
+
+// ════════════════════════════════════════════════════════════════════
+// Phase 2: Name Editor
+// ════════════════════════════════════════════════════════════════════
+function renderPageStrip(){
+  const strip = document.getElementById("pageStrip");
+  strip.innerHTML="";
+  if(!story||!story.pages||!story.pages.length){
+    strip.innerHTML=`<div style="font-size:.74rem;color:var(--muted);padding:.3rem .5rem">ページがありません。Phase 1でネームを生成してください。</div>`;
+    return;
+  }
+  story.pages.forEach((pg,i)=>{
+    const thumb = document.createElement("div");
+    thumb.className = `page-thumb${i===currentPage?" active":""}`;
+    thumb.dataset.pi = i;
+    // Small SVG preview of first panel
+    const firstPanel = (pg.panels||[])[0];
+    const cfg = story.char_config||{};
+    thumb.innerHTML=`
+      <div style="background:white;height:60px;overflow:hidden">
+        ${firstPanel?makePanelSVG(firstPanel,cfg,90,60):"<div style='height:60px;background:#f8f8f8'></div>"}
+      </div>
+      <div class="pt-lbl">P${i+1} / ${(pg.panels||[]).length}コマ</div>
+      <div class="pt-beats">${(pg.beat_ids||[]).map(b=>{const def=STC15.find(x=>x.id===b);return def?def.ja.slice(0,4):b.slice(0,4);}).join(" · ")}</div>
+    `;
+    thumb.addEventListener("click",()=>selectPage(i));
+    strip.appendChild(thumb);
+  });
+}
+
+function selectPage(idx){
+  currentPage = idx;
+  selectedPanel = -1;
+  document.querySelectorAll(".page-thumb").forEach((t,i)=>t.classList.toggle("active",i===idx));
+  renderNameCanvas();
+  renderNPE();
+}
+
+// ─── Manga settings helpers ────────────────────────────────────────────────
+function getMangaSettings(){
+  return {
+    paperSize:    document.getElementById("paperSize")?.value   || "B4",
+    bindingDir:   document.getElementById("bindingDir")?.value  || "left",
+    spreadMode:   document.getElementById("spreadMode")?.value  || "single",
+    showGuides:   document.getElementById("showGuides")?.checked ?? true,
+    showTrimMarks:document.getElementById("showTrimMarks")?.checked ?? false,
+  };
+}
+
+// Paper dimension catalogue (mm, portrait)
+const PAPER_MM = {
+  B4:{w:257,h:364}, A4:{w:210,h:297}, B5:{w:182,h:257}, weekly:{w:182,h:245}
+};
+
+// Compute panel rects for a given layout
+function getPanelPositions(layout, count, cx, cy, cw, ch, gap){
+  switch(layout){
+    case "single": return [{x:cx,y:cy,w:cw,h:ch}];
+    case "horizontal_2": return [
+      {x:cx,y:cy,w:(cw-gap)/2,h:ch},
+      {x:cx+(cw-gap)/2+gap,y:cy,w:(cw-gap)/2,h:ch}];
+    case "vertical_2": return [
+      {x:cx,y:cy,w:cw,h:(ch-gap)/2},
+      {x:cx,y:cy+(ch-gap)/2+gap,w:cw,h:(ch-gap)/2}];
+    case "vertical_3": return [0,1,2].map(i=>({
+      x:cx,y:cy+i*((ch-gap*2)/3+gap),w:cw,h:(ch-gap*2)/3}));
+    case "top_wide_bottom_two": return [
+      {x:cx,y:cy,w:cw,h:(ch-gap)/2},
+      {x:cx,y:cy+(ch-gap)/2+gap,w:(cw-gap)/2,h:(ch-gap)/2},
+      {x:cx+(cw-gap)/2+gap,y:cy+(ch-gap)/2+gap,w:(cw-gap)/2,h:(ch-gap)/2}];
+    case "left_tall_right_two": return [
+      {x:cx,y:cy,w:cw*0.4-gap/2,h:ch},
+      {x:cx+cw*0.4+gap/2,y:cy,w:cw*0.6-gap/2,h:(ch-gap)/2},
+      {x:cx+cw*0.4+gap/2,y:cy+(ch-gap)/2+gap,w:cw*0.6-gap/2,h:(ch-gap)/2}];
+    case "right_tall_left_two": return [
+      {x:cx,y:cy,w:cw*0.6-gap/2,h:(ch-gap)/2},
+      {x:cx,y:cy+(ch-gap)/2+gap,w:cw*0.6-gap/2,h:(ch-gap)/2},
+      {x:cx+cw*0.6+gap/2,y:cy,w:cw*0.4-gap/2,h:ch}];
+    case "diagonal_3": return [
+      {x:cx,y:cy,w:cw,h:ch*0.45-gap/2},
+      {x:cx,y:cy+ch*0.45+gap/2,w:(cw-gap)/2,h:ch*0.55-gap/2},
+      {x:cx+(cw-gap)/2+gap,y:cy+ch*0.45+gap/2,w:(cw-gap)/2,h:ch*0.55-gap/2}];
+    default:{ // grid_2x2
+      const cols=2,rows=Math.ceil(count/cols);
+      return Array.from({length:count},(_,i)=>{
+        const c=i%cols, r=Math.floor(i/cols);
+        return {x:cx+c*((cw-gap*(cols-1))/cols+gap),y:cy+r*((ch-gap*(rows-1))/rows+gap),
+                w:(cw-gap*(cols-1))/cols,h:(ch-gap*(rows-1))/rows};});
+    }
+  }
+}
+
+function makeTrimMarksSVG(W, H, bleed, arm){
+  const b=bleed, a=arm, gap=3;
+  const lines=[
+    // top-left
+    `M${b-gap-a},${b} H${b-gap}`,`M${b},${b-gap-a} V${b-gap}`,
+    // top-right
+    `M${W-b+gap},${b} H${W-b+gap+a}`,`M${W-b},${b-gap-a} V${b-gap}`,
+    // bottom-left
+    `M${b-gap-a},${H-b} H${b-gap}`,`M${b},${H-b+gap} V${H-b+gap+a}`,
+    // bottom-right
+    `M${W-b+gap},${H-b} H${W-b+gap+a}`,`M${W-b},${H-b+gap} V${H-b+gap+a}`,
+  ];
+  return `<path d="${lines.join(' ')}" stroke="black" stroke-width="0.7" fill="none"/>`;
+}
+
+function makeMangaPageSVG(pageData, cfg, settings, targetH){
+  const {paperSize,showGuides,showTrimMarks} = settings;
+  const paper = PAPER_MM[paperSize]||PAPER_MM.B4;
+  const H = targetH||540;
+  const scale = H/paper.h;
+  const W = Math.round(paper.w*scale);
+  const bleed  = 3*scale;
+  const safe   = 13*scale;
+  const gutter = 3*scale;
+  const cx=safe, cy=safe, cw=W-safe*2, ch=H-safe*2;
+
+  const layout = pageData.layout_type||"grid_2x2";
+  const panels = pageData.panels||[];
+  const positions = getPanelPositions(layout, panels.length, cx, cy, cw, ch, gutter);
+
+  let defs="", body="";
+  panels.forEach((panel,i)=>{
+    const pos=positions[i]; if(!pos) return;
+    const {x,y,w,h}=pos;
+    defs+=`<clipPath id="mcp-${i}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="0"/></clipPath>`;
+
+    // Panel background
+    body+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="white"/>`;
+
+    if(panel.generated_image){
+      body+=`<image href="${panel.generated_image}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid slice" clip-path="url(#mcp-${i})"/>`;
+    } else {
+      // Embed sketch SVG via inline group
+      const inner = makePanelSVG(panel, cfg, w, h);
+      body+=`<foreignObject x="${x}" y="${y}" width="${w}" height="${h}" clip-path="url(#mcp-${i})"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${h}px;overflow:hidden">${inner}</div></foreignObject>`;
+    }
+
+    // Beat label
+    const beatShort = {setup:"起",development:"承",twist:"転",resolution:"結",opening_image:"OI",catalyst:"起▸",midpoint:"中転",finale:"終"};
+    const btxt = beatShort[panel.narrative_beat||""]||panel.narrative_beat?.slice(0,3)||"";
+    if(btxt) body+=`<rect x="${x+w-28}" y="${y+h-14}" width="26" height="12" fill="#111a" rx="2"/><text x="${x+w-15}" y="${y+h-5}" fill="white" font-size="7" text-anchor="middle" font-family="sans-serif">${btxt}</text>`;
+
+    // Thick manga border
+    body+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="none" stroke="black" stroke-width="2.5"/>`;
+    // Clickable overlay (transparent, for JS event)
+    body+=`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="transparent" class="panel-hit" data-pi="${i}" style="cursor:pointer"/>`;
+  });
+
+  // Outer page border
+  body+=`<rect x="${safe}" y="${safe}" width="${cw}" height="${ch}" fill="none" stroke="#333" stroke-width="1"/>`;
+
+  let guides="";
+  if(showGuides){
+    // Bleed guide
+    guides+=`<rect x="${bleed}" y="${bleed}" width="${W-bleed*2}" height="${H-bleed*2}" fill="none" stroke="#f08" stroke-width="0.4" stroke-dasharray="3,2" opacity=".5"/>`;
+    // Safe area guide
+    guides+=`<rect x="${safe}" y="${safe}" width="${cw}" height="${ch}" fill="none" stroke="#08f" stroke-width="0.4" stroke-dasharray="2,3" opacity=".4"/>`;
+  }
+  let trimMarks="";
+  if(showTrimMarks) trimMarks=makeTrimMarksSVG(W,H,bleed,8);
+
+  return {
+    svg:`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" data-page-svg="1">`+
+        `<rect width="${W}" height="${H}" fill="white"/>`+
+        `<defs>${defs}</defs>${body}${guides}${trimMarks}</svg>`,
+    W, H
+  };
+}
+
+function renderNameCanvas(){
+  const canvas = document.getElementById("nameCanvas");
+  if(!story||!story.pages||!story.pages[currentPage]){
+    canvas.innerHTML=`<div class="empty-hint">ページがありません</div>`;
+    return;
+  }
+  canvas.innerHTML="";
+  const settings = getMangaSettings();
+  const spreadMode = settings.spreadMode==="spread";
+
+  if(spreadMode){
+    renderSpreadView(canvas, settings);
+  } else {
+    renderSinglePageView(canvas, currentPage, settings);
+  }
+
+  // Layout selector sync
+  document.getElementById("layoutSelect").value = (story.pages[currentPage]||{}).layout_type||"grid_2x2";
+}
+
+function renderSinglePageView(container, pageIdx, settings){
+  const pg  = story.pages[pageIdx];
+  const cfg = story.char_config||{};
+  const canvasH = container.clientHeight||540;
+  const targetH = Math.min(540, Math.max(400, canvasH-20));
+  const {svg, W, H} = makeMangaPageSVG(pg, cfg, settings, targetH);
+  const wrap = document.createElement("div");
+  wrap.className="b4-page-wrap";
+  wrap.innerHTML=svg;
+  container.appendChild(wrap);
+  // Attach click handlers to panel hit areas
+  wrap.querySelectorAll(".panel-hit").forEach(el=>{
+    el.addEventListener("click",e=>{
+      e.stopPropagation();
+      selectedPanel = parseInt(el.dataset.pi);
+      wrap.querySelectorAll(".panel-hit").forEach(r=>r.setAttribute("stroke","transparent"));
+      el.setAttribute("stroke",getComputedStyle(document.documentElement).getPropertyValue("--accent")||"#4a9eff");
+      el.setAttribute("stroke-width","2");
+      renderNPE();
+    });
+  });
+}
+
+function renderSpreadView(container, settings){
+  const cfg   = story.char_config||{};
+  const bind  = settings.bindingDir||"left";
+  // Determine which pair to show: floor(currentPage/2)*2 = leftIdx
+  const pairStart = Math.floor(currentPage/2)*2;
+  const leftIdx   = pairStart;
+  const rightIdx  = pairStart+1;
+
+  const targetH = 480;
+  const wrapDiv = document.createElement("div");
+  wrapDiv.className="b4-spread-wrap";
+
+  // Page 1 on left (左開き: leftIdx=0,2,4…)
+  // Page 1 on right (右開き: leftIdx+1=1,3,5…)
+  const isLeft  = bind==="left"; // left-opening: even pages on left
+  const pageA = isLeft ? leftIdx  : rightIdx;
+  const pageB = isLeft ? rightIdx : leftIdx;
+
+  [pageA, pageB].forEach((pidx, i)=>{
+    const pg = story.pages[pidx];
+    if(!pg){
+      // Empty page placeholder
+      const paper = PAPER_MM[settings.paperSize]||PAPER_MM.B4;
+      const H=targetH, W=Math.round(paper.w*(H/paper.h));
+      const ph=document.createElement("div");
+      ph.style.cssText=`width:${W}px;height:${H}px;background:white;border:1px solid #ccc;`;
+      wrapDiv.appendChild(ph);
+    } else {
+      const {svg} = makeMangaPageSVG(pg, cfg, settings, targetH);
+      const pgDiv = document.createElement("div");
+      pgDiv.innerHTML=svg;
+      pgDiv.style.cursor="pointer";
+      pgDiv.title=`P${pidx+1}`;
+      pgDiv.addEventListener("click",()=>{currentPage=pidx;selectedPanel=-1;renderPageStrip();renderNameCanvas();renderNPE();});
+      wrapDiv.appendChild(pgDiv);
+    }
+    if(i===0){
+      const spine=document.createElement("div");
+      spine.className="b4-spine";
+      spine.style.height=targetH+"px";
+      wrapDiv.appendChild(spine);
+    }
+  });
+  container.appendChild(wrapDiv);
+}
+
+function renderNPE(){
+  const pg  = story && story.pages && story.pages[currentPage];
+  const body = document.getElementById("npeBody");
+  const title = document.getElementById("npeTitle");
+  if(!pg){body.innerHTML=`<div style="font-size:.75rem;color:var(--muted)">ページなし</div>`;return;}
+
+  const cfg = story.char_config||{};
+  title.textContent = `P${currentPage+1} の編集`;
+  document.getElementById("panelCountLbl").textContent = `${(pg.panels||[]).length} コマ`;
+
+  body.innerHTML="";
+  (pg.panels||[]).forEach((panel,ni)=>{
+    const card = document.createElement("div");
+    card.className = `panel-card${ni===selectedPanel?" selected":""}`;
+    card.innerHTML=`
+      <div class="panel-card-head">
+        コマ ${ni+1}
+        <span class="panel-card-beat">${panel.narrative_beat||""}</span>
+        ${panel.generated_image?'<span style="font-size:.62rem;color:var(--green)">🖼 AI済</span>':""}
+      </div>
+      <div class="field" style="margin:.25rem 0">
+        <label>台詞</label>
+        <textarea data-pi="${currentPage}" data-ni="${ni}" data-field="dialogue" rows="2">${esc(panel.dialogue||"")}</textarea>
+      </div>
+      <div class="field" style="margin:.25rem 0">
+        <label>ビジュアル指示</label>
+        <textarea data-pi="${currentPage}" data-ni="${ni}" data-field="visual" rows="2">${esc(panel.visual_description||"")}</textarea>
+      </div>
+      <div class="field" style="margin:.25rem 0">
+        <label>ビート</label>
+        <select data-pi="${currentPage}" data-ni="${ni}" data-field="beat">
+          ${[...STC15,...STC8,...KIS4].filter((b,i,a)=>a.findIndex(x=>x.id===b.id)===i).map(b=>`<option value="${b.id}"${panel.narrative_beat===b.id?" selected":""}>${b.ja}</option>`).join("")}
+        </select>
+      </div>
+    `;
+    card.addEventListener("click",()=>{selectedPanel=ni;renderNameCanvas();});
+    body.appendChild(card);
+  });
+
+  // Live-edit on change
+  body.querySelectorAll("textarea,select").forEach(el=>{
+    el.addEventListener("change",()=>{
+      const pi=parseInt(el.dataset.pi),ni=parseInt(el.dataset.ni),f=el.dataset.field;
+      const panel = story.pages[pi].panels[ni];
+      if(f==="dialogue") panel.dialogue=el.value;
+      if(f==="visual")   panel.visual_description=el.value;
+      if(f==="beat")     panel.narrative_beat=el.value;
+      renderNameCanvas();
+    });
+  });
+}
+
+// Panel count +/-
+document.getElementById("btnPanelInc").onclick=()=>{
+  const pg=story&&story.pages&&story.pages[currentPage]; if(!pg)return;
+  const cfg=story.char_config||{};
+  pg.panels.push({narrative_beat:"setup",visual_description:"",dialogue:"",character_expression:""});
+  renderNPE(); renderNameCanvas(); renderPageStrip();
+};
+document.getElementById("btnPanelDec").onclick=()=>{
+  const pg=story&&story.pages&&story.pages[currentPage]; if(!pg||pg.panels.length<=1)return;
+  pg.panels.pop(); selectedPanel=Math.min(selectedPanel,pg.panels.length-1);
+  renderNPE(); renderNameCanvas(); renderPageStrip();
+};
+
+// Add/del page
+document.getElementById("btnAddPage").onclick=()=>{
+  if(!story){story={title:"Untitled",pages:[],char_config:{}};}
+  story.pages.push({page_number:story.pages.length+1,layout_type:"grid_2x2",panels:[{narrative_beat:"setup",visual_description:"",dialogue:"",character_expression:""}]});
+  renderPageStrip(); selectPage(story.pages.length-1);
+};
+document.getElementById("btnDelPage").onclick=()=>{
+  if(!story||!story.pages||story.pages.length<=1)return;
+  if(!confirm(`P${currentPage+1}を削除しますか？`))return;
+  story.pages.splice(currentPage,1);
+  story.pages.forEach((p,i)=>p.page_number=i+1);
+  currentPage=Math.min(currentPage,story.pages.length-1);
+  renderPageStrip(); selectPage(currentPage);
+};
+
+// Layout select
+document.getElementById("layoutSelect").onchange=function(){
+  const pg=story&&story.pages&&story.pages[currentPage]; if(!pg)return;
+  pg.layout_type=this.value; renderNameCanvas(); renderPageStrip();
+};
+
+// Manga settings bar: redraw on change
+["paperSize","bindingDir","spreadMode","showGuides","showTrimMarks"].forEach(id=>{
+  const el=document.getElementById(id);
+  if(el) el.addEventListener("change",()=>renderNameCanvas());
+});
+
+// Save current page
+document.getElementById("btnSavePage").onclick=async()=>{
+  if(!story)return;
+  try{await fetch("/api/story",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify(story)});toast("保存しました");}
+  catch(e){toast("保存失敗: "+e.message,"err");}
+};
+
+// Regen single page via LLM
+document.getElementById("btnRegenPage").onclick=async()=>{
+  const pg=story&&story.pages&&story.pages[currentPage]; if(!pg)return;
+  if(!confirm(`P${currentPage+1}をAIで再生成しますか？`))return;
+  const btn=document.getElementById("btnRegenPage"); btn.disabled=true; btn.textContent="生成中…";
+  const beatChunk=(pg.beat_ids||[]).join(", ")||"general";
+  try{
+    const res=await fetch("/api/script-to-name",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        script:{beats:(story.script&&story.script.beats)||[{id:beatChunk,scene:"Continue the story",dialogue:"",visual:"",paper_ref:""}]},
+        total_pages:1, panels:pg.panels.length,
+        lang:story.lang||"ja", char_config:story.char_config||{},
+      })});
+    const d=await res.json().catch(()=>({}));
+    if(d.pages&&d.pages[0]){story.pages[currentPage].panels=d.pages[0].panels;renderNameCanvas();renderPageStrip();toast("再生成完了");}
+  }catch(e){toast("エラー: "+e.message,"err");}
+  finally{btn.disabled=false;btn.textContent="↻ このページ再生成";}
+};
+
+// Generate ALL pages from script (SSE)
+document.getElementById("btnGenAllPages").onclick=async()=>{
+  if(!story||!story.script){toast("脚本を生成してから実行してください","warn");return;}
+  const pages=parseInt(document.getElementById("scriptPages").value)||story.pages.length||6;
+  if(!confirm(`全${pages}ページをAIで生成します。よろしいですか？`))return;
+  const btn=document.getElementById("btnGenAllPages");
+  const fill=document.getElementById("genAllFill");
+  const note=document.getElementById("genAllNote");
+  const prog=document.getElementById("genAllProgress");
+  btn.disabled=true; prog.style.display="flex"; note.textContent="生成中…";
+  try{
+    const res=await fetch("/api/script-to-name",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({script:story.script,total_pages:pages,panels:4,lang:story.lang||"ja",char_config:story.char_config||{}})});
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    let buf="";
+    while(true){
+      const{value,done}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const blocks=buf.split(/\n\n+/);buf=blocks.pop();
+      for(const block of blocks){
+        const em=block.match(/^event:\s*(.+)/m),dm=block.match(/^data:\s*(.+)/m);
+        if(!em||!dm)continue;
+        const ev=em[1].trim(),d=JSON.parse(dm[1]);
+        if(ev==="progress"){note.textContent=`P${d.page}/${d.total}`;fill.style.width=`${Math.round(d.page/d.total*90)}%`;}
+        else if(ev==="done"){fill.style.width="100%";await loadStory();switchPhase("name");toast(`${d.pages}ページ生成完了！`);}
+        else if(ev==="error"){toast("エラー: "+d,"err");}
+      }
+    }
+  }catch(e){toast("エラー: "+e.message,"err");}
+  finally{btn.disabled=false;prog.style.display="none";}
+};
+
+// ════════════════════════════════════════════════════════════════════
+// Phase 3: Image generation
+// ════════════════════════════════════════════════════════════════════
+function renderImgGrid(){
+  const grid=document.getElementById("imgGrid");
+  if(!story||!story.pages||!story.pages.length){
+    grid.innerHTML=`<div class="empty-hint">ネームを先に生成してください</div>`;return;
+  }
+  grid.innerHTML="";
+  const cfg=story.char_config||{};
+  story.pages.forEach((pg,pi)=>{
+    (pg.panels||[]).forEach((panel,ni)=>{
+      const card=document.createElement("div");
+      card.className="img-card";
+      card.innerHTML=`
+        <div class="img-card-label">
+          <span>P${pi+1} コマ${ni+1} — ${panel.narrative_beat||""}</span>
+          ${panel.generated_image?'<span style="color:var(--green)">✓ 生成済み</span>':""}
+        </div>
+        <div class="img-card-canvas" id="ic-${pi}-${ni}">
+          ${panel.generated_image?`<img src="${panel.generated_image}" style="width:100%;height:100%;object-fit:cover"/>`:makePanelSVG(panel,cfg)}
+          <div class="gen-spinner hidden" id="sp-${pi}-${ni}"><div class="spin"></div>AI生成中…</div>
+        </div>
+        <div class="img-card-actions">
+          <button class="btn" onclick="copyToClipboard('P${pi+1} コマ${ni+1}: ${(panel.dialogue||"").replace(/'/g,"")}')" style="font-size:.67rem;padding:.2rem .4rem">台詞コピー</button>
+          ${sdAvailable?`<button class="btn violet" style="font-size:.67rem;padding:.2rem .4rem" onclick="generatePanelImage(${pi},${ni})">${panel.generated_image?"🔄 再生成":"🎨 AI生成"}</button>`:""}
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  });
+}
+
+// SD: Generate single panel
+async function generatePanelImage(pi,ni){
+  const sp=document.getElementById(`sp-${pi}-${ni}`);
+  if(sp)sp.classList.remove("hidden");
+  try{
+    const res=await fetch("/api/generate-panel",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({page_index:pi,panel_index:ni,
+        lora_name:document.getElementById("loraName").value.trim(),
+        style_prompt:document.getElementById("stylePrompt").value.trim()})});
+    const d=await res.json();
+    if(!res.ok)throw new Error(d.error||"生成失敗");
+    story.pages[pi].panels[ni].generated_image=d.image;
+    renderImgGrid();
+    renderNameCanvas();
+  }catch(e){alert("AI生成エラー: "+e.message);}
+  finally{const s=document.getElementById(`sp-${pi}-${ni}`);if(s)s.classList.add("hidden");}
+}
+
+// SD: generate all
+document.getElementById("btnGenAllImg").onclick=async()=>{
+  const total=story?story.pages.reduce((s,p)=>s+(p.panels||[]).length,0):0;
+  if(!confirm(`全${total}パネルをAI生成します（約${Math.round(total*30/60)}分）。よろしいですか？`))return;
+  const btn=document.getElementById("btnGenAllImg");
+  btn.disabled=true; btn.textContent="🎨 生成中…";
+  try{
+    const res=await fetch("/api/generate-all",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({lora_name:document.getElementById("loraName").value.trim(),style_prompt:document.getElementById("stylePrompt").value.trim()})});
+    const reader=res.body.getReader(),dec=new TextDecoder();
+    let buf="";
+    while(true){
+      const{value,done}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const blocks=buf.split(/\n\n+/);buf=blocks.pop();
+      for(const block of blocks){
+        const em=block.match(/^event:\s*(.+)/m),dm=block.match(/^data:\s*(.+)/m);
+        if(!em||!dm)continue;
+        const ev=em[1].trim(),d=JSON.parse(dm[1]);
+        if(ev==="panel_done"){story.pages[d.page_index].panels[d.panel_index].generated_image=d.image;renderImgGrid();}
+        else if(ev==="done"){toast(`${d.generated}コマ生成完了`);}
+      }
+    }
+  }catch(e){alert("エラー: "+e.message);}
+  finally{btn.disabled=!sdAvailable;btn.textContent="🎨 全パネルAI生成";}
+};
+
+// SD settings
+document.getElementById("btnSDToggle").onclick=()=>document.getElementById("sdSettingsRow").classList.toggle("hidden");
+document.getElementById("btnSDSave").onclick=async()=>{
+  await fetch("/api/sd-config",{method:"PUT",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({sd_url:document.getElementById("sdUrl").value.trim(),lora_name:document.getElementById("loraName").value.trim(),style_prompt:document.getElementById("stylePrompt").value.trim()})})
+  .catch(()=>{});
+  await checkSD(); toast("SD設定を保存しました");
+};
+document.getElementById("btnSDTest").onclick=async()=>{
+  document.getElementById("imgNote").textContent="接続確認中…";
+  await checkSD();
+  document.getElementById("imgNote").textContent=sdAvailable?"✅ Stable Diffusion に接続済み":"❌ 未接続 — AUTOMATIC1111 を起動してください";
+};
+
+// ════════════════════════════════════════════════════════════════════
+// Load story & SD check
+// ════════════════════════════════════════════════════════════════════
+async function loadStory(){
+  try{
+    const res=await fetch("/api/story");
+    if(!res.ok)return;
+    story=await res.json();
+    document.getElementById("storyTitleEl").textContent=story.title||"Untitled";
+    if(story.script&&story.script.premise){
+      document.getElementById("premiseBar").style.display="flex";
+      document.getElementById("premiseText").textContent=story.script.premise;
+    }
+    renderBeatList(currentBeats);
+    renderPageStrip();
+    if(currentPage<(story.pages||[]).length)renderNameCanvas();
+  }catch(e){/* server not running */}
+}
+
+async function checkSD(){
+  try{
+    const r=await fetch("/api/sd-status");
+    const d=await r.json();
+    sdAvailable=d.available;
+    const pill=document.getElementById("sdPill");
+    pill.textContent=sdAvailable?"SD接続済み":"SD未接続";
+    pill.className=`sd-pill${sdAvailable?" on":" off"}`;
+    document.getElementById("btnGenAllImg").disabled=!sdAvailable;
+    if(d.url) document.getElementById("sdUrl").value=d.url;
+    if(d.lora_name) document.getElementById("loraName").value=d.lora_name;
+    if(d.style_prompt) document.getElementById("stylePrompt").value=d.style_prompt;
+  }catch{}
+}
+
+// ════════════════════════════════════════════════════════════════════
+// Utilities
+// ════════════════════════════════════════════════════════════════════
+function toast(msg,type="ok"){
+  const el=document.createElement("div");
+  el.className="toast";
+  el.style.borderColor=type==="err"?"#f87171":type==="warn"?"#fbbf24":"var(--border)";
+  el.textContent=msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),3000);
+}
+function copyToClipboard(text){
+  navigator.clipboard.writeText(text).then(()=>toast("コピーしました")).catch(()=>{});
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// AI チャット (Ollama 連携)
+// ════════════════════════════════════════════════════════════════════
+(function initAIChat(){
+  const msgs   = document.getElementById("chatMsgs");
+  const input  = document.getElementById("chatInput");
+  const sendBtn= document.getElementById("btnChatSend");
+  const ctxLbl = document.getElementById("chatCtxLabel");
+  const ctxBtn = document.getElementById("btnChatCtx");
+  if(!msgs||!input||!sendBtn) return;
+
+  let chatHistory = [];
+  let shareCtx = false;
+
+  ctxBtn?.addEventListener("click",()=>{
+    shareCtx = !shareCtx;
+    ctxBtn.textContent = shareCtx ? "📄 コンテキスト共有中" : "📄 コンテキスト共有";
+    ctxBtn.style.color = shareCtx ? "var(--accent)" : "";
+    ctxLbl.textContent = shareCtx ? `コンテキスト: P${currentPage+1} / ${(story?.pages||[]).length}P` : "コンテキスト: なし";
+  });
+
+  function appendMsg(role, text){
+    const el = document.createElement("div");
+    el.className = `ai-chat-msg ${role}`;
+    el.textContent = text;
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+    return el;
+  }
+
+  async function sendMessage(){
+    const text = input.value.trim();
+    if(!text) return;
+    sendBtn.disabled = true;
+    input.value = "";
+    appendMsg("user", text);
+
+    // コンテキスト構築
+    let systemCtx = "あなたはマンガのネーム制作を支援するAIアシスタントです。ユーザーのマンガ構成・台詞・コマ割りに関する質問に日本語で具体的にアドバイスしてください。";
+    if(shareCtx && story){
+      const pg = story.pages?.[currentPage];
+      const title = story.title||"";
+      const panels = (pg?.panels||[]).map((p,i)=>`コマ${i+1}: [${p.narrative_beat}] ${p.dialogue||"（台詞なし）"} / ${p.visual_description||""}`).join("\n");
+      systemCtx += `\n\n現在編集中のネーム:\nタイトル: ${title}\nページ: ${currentPage+1}/${story.pages?.length||0}\nレイアウト: ${pg?.layout_type||""}\n${panels}`;
+    }
+
+    chatHistory.push({role:"user", content:text});
+    const thinking = appendMsg("thinking","生成中…");
+
+    try{
+      const res = await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          messages: chatHistory,
+          system: systemCtx,
+        })
+      });
+      msgs.removeChild(thinking);
+      if(!res.ok) throw new Error(await res.text());
+
+      // SSE streaming
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf="";
+      const replyEl = appendMsg("assistant","");
+      let fullReply = "";
+      while(true){
+        const {value,done} = await reader.read();
+        if(done) break;
+        buf += dec.decode(value,{stream:true});
+        const lines = buf.split("\n");
+        buf = lines.pop();
+        for(const line of lines){
+          if(line.startsWith("data:")){
+            const chunk = line.slice(5);
+            if(chunk==="[DONE]") break;
+            fullReply += chunk;
+            replyEl.textContent = fullReply;
+            msgs.scrollTop = msgs.scrollHeight;
+          }
+        }
+      }
+      chatHistory.push({role:"assistant", content:fullReply});
+    }catch(e){
+      msgs.removeChild(thinking);
+      appendMsg("system","エラー: "+e.message);
+    }
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keydown",e=>{
+    if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); sendMessage(); }
+    // Auto resize
+    setTimeout(()=>{ input.style.height="auto"; input.style.height=Math.min(input.scrollHeight,96)+"px"; },0);
+  });
+})();
+
+// Init
+loadStory();
+checkSD();
+setInterval(checkSD,30000);
+// Initialize beat list
+renderBeatList(currentBeats);
+</script>
+</body>
+</html>

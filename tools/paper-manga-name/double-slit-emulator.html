@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>二重スリット・ネーム＆エミュレーター</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --panel: #1a2332;
+      --text: #e8eef5;
+      --muted: #8b9cb3;
+      --accent: #5eead4;
+      --hot: #fb7185;
+      --calm: #93c5fd;
+      --beat-起: #fbbf24;
+      --beat-承: #a78bfa;
+      --beat-転: #f472b6;
+      --beat-結: #34d399;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid #2a3545;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    header span { color: var(--muted); font-size: 0.85rem; }
+    main {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      padding: 1rem;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 960px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+    section {
+      background: var(--panel);
+      border-radius: 12px;
+      border: 1px solid #2a3545;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 200px;
+    }
+    section h2 {
+      margin: 0;
+      padding: 0.65rem 1rem;
+      font-size: 0.95rem;
+      background: #141c28;
+      border-bottom: 1px solid #2a3545;
+    }
+    .body-pad { padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem; }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      flex: 1;
+      resize: vertical;
+      font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.45;
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0b1017;
+      color: #e2e8f0;
+    }
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      background: var(--accent);
+      color: #042f2e;
+    }
+    button.secondary {
+      background: #334155;
+      color: var(--text);
+    }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .err {
+      color: #fca5a5;
+      font-size: 0.85rem;
+      white-space: pre-wrap;
+    }
+    .ok { color: var(--accent); font-size: 0.85rem; }
+    #preview {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      max-height: 70vh;
+      overflow: auto;
+      padding-right: 4px;
+    }
+    .page-card {
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.75rem;
+      background: #0b1017;
+    }
+    .page-card h3 {
+      margin: 0 0 0.5rem;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+    .layout-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+    .panel {
+      border-left: 3px solid var(--hot);
+      padding: 0.5rem 0.6rem;
+      margin-bottom: 0.5rem;
+      background: #111827;
+      border-radius: 0 6px 6px 0;
+    }
+    .panel:nth-child(even) { border-left-color: var(--calm); }
+    .panel .d {
+      font-size: 0.82rem;
+      color: #f1f5f9;
+      margin: 0.35rem 0;
+      white-space: pre-wrap;
+    }
+    .panel .meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+      white-space: pre-wrap;
+    }
+    .beat {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      margin-right: 0.35rem;
+      vertical-align: middle;
+    }
+    .beat-起 { background: rgba(251,191,36,0.2); color: var(--beat-起); }
+    .beat-承 { background: rgba(167,139,250,0.2); color: var(--beat-承); }
+    .beat-転 { background: rgba(244,114,182,0.2); color: var(--beat-転); }
+    .beat-結 { background: rgba(52,211,153,0.2); color: var(--beat-結); }
+    .ref-box {
+      margin-top: 0.35rem;
+      padding: 0.4rem 0.5rem;
+      background: #0f172a;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+      border: 1px solid #1e293b;
+    }
+    .ref-box code { color: #fde68a; font-size: 0.7rem; }
+    canvas#sim {
+      width: 100%;
+      height: 280px;
+      background: #05080d;
+      border-radius: 8px;
+      display: block;
+    }
+    .sim-controls label { font-size: 0.85rem; color: var(--muted); }
+    input[type="range"] { width: 160px; vertical-align: middle; }
+    input[type="number"] {
+      width: 4rem;
+      padding: 0.25rem 0.35rem;
+      border-radius: 6px;
+      border: 1px solid #334155;
+      background: #0b1017;
+      color: var(--text);
+    }
+    .legend {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    #default-story-json { display: none; }
+  </style>
+</head>
+<body>
+  <script type="application/json" id="default-story-json">
+{
+  "title": "量子力学の二重スリット実験（初心者向けネーム）",
+  "pages": [
+    {
+      "page_number": 1,
+      "layout_type": "vertical_3",
+      "layout_rationale": "3コマは上→下の縦割で「起→承→転（量子側への落差）」の加速が読みやすい。",
+      "panels": [
+        {
+          "narrative_beat": "起",
+          "visual_description": "研究室。ホワイトボードに「二重スリット」と粗い図。博士がチョークを握りしめ助手に食ってかかるワイド。背景にサッカーゴールのラフが小さくチラ見え。",
+          "dialogue": "いいか！『二重スリット』は量子の入門の入門だ！ここがわかれば世界がひっくり返るぞ！",
+          "character_expression": "【博士】目に炎。唾飛沫まで描く勢い。白衣の袖まくり。",
+          "source_text_ref": {
+            "excerpt": "The double-slit experiment remains the canonical demonstration of wave-particle duality.",
+            "location_label": "Introduction（導入の要旨）",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "承",
+          "visual_description": "助手がコーヒーカップを置き、ボールの線画（サッカーボール）をスケッチして説明するコマ。博士の肩越し。",
+          "dialogue": "落ち着いて。難しい言葉の『電子』は、まず『とにかく小さなサッカーボール』だと思ってください。普通は一つの穴から、一つの道を通ります。",
+          "character_expression": "【助手】穏やかな目。口角はほんの少し上がる。指先は丁寧。",
+          "source_text_ref": {
+            "excerpt": "We model the incident particle as a wavepacket approaching a barrier with two narrow openings.",
+            "location_label": "§2.1 Classical baseline",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "転",
+          "visual_description": "ゴールネットに穴が二つ空いた比喩イラスト。ボールが「同時に両方を検討するような」点線の分岐で描かれるギャグ寄り。",
+          "dialogue": "だが量子のボールは違う！『二つのスリット』を前にすると、古典の常識だけじゃ説明がつかない『干渉』という観客の波が立つんだ！",
+          "character_expression": "【博士】血管浮き目ギラ。助手は額に手を当てて軽い呆れ。",
+          "source_text_ref": {
+            "excerpt": "An interference pattern emerges even when single quanta are sent one at a time.",
+            "location_label": "§3 Results",
+            "link_kind": "verbatim"
+          }
+        }
+      ]
+    },
+    {
+      "page_number": 2,
+      "layout_type": "grid_2x2",
+      "layout_rationale": "4コマは2×2のZ字読みで「起承転結」を1ページに収めるのに最適。",
+      "panels": [
+        {
+          "narrative_beat": "起",
+          "visual_description": "上段左：スタジアムの俯瞰ラフ。観客が人波（縦じま）で揺れるシルエット。スクリーンに縞模様が投影される比喩。",
+          "dialogue": "まず『観測しない』。ボールをたくさん撃つと……スクリーンには縞が出る。スタジアムで観客が揃って立ち上がるみたいな『山と谷』です。",
+          "character_expression": "【助手】淡々とした眼差し。レーザーポインタで縞を示す。",
+          "source_text_ref": {
+            "excerpt": "Accumulated detection events reproduce a fringe pattern consistent with wave interference.",
+            "location_label": "Figure 2 caption",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "承",
+          "visual_description": "上段右：博士が興奮してホワイトボードを叩く。縞模様のスケッチに「干渉！」の文字。",
+          "dialogue": "それが『干渉縞』だ！波がぶつかって強くなったり弱くなったりする、あのノリだ！",
+          "character_expression": "【博士】歯を見せて笑う。髪が逆立ち気味。",
+          "source_text_ref": {
+            "excerpt": "constructive and destructive interference",
+            "location_label": "§3.2 Interference terminology",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "転",
+          "visual_description": "下段左：二つのスリットの図と、スクリーンの縞を矢印で結ぶ。ナレーション風の小文字。",
+          "dialogue": "論文だと『確率振幅の重ね合わせ』なんて言いますが……今は『二つの道のりが、観客席の拍手みたいに重なる』と覚えれば十分です。",
+          "character_expression": "【助手】眼鏡の位置を直す。冷静。",
+          "source_text_ref": {
+            "excerpt": "The total amplitude is the coherent sum of amplitudes associated with each path.",
+            "location_label": "§4 Discussion",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "結",
+          "visual_description": "下段右：博士と助手が横並びでスクリーンを見上げるシルエット。画面いっぱいに縞が光る。",
+          "dialogue": "つまり『どっちのスリットか』を決め打ちしない限り、世界は“波の計算”をしてるってことさ！",
+          "character_expression": "【博士】胸を張る。【助手】小さく頷く。",
+          "source_text_ref": {
+            "excerpt": "which-path information is absent in this configuration",
+            "location_label": "§4.1 Complementarity（要旨）",
+            "link_kind": "inspired_by"
+          }
+        }
+      ]
+    },
+    {
+      "page_number": 3,
+      "layout_type": "vertical_3",
+      "layout_rationale": "中段で『転』（観測）を置き、最下段で『結』に情緒を回収する縦3分割。",
+      "panels": [
+        {
+          "narrative_beat": "起",
+          "visual_description": "スタジアムに防犯カメラ（どちらのゲートを通ったか判別）を追加した比喩図。赤いRECランプ。",
+          "dialogue": "ここからがミソ。もし『どっちのスリットを通ったか』をカメラみたいに必ず記録すると……",
+          "character_expression": "【助手】真剣。目線は読者へ。",
+          "source_text_ref": {
+            "excerpt": "Introducing a which-path detector destroys the interference fringes.",
+            "location_label": "§5 Measurement",
+            "link_kind": "verbatim"
+          }
+        },
+        {
+          "narrative_beat": "転",
+          "visual_description": "スクリーンの縞が消え、左右二つの塊（山）だけになるビフォーアフター対比。",
+          "dialogue": "縞が消えて、二つのまとまりに戻る。いわゆる『波じゃなく粒子っぽく見える』状態へ。",
+          "character_expression": "【博士】一瞬しょんぼり→すぐに燃え直し。「観測が世界を選ぶ！」の勢い。",
+          "source_text_ref": {
+            "excerpt": "The screen distribution converges to a classical two-peak profile.",
+            "location_label": "Figure 4 / §5.2",
+            "link_kind": "paraphrase"
+          }
+        },
+        {
+          "narrative_beat": "結",
+          "visual_description": "二人が窓際で夕焼け。博士は拳を空に掲げ、助手は微笑み。余白に小さく「初心者は比喩でOK」。",
+          "dialogue": "難しい用語は置いといて、まずは『観客の波』と『防犯カメラ』のイメージで掴もう！次は数式の闘技場だ！",
+          "character_expression": "【博士】熱い背中。【助手】優しい目。安心させる表情。",
+          "source_text_ref": {
+            "excerpt": "These observations motivate the broader framework of complementarity.",
+            "location_label": "Conclusion",
+            "link_kind": "inspired_by"
+          }
+        }
+      ]
+    }
+  ]
+}
+  </script>
+
+  <header>
+    <h1>論文→ネーム（骨格）＋ JSONプレビュー ＋ 分布エミュレーター</h1>
+    <span>起承転結に基づくコマ割り提案（スタブ）／将来のAI生成の入力仕様として source_text_ref を表示</span>
+    <span class="legend" style="flex:1 1 100%; margin-top:0.35rem;">
+      <strong>HTTPで確認</strong>：このフォルダで <code>npm start</code> →
+      <a id="linkViewer" href="./viewer.html" style="color:var(--accent);">viewer.html</a>
+      （<code>http://127.0.0.1:5173/viewer.html</code>）。マージ時に最新JSONを Viewer へ渡します（同一オリジン時）。
+    </span>
+  </header>
+  <main>
+    <section>
+      <h2>1ページ内の「起承転結」→ コマ割り提案（論文テキスト入力）</h2>
+      <div class="body-pad">
+        <p class="legend">
+          <strong>ロジック（スタブ）</strong>：論文を意味単位（空行段落→優先、無ければ文末で分割）でチャンク化し、コマ数に均等割付→各コマに <code>narrative_beat</code>（起承転結のレール）を割当→拍の形から <code>layout_type</code> を決定。
+          4コマは <code>grid_2x2</code>、3コマは基本 <code>vertical_3</code>（中央が「転」なら <code>left_tall_right_two</code> で落差を強調）など。
+          各コマの <code>source_text_ref</code> に抜粋と（可能なら）元テキスト内の <code>span</code> を入れ、後段のLLMがセリフを「根拠付き」で埋める前提です。
+        </p>
+        <label class="legend" for="paperInput">任意の論文テキスト（貼り付け）</label>
+        <textarea id="paperInput" spellcheck="false" placeholder="Abstract / 本文をここに貼る…"></textarea>
+        <div class="row">
+          <label class="legend">1ページのコマ数
+            <input type="number" id="panelCount" min="1" max="8" value="4" />
+          </label>
+          <label class="legend">page_number
+            <input type="number" id="pageNumber" min="1" value="1" />
+          </label>
+          <button type="button" id="btnSkeleton">この条件で1ページ骨格JSONを生成</button>
+        </div>
+        <label class="legend" for="skeletonOut">生成結果（pages の1要素として使えるオブジェクト）</label>
+        <textarea id="skeletonOut" spellcheck="false"></textarea>
+        <div class="row">
+          <button type="button" id="btnMerge">骨格をストーリーJSONにマージ</button>
+          <label class="legend" style="display:flex;align-items:center;gap:0.35rem;">
+            <input type="checkbox" id="mergeOpenViewer" checked />
+            マージ後に Viewer を別タブで開く（http(s) 時のみ有効）
+          </label>
+        </div>
+        <p class="legend">
+          マージは <code>page_number</code> が一致するページを<strong>置換</strong>、無ければ <code>pages</code> に<strong>追加</strong>して番号順に並べ替えます。
+          ※ AI接続前のローカルヒューリスティックです。<code>visual_description</code> / <code>dialogue</code> / <code>character_expression</code> は TODO プレースホルダーです。
+        </p>
+      </div>
+    </section>
+
+    <div class="grid-2">
+      <section>
+        <h2>ネームJSON（pages 配列）</h2>
+        <div class="body-pad">
+          <div class="row">
+            <button type="button" id="btnApply">プレビュー更新</button>
+            <button type="button" id="btnReset" class="secondary">初期サンプルに戻す</button>
+          </div>
+          <textarea id="jsonInput" spellcheck="false"></textarea>
+          <div id="jsonMsg"></div>
+        </div>
+      </section>
+      <section>
+        <h2>プレビュー（1ページ＝カード）</h2>
+        <div class="body-pad" style="min-height: 360px;">
+          <div id="preview"></div>
+        </div>
+      </section>
+    </div>
+
+    <section>
+      <h2>スクリーン上の「当たり」エミュレーター（比喩モデル）</h2>
+      <div class="body-pad">
+        <p class="legend">
+          左から「粒子」を発射し、中央の壁の<strong>二つのスリット</strong>を通って右のスクリーンに当たる位置をドットで蓄積します。<br />
+          <strong>観測OFF</strong>：二スリットの干渉で縞が出やすい分布（観客の人波の比喩）。<br />
+          <strong>観測ON</strong>：どちらのスリットを通ったかが毎回決まり、縞が薄れ<strong>二つの山</strong>に近づきます（古典的なイメージに寄る簡易モデル）。
+        </p>
+        <div class="row sim-controls">
+          <label><input type="checkbox" id="observe" /> 観測ON（どちらのスリットか常に判別）</label>
+        </div>
+        <div class="row sim-controls">
+          <label>発射速度 <input type="range" id="rate" min="1" max="40" value="12" /></label>
+          <button type="button" id="btnClear" class="secondary">スクリーンをクリア</button>
+        </div>
+        <canvas id="sim" width="900" height="280"></canvas>
+      </div>
+    </section>
+  </main>
+  <script>
+    const DEFAULT_JSON = document.getElementById("default-story-json").textContent.trim();
+
+    const el = (id) => document.getElementById(id);
+    const jsonInput = el("jsonInput");
+    const jsonMsg = el("jsonMsg");
+    const preview = el("preview");
+    const paperInput = el("paperInput");
+    const skeletonOut = el("skeletonOut");
+
+    jsonInput.value = DEFAULT_JSON;
+
+    /**
+     * 論文テキストを意味単位に分割（段落優先、無ければ文末）。
+     * @param {string} text
+     * @returns {string[]}
+     */
+    function splitSemanticUnits(text) {
+      const norm = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      if (!norm) return [];
+      const paras = norm.split(/\n\s*\n+/).map((s) => s.trim()).filter(Boolean);
+      if (paras.length > 1) return paras;
+      return norm.split(/(?<=[。．!?？])\s+/).map((s) => s.trim()).filter(Boolean);
+    }
+
+    /**
+     * コマ数に合わせて「起承転結」の拍を割り当て（1ページ内のレール）。
+     * @param {number} panelCount
+     * @returns {("起"|"承"|"転"|"結")[]}
+     */
+    function assignNarrativeBeats(panelCount) {
+      if (panelCount <= 0) return [];
+      if (panelCount === 1) return ["結"];
+      if (panelCount === 2) return ["起", "結"];
+      if (panelCount === 3) return ["起", "承", "結"];
+      if (panelCount === 4) return ["起", "承", "転", "結"];
+      const out = ["起", "承"];
+      const extra = panelCount - 4;
+      for (let k = 0; k < extra; k++) out.push("承");
+      out.push("転", "結");
+      return out.slice(0, panelCount);
+    }
+
+    /**
+     * 拍の並びとコマ数から layout_type を提案（AI前の決定論ヒューリスティック）。
+     * @param {number} panelCount
+     * @param {("起"|"承"|"転"|"結")[]} beats
+     */
+    function suggestLayoutType(panelCount, beats) {
+      const mid = beats[Math.floor(beats.length / 2)];
+      if (panelCount === 1) {
+        return { layout_type: "single", rationale: "結のみ：余白を最大化し、余韻で締める。" };
+      }
+      if (panelCount === 2) {
+        return { layout_type: "horizontal_2", rationale: "起と結の対比を左右分割で並置。" };
+      }
+      if (panelCount === 3) {
+        if (beats[1] === "転") {
+          return {
+            layout_type: "left_tall_right_two",
+            rationale: "左の大コマで「起」を確立し、右上下で「転」を落差として置く非対称割り。",
+          };
+        }
+        return {
+          layout_type: "vertical_3",
+          rationale: "上→下の定番読みで、起・承・結の縦の旅路（テンポ均一）。",
+        };
+      }
+      if (panelCount === 4) {
+        return {
+          layout_type: "grid_2x2",
+          rationale: "起承転結と2×2のZ字読みが対応しやすい。",
+        };
+      }
+      if (panelCount === 5) {
+        return {
+          layout_type: "grid_2x3",
+          rationale: "「承」を増やす5コマは縦長グリッドで情報密度を均す。",
+        };
+      }
+      if (panelCount === 6) {
+        return {
+          layout_type: "grid_3x2",
+          rationale: "6コマは3×2で中盤の展開量を担保しつつ、下段で結へ着地。",
+        };
+      }
+      return {
+        layout_type: "custom",
+        rationale: "既定テンプレ外。読み順ロックを最優先し、詳細割りはAIまたは人間に委譲。",
+      };
+    }
+
+    /**
+     * 意味単位をコマ数に均等割付し、各コマの根拠抜粋を作る。
+     * @param {string} norm
+     * @param {number} panelCount
+     */
+    function chunkPaperForPanels(norm, panelCount) {
+      const units = splitSemanticUnits(norm);
+      if (units.length === 0) {
+        return Array.from({ length: panelCount }, () => ({
+          excerpt: "（入力なし）",
+          span: { start: 0, end: 0 },
+        }));
+      }
+      const chunks = [];
+      for (let p = 0; p < panelCount; p++) {
+        const start = Math.floor((p * units.length) / panelCount);
+        const end = Math.floor(((p + 1) * units.length) / panelCount);
+        const slice = units.slice(start, end);
+        const excerpt = slice.join("\n\n").trim().slice(0, 800) || units[Math.min(p, units.length - 1)];
+        const needle = excerpt.slice(0, Math.min(64, excerpt.length));
+        let s0 = norm.indexOf(needle);
+        if (s0 < 0) s0 = Math.floor((p * norm.length) / panelCount);
+        const e0 = Math.min(norm.length, s0 + Math.max(1, excerpt.length));
+        chunks.push({ excerpt, span: { start: s0, end: e0 } });
+      }
+      return chunks;
+    }
+
+    /**
+     * 1ページ分の骨格（LLMがセリフ等を埋める前提）。
+     */
+    function buildSkeletonPage(paperText, pageNumber, panelCount) {
+      const norm = paperText.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim();
+      const beats = assignNarrativeBeats(panelCount);
+      const { layout_type, rationale } = suggestLayoutType(panelCount, beats);
+      const chunks = chunkPaperForPanels(norm, panelCount);
+      const panels = chunks.map((c, i) => ({
+        narrative_beat: beats[i],
+        visual_description: `【${beats[i]}】TODO: 絵の指示（source_text_ref.excerpt に沿った構図）`,
+        dialogue: "",
+        character_expression: "TODO: 【博士】/【助手】の表情指示",
+        source_text_ref: {
+          excerpt: c.excerpt,
+          location_label: `auto chunk ${i + 1}/${panelCount}`,
+          span: c.span,
+          link_kind: "verbatim",
+        },
+      }));
+      return {
+        page_number: pageNumber,
+        layout_type,
+        layout_rationale: rationale,
+        panels,
+      };
+    }
+
+    el("btnSkeleton").addEventListener("click", () => {
+      const n = Math.min(8, Math.max(1, parseInt(el("panelCount").value, 10) || 4));
+      const pn = Math.max(1, parseInt(el("pageNumber").value, 10) || 1);
+      const page = buildSkeletonPage(paperInput.value, pn, n);
+      skeletonOut.value = JSON.stringify(page, null, 2);
+    });
+
+    const LS_STORY_KEY = "manga-name-story-json";
+
+    /**
+     * 骨格（1ページオブジェクト）をストーリーにマージ。
+     * 同じ page_number があれば置換、なければ追加して page_number でソート。
+     */
+    function mergeSkeletonIntoStory(story, skeletonPage) {
+      if (!skeletonPage || typeof skeletonPage !== "object") {
+        throw new Error("骨格JSONが空、またはオブジェクトではありません");
+      }
+      validatePage(skeletonPage, 0);
+      if (!Array.isArray(story.pages)) story.pages = [];
+      const idx = story.pages.findIndex((p) => p.page_number === skeletonPage.page_number);
+      if (idx >= 0) story.pages[idx] = skeletonPage;
+      else {
+        story.pages.push(skeletonPage);
+        story.pages.sort((a, b) => a.page_number - b.page_number);
+      }
+      return story;
+    }
+
+    el("btnMerge").addEventListener("click", () => {
+      jsonMsg.textContent = "";
+      try {
+        const story = JSON.parse(jsonInput.value);
+        if (!story || typeof story !== "object") throw new Error("ストーリーがオブジェクトではありません");
+        if (!Array.isArray(story.pages)) story.pages = [];
+        const skeletonPage = JSON.parse(skeletonOut.value);
+        mergeSkeletonIntoStory(story, skeletonPage);
+        jsonInput.value = JSON.stringify(story, null, 2);
+        applyJson();
+        try {
+          localStorage.setItem(LS_STORY_KEY, jsonInput.value);
+        } catch (e) {
+          /* 容量・プライベートモード等 */
+        }
+        const wantViewer = el("mergeOpenViewer").checked;
+        const canHttp = window.location.protocol === "http:" || window.location.protocol === "https:";
+        if (wantViewer && canHttp) {
+          const v = new URL("viewer.html", window.location.href).href;
+          window.open(v, "_blank", "noopener,noreferrer");
+        }
+        jsonMsg.innerHTML =
+          '<span class="ok">マージ完了。page_number ' +
+          skeletonPage.page_number +
+          " を更新しました。" +
+          (wantViewer && !canHttp
+            ? "（file:// では Viewer の別タブ起動をスキップしました。<code>npm start</code> 推奨）"
+            : "") +
+          "</span>";
+      } catch (e) {
+        jsonMsg.innerHTML = '<span class="err">' + (e && e.message ? e.message : String(e)) + "</span>";
+      }
+    });
+
+    (function syncViewerLink() {
+      const a = document.getElementById("linkViewer");
+      if (a) a.href = new URL("viewer.html", window.location.href).href;
+    })();
+
+    function validatePage(page, i) {
+      const req = ["page_number", "layout_type", "panels"];
+      for (const k of req) {
+        if (!(k in page)) throw new Error(`pages[${i}]: 必須キー "${k}" がありません`);
+      }
+      if (typeof page.page_number !== "number" || page.page_number < 1) {
+        throw new Error(`pages[${i}]: page_number は 1 以上の数値`);
+      }
+      if (!Array.isArray(page.panels) || page.panels.length < 1) {
+        throw new Error(`pages[${i}]: panels は1件以上必要`);
+      }
+      page.panels.forEach((p, j) => {
+        ["visual_description", "dialogue", "character_expression"].forEach((key) => {
+          if (typeof p[key] !== "string") throw new Error(`pages[${i}].panels[${j}]: "${key}" は文字列`);
+        });
+        if (!p.visual_description.trim()) throw new Error(`pages[${i}].panels[${j}]: visual_description が空`);
+        if (p.narrative_beat && !["起", "承", "転", "結"].includes(p.narrative_beat)) {
+          throw new Error(`pages[${i}].panels[${j}]: narrative_beat が不正`);
+        }
+        if (p.source_text_ref !== undefined) {
+          if (typeof p.source_text_ref !== "object" || p.source_text_ref === null) {
+            throw new Error(`pages[${i}].panels[${j}]: source_text_ref はオブジェクト`);
+          }
+          if (typeof p.source_text_ref.excerpt !== "string" || !p.source_text_ref.excerpt.trim()) {
+            throw new Error(`pages[${i}].panels[${j}]: source_text_ref.excerpt が必要`);
+          }
+        }
+      });
+    }
+
+    function beatClass(b) {
+      if (b === "起" || b === "承" || b === "転" || b === "結") return "beat beat-" + b;
+      return "beat";
+    }
+
+    function renderPreview(data) {
+      preview.innerHTML = "";
+      if (!data.pages || !Array.isArray(data.pages)) {
+        throw new Error('ルートに "pages" 配列が必要です');
+      }
+      const warnings = [];
+      data.pages.forEach((page, i) => {
+        validatePage(page, i);
+        page.panels.forEach((p, j) => {
+          if (!p.source_text_ref) warnings.push(`pages[${i}].panels[${j}]: source_text_ref 未設定`);
+        });
+        const card = document.createElement("div");
+        card.className = "page-card";
+        const h3 = document.createElement("h3");
+        h3.textContent = `ページ ${page.page_number}`;
+        const lt = document.createElement("div");
+        lt.className = "layout-tag";
+        lt.textContent = `layout_type: ${page.layout_type} / コマ数: ${page.panels.length}`;
+        card.appendChild(h3);
+        card.appendChild(lt);
+        if (page.layout_rationale) {
+          const lr = document.createElement("div");
+          lr.className = "meta";
+          lr.textContent = "layout_rationale: " + page.layout_rationale;
+          card.appendChild(lr);
+        }
+        page.panels.forEach((p, idx) => {
+          const div = document.createElement("div");
+          div.className = "panel";
+          const meta = document.createElement("div");
+          meta.className = "meta";
+          const beat = p.narrative_beat
+            ? `<span class="${beatClass(p.narrative_beat)}">${p.narrative_beat}</span>`
+            : "";
+          meta.innerHTML = beat + `コマ ${idx + 1}｜${escapeHtml(p.character_expression)}`;
+          const vis = document.createElement("div");
+          vis.className = "meta";
+          vis.textContent = "【絵】" + p.visual_description;
+          const dia = document.createElement("div");
+          dia.className = "d";
+          dia.textContent = p.dialogue ? "セリフ：" + p.dialogue : "（無言）";
+          div.appendChild(meta);
+          div.appendChild(vis);
+          div.appendChild(dia);
+          if (p.source_text_ref) {
+            const ref = document.createElement("div");
+            ref.className = "ref-box";
+            const r = p.source_text_ref;
+            const spanTxt =
+              r.span && typeof r.span.start === "number"
+                ? `<div><code>span</code>: [${r.span.start}, ${r.span.end})</div>`
+                : "";
+            ref.innerHTML =
+              "<strong>source_text_ref</strong>" +
+              (r.location_label ? "<div>location: " + escapeHtml(r.location_label) + "</div>" : "") +
+              (r.link_kind ? "<div>link_kind: " + escapeHtml(r.link_kind) + "</div>" : "") +
+              "<div>excerpt: " + escapeHtml(r.excerpt) + "</div>" +
+              spanTxt;
+            div.appendChild(ref);
+          }
+          card.appendChild(div);
+        });
+        preview.appendChild(card);
+      });
+      if (data.title) {
+        const t = document.createElement("p");
+        t.className = "ok";
+        t.style.marginTop = "0.5rem";
+        t.textContent = "タイトル: " + data.title;
+        preview.insertBefore(t, preview.firstChild);
+      }
+      if (warnings.length) {
+        const w = document.createElement("p");
+        w.className = "err";
+        w.textContent = "警告: " + warnings.slice(0, 6).join(" / ") + (warnings.length > 6 ? " …" : "");
+        preview.insertBefore(w, preview.firstChild);
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function applyJson() {
+      jsonMsg.textContent = "";
+      try {
+        const data = JSON.parse(jsonInput.value);
+        renderPreview(data);
+        jsonMsg.innerHTML =
+          '<span class="ok">パース成功。manga-name-page.schema.json（拡張版：source_text_ref / narrative_beat / layout_rationale）に準拠。</span>';
+      } catch (e) {
+        jsonMsg.innerHTML = '<span class="err">' + (e && e.message ? e.message : String(e)) + "</span>";
+      }
+    }
+
+    el("btnApply").addEventListener("click", applyJson);
+    el("btnReset").addEventListener("click", () => {
+      jsonInput.value = DEFAULT_JSON;
+      applyJson();
+    });
+
+    /* ---- Canvas simulation (pedagogical toy model) ---- */
+    const canvas = el("sim");
+    const ctx = canvas.getContext("2d");
+    const observeEl = el("observe");
+    const rateEl = el("rate");
+    el("btnClear").addEventListener("click", () => {
+      hits.fill(0);
+    });
+
+    const W = canvas.width;
+    const H = canvas.height;
+    const barrierX = W * 0.48;
+    const screenX = W * 0.92;
+    const slitY1 = H * 0.38;
+    const slitY2 = H * 0.62;
+    const slitW = 10;
+    const hits = new Uint32Array(W);
+
+    function drawScene() {
+      ctx.fillStyle = "#05080d";
+      ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = "#1e293b";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(barrierX, 0);
+      ctx.lineTo(barrierX, slitY1 - slitW);
+      ctx.moveTo(barrierX, slitY1 + slitW);
+      ctx.lineTo(barrierX, slitY2 - slitW);
+      ctx.moveTo(barrierX, slitY2 + slitW);
+      ctx.lineTo(barrierX, H);
+      ctx.stroke();
+      ctx.fillStyle = "#334155";
+      ctx.fillRect(barrierX - 3, 0, 6, slitY1 - slitW);
+      ctx.fillRect(barrierX - 3, slitY1 + slitW, 6, slitY2 - slitY1 - 2 * slitW);
+      ctx.fillRect(barrierX - 3, slitY2 + slitW, 6, H - (slitY2 + slitW));
+      ctx.strokeStyle = "#64748b";
+      ctx.beginPath();
+      ctx.moveTo(screenX, 0);
+      ctx.lineTo(screenX, H);
+      ctx.stroke();
+      const m = Math.max(1, ...hits);
+      for (let x = 0; x < W; x++) {
+        if (hits[x] <= 0) continue;
+        const t = hits[x] / m;
+        const h = Math.min(H - 4, 8 + t * (H * 0.85));
+        ctx.fillStyle = observeEl.checked ? "rgba(251,113,133,0.55)" : "rgba(94,234,212,0.45)";
+        ctx.fillRect(x, H - h, 1, h);
+      }
+      ctx.fillStyle = "#f8fafc";
+      ctx.font = "12px sans-serif";
+      ctx.fillText("源", 12, H / 2);
+      ctx.fillText("壁＋二スリット", barrierX - 40, 18);
+      ctx.fillText("スクリーン（ヒストグラム）", screenX - 120, 18);
+    }
+
+    function gaussian() {
+      let u = 0,
+        v = 0;
+      while (u === 0) u = Math.random();
+      while (v === 0) v = Math.random();
+      return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+    }
+
+    function sampleScreenX() {
+      const y1 = slitY1;
+      const y2 = slitY2;
+      const mid = (y1 + y2) / 2;
+      if (observeEl.checked) {
+        const useFirst = Math.random() < 0.5;
+        const ySlit = useFirst ? y1 : y2;
+        const angle = gaussian() * 0.14 + (ySlit - mid) * 0.0008;
+        const hitY = mid + angle * (screenX - barrierX) + gaussian() * 2.2;
+        const t = (hitY - mid) / (H * 0.35);
+        const x = Math.floor(screenX + t * 38 + gaussian() * 1.2);
+        return Math.max(0, Math.min(W - 1, x));
+      }
+      let xPix;
+      for (let k = 0; k < 80; k++) {
+        const phase = (Math.random() * 2 - 1) * 4.2;
+        const env = gaussian() * 1.15;
+        const interf = Math.pow(Math.cos(phase), 2) * (0.55 + Math.random() * 0.45);
+        const base = gaussian() * 0.55;
+        const score = interf + base * 0.25 + env * 0.08;
+        if (Math.random() < score / 1.4) {
+          xPix = Math.floor(screenX + phase * 9 + gaussian() * 1.4);
+          break;
+        }
+      }
+      if (xPix === undefined) xPix = Math.floor(screenX + gaussian() * 10);
+      return Math.max(0, Math.min(W - 1, xPix));
+    }
+
+    function tick() {
+      const n = parseInt(rateEl.value, 10) || 1;
+      for (let i = 0; i < n; i++) {
+        const x = sampleScreenX();
+        hits[x]++;
+      }
+      drawScene();
+      requestAnimationFrame(tick);
+    }
+
+    observeEl.addEventListener("change", () => {
+      hits.fill(0);
+    });
+
+    applyJson();
+    tick();
+  </script>
+</body>
+</html>
