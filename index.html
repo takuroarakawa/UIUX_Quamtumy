@@ -934,19 +934,33 @@
 
             <section id="try-ai" style={{ padding: "2rem 2rem 2.6rem", maxWidth: 960, margin: "0 auto", width: "100%" }}>
               <div style={{ background: "rgba(6,17,11,0.68)", borderRadius: "1.35rem", padding: "1.8rem 1.75rem", boxShadow: "0 10px 40px rgba(0,0,0,0.35)", border: "1px solid rgba(34,197,94,0.22)" }}>
-                <h2 style={{ fontSize: "1.35rem", color: "#eaf8ef", margin: "0 0 0.75rem 0", fontWeight: 1000 }}>
-                  お試し: 論文を漫画ネーム案にする（AI・段階実装）
+                <h2 style={{ fontSize: "1.35rem", color: "#eaf8ef", margin: "0 0 0.5rem 0", fontWeight: 1000 }}>
+                  論文 → 漫画ネーム案（AI パイプライン）
                 </h2>
-                <p style={{ margin: 0, color: "rgba(234,248,239,0.75)", lineHeight: 1.8 }}>
-                  バックエンド <code style={{ color: "#bbf7d0" }}>/api/ai/paper-outline</code> に接続します。API 未設定時は同一オリジンへ飛ぶため、本番では{" "}
-                  <button
-                    type="button"
-                    onClick={() => onOpenAuth && onOpenAuth()}
-                    style={{ background: "none", border: "none", color: "#86efac", textDecoration: "underline", cursor: "pointer", padding: 0, font: "inherit" }}
-                  >
-                    ログイン画面で API 接続先を保存
-                  </button>
-                  を保存してください。PDF からの自動抽出は次フェーズです。
+
+                {/* API 接続ガイダンス */}
+                <div style={{
+                  display: "flex", alignItems: "flex-start", gap: "0.6rem",
+                  background: "rgba(234,179,8,0.12)", border: "1px solid rgba(234,179,8,0.35)",
+                  borderRadius: "0.85rem", padding: "0.7rem 0.9rem", marginBottom: "1rem",
+                }}>
+                  <span style={{ fontSize: "1rem", marginTop: 1 }}>⚡</span>
+                  <p style={{ margin: 0, color: "rgba(234,248,239,0.85)", lineHeight: 1.7, fontSize: "0.9rem" }}>
+                    <strong style={{ color: "#fde68a" }}>API 接続先の設定が必要です。</strong>{" "}
+                    <button
+                      type="button"
+                      onClick={() => onOpenAuth && onOpenAuth()}
+                      style={{ background: "none", border: "none", color: "#86efac", textDecoration: "underline", cursor: "pointer", padding: 0, font: "inherit", fontSize: "0.9rem" }}
+                    >
+                      ログイン画面 (#auth)
+                    </button>{" "}
+                    で <code style={{ color: "#bbf7d0", fontSize: "0.85em" }}>https://drcanvas-api.onrender.com</code> を保存してください。
+                    ローカル開発時は <code style={{ color: "#bbf7d0", fontSize: "0.85em" }}>http://localhost:3000</code>（cargo run が必要）。
+                  </p>
+                </div>
+
+                <p style={{ margin: "0 0 1rem 0", color: "rgba(234,248,239,0.6)", lineHeight: 1.7, fontSize: "0.88rem" }}>
+                  テキスト貼り付けまたは PDF をアップロード。B1（セクション分割）→ B2（チャンク）→ B3（要約）→ C3（ネーム生成）の順に処理します。
                 </p>
 
                 <div style={{ marginTop: "1rem" }}>
