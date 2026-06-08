@@ -597,7 +597,10 @@ pub async fn ingest_job(
     let hash = format!("{:x}", Sha256::digest(text.as_bytes()));
 
     let existing: Option<Uuid> = sqlx::query_scalar(
-        "SELECT id FROM ai_jobs WHERE input_text_hash = $1 AND status = 'completed' ORDER BY completed_at DESC LIMIT 1"
+        r#"SELECT j.id FROM ai_jobs j
+           JOIN ai_artifacts a ON a.job_id = j.id AND a.stage = 'C3_name_generate'
+           WHERE j.input_text_hash = $1 AND j.status = 'completed' AND a.model_used != 'mock'
+           ORDER BY j.completed_at DESC LIMIT 1"#
     )
     .bind(&hash)
     .fetch_optional(&state.pool)
