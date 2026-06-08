@@ -802,12 +802,15 @@ struct PaperBrief {
 
 /// B3: チャンク配列からPaperBriefを生成する（Gemini → OpenAI → mock の優先順）
 async fn b3_summarize(chunks: &[String], title: Option<&str>) -> PaperBrief {
-    if let Some(brief) = try_gemini_summarize(chunks, title).await {
-        return brief;
+    match try_gemini_summarize(chunks, title).await {
+        Some(brief) => { tracing::info!("B3: gemini 成功"); return brief; }
+        None => tracing::warn!("B3: gemini 失敗 → openai/mock にフォールバック"),
     }
     if let Some(brief) = try_openai_summarize(chunks, title).await {
+        tracing::info!("B3: openai 成功");
         return brief;
     }
+    tracing::warn!("B3: openai も失敗 → mock");
     mock_summarize(chunks, title)
 }
 
@@ -1236,6 +1239,15 @@ async fn run_pipeline(
     text: String,
     title: Option<String>,
 ) {
+    // ── API キー診断ログ ────────────────────────────────────────────────
+    let has_gemini = std::env::var("GEMINI_API_KEY")
+        .map(|k| !k.trim().is_empty())
+        .unwrap_or(false);
+    let has_openai = std::env::var("OPENAI_API_KEY")
+        .map(|k| !k.trim().is_empty())
+        .unwrap_or(false);
+    tracing::info!("[job {}] pipeline start — gemini_key={} openai_key={}", job_id, has_gemini, has_openai);
+
     // ── status → running ────────────────────────────────────────────────
     if let Err(e) = sqlx::query(
         "UPDATE ai_jobs SET status='running', current_stage='B1_segment', started_at=NOW(), updated_at=NOW() WHERE id=$1"
