@@ -1,5 +1,6 @@
 ### Quantumy Auth API（VS Code REST Client / IntelliJ HTTP Client 用）
 @base = http://localhost:3000
+@token = （ログイン応答の access_token を貼る）
 
 ### 登録
 POST {{base}}/api/register
@@ -19,3 +20,24 @@ Content-Type: application/json
   "email": "reader@example.com",
   "password": "secret123"
 }
+
+### 論文ネーム案（テキスト）
+POST {{base}}/api/ai/paper-outline
+Content-Type: application/json
+
+{
+  "text": "We propose a novel method for ...",
+  "title": "optional-title"
+}
+
+### Stripe Checkout セッション（要 Bearer・artwork_id は DB の UUID）
+POST {{base}}/api/checkout/session
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "artwork_id": "00000000-0000-0000-0000-000000000000"
+}
+
+### PDF→テキスト（multipart は curl 推奨）
+# curl -s -F "file=@./sample.pdf" {{base}}/api/ai/pdf-text

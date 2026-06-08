@@ -20,8 +20,8 @@ use crate::auth::issue_token;
 use crate::error::AppError;
 use crate::models::{
     AuthResponse, IngestRequest, IngestResponse, JobStatusResponse,
-    LoginRequest, PaperOutlineRequest, PaperOutlineResponse, RegisterRequest,
-    WorkProgressResponse, WorkProgressUpdateRequest,
+    LoginRequest, PaperOutlineRequest, PaperOutlineResponse, RefineRequest, RefineResponse,
+    RegisterRequest, WorkProgressResponse, WorkProgressUpdateRequest,
 };
 use crate::AppState;
 
@@ -1570,4 +1570,129 @@ pub async fn get_job_status(
                 .into_response()
         }
     }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POST /api/ai/refine — チャット指示で漫画企画書を修正（同期・DB 不使用）
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// POST /api/ai/refine
+///
+/// 既に生成された企画書（テーマ・キャラ・粗筋・起承転結）に対して
+/// ユーザーの修正指示（instruction）を反映させた版を即時返す。
+/// DB ジョブキューを使わず Gemini に直接投げるため、ポーリング不要。
+pub async fn refine_content(
+    State(_state): State<AppState>,
+    Json(payload): Json<RefineRequest>,
+) -> impl IntoResponse {
+    let key = match std::env::var("GEMINI_API_KEY")
+        .ok()
+        .filter(|k| !k.trim().is_empty())
+    {
+        Some(k) => k,
+        None => {
+            return (
+                StatusCode::SERVICE_UNAVAILABLE,
+                Json(RefineResponse {
+                    ok: false,
+                    message: "GEMINI_API_KEY が未設定です。Render の環境変数を確認してください。".into(),
+                    source: "none".into(),
+                    theme_line: None,
+                    characters: vec![],
+                    synopsis: None,
+                    panel_beats: vec![],
+                }),
+            )
+                .into_response();
+        }
+    };
+
+    let model = std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-2.5-flash".into());
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(120))
+        .build()
+        .unwrap_or_default();
+
+    let tone = payload.tone.as_deref().unwrap_or("ポップサイエンス");
+    let chars_json = serde_json::to_string(&payload.characters).unwrap_or_else(|_| "[]".into());
+    let beats = &payload.panel_beats;
+
+    let prompt = format!(
+        r#"あなたは漫画編集者です。以下の漫画企画書を、ユーザーの修正指示に従って改善してください。
+変更不要な部分は元のまま維持し、指示に関係する部分のみ修正してください。
+厳密なJSONのみ出力（前後に説明文・マークダウン記号なし）。
+
+【現在の企画書】
+トーン: {}
+テーマ一行: {}
+キャラクター: {}
+粗筋（3幕）: {}
+ネーム構成（起承転結）:
+  起: {}
+  承: {}
+  転: {}
+  結: {}
+
+【修正指示】
+{}
+
+【出力キー（全て含めること）】
+"theme_line": string（テーマ一行、30文字以内）
+"characters": array of {{"name":string,"role":string,"description":string}}
+"synopsis": string（3幕構成の粗筋、150〜300文字）
+"panel_beats": 4要素のarray（起→承→転→結の順、各30〜60文字）"#,
+        tone,
+        payload.theme_line.as_deref().unwrap_or(""),
+        chars_json,
+        payload.synopsis.as_deref().unwrap_or(""),
+        beats.get(0).map(String::as_str).unwrap_or(""),
+        beats.get(1).map(String::as_str).unwrap_or(""),
+        beats.get(2).map(String::as_str).unwrap_or(""),
+        beats.get(3).map(String::as_str).unwrap_or(""),
+        payload.instruction,
+    );
+
+    let content = match gemini_generate(&client, &key, &model, &prompt, true).await {
+        Some(c) => c,
+        None => {
+            return (
+                StatusCode::SERVICE_UNAVAILABLE,
+                Json(RefineResponse {
+                    ok: false,
+                    message: "Gemini API の呼び出しに失敗しました（429 または接続エラー）。しばらく待ってから再試行してください。".into(),
+                    source: "none".into(),
+                    theme_line: None,
+                    characters: vec![],
+                    synopsis: None,
+                    panel_beats: vec![],
+                }),
+            )
+                .into_response();
+        }
+    };
+
+    #[derive(serde::Deserialize, Default)]
+    struct RefinedJson {
+        #[serde(default)] theme_line: Option<String>,
+        #[serde(default)] characters: Vec<crate::models::MangaCharacter>,
+        #[serde(default)] synopsis: Option<String>,
+        #[serde(default)] panel_beats: Vec<String>,
+    }
+
+    let refined: RefinedJson = serde_json::from_str(&content).unwrap_or_default();
+    tracing::info!("[refine] 完了: instruction={}", &payload.instruction.chars().take(50).collect::<String>());
+
+    (
+        StatusCode::OK,
+        Json(RefineResponse {
+            ok: true,
+            message: "ok".into(),
+            source: "gemini".into(),
+            theme_line: refined.theme_line,
+            characters: refined.characters,
+            synopsis: refined.synopsis,
+            panel_beats: refined.panel_beats,
+        }),
+    )
+        .into_response()
 }

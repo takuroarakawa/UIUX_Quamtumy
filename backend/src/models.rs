@@ -349,6 +349,44 @@ pub struct AiArtifact {
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
+/// POST /api/ai/refine — 既存の漫画企画書にチャット指示で修正を加える（同期・DB 不使用）
+#[derive(Debug, Deserialize)]
+pub struct RefineRequest {
+    /// 漫画化トーン
+    #[serde(default)]
+    pub tone: Option<String>,
+    /// ユーザーの修正指示（例: "もっと熱血にして"）
+    pub instruction: String,
+    /// 現在のテーマ一行
+    #[serde(default)]
+    pub theme_line: Option<String>,
+    /// 現在のキャラクター
+    #[serde(default)]
+    pub characters: Vec<MangaCharacter>,
+    /// 現在の粗筋
+    #[serde(default)]
+    pub synopsis: Option<String>,
+    /// 現在のネーム構成（起承転結 4要素）
+    #[serde(default)]
+    pub panel_beats: Vec<String>,
+}
+
+/// POST /api/ai/refine レスポンス
+#[derive(Debug, Serialize)]
+pub struct RefineResponse {
+    pub ok: bool,
+    pub message: String,
+    pub source: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub theme_line: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub characters: Vec<MangaCharacter>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub synopsis: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub panel_beats: Vec<String>,
+}
+
 /// GET /api/ai/jobs/:id — ポーリング用レスポンス
 #[derive(Debug, Serialize)]
 pub struct JobStatusResponse {

@@ -1,109 +1,31 @@
 openapi: 3.0.3
 info:
-  title: Quantumy Auth API
-  description: ユーザー登録・ログイン（Doctor Canvas バックエンド）
-  version: 0.1.0
+  title: Quantumy / Dr.CANVAS API
+  description: |
+    ユーザー認証・作品カタログ・コミュニティ・AI パイプライン・決済を束ねる
+    Dr.CANVAS バックエンド（Rust / Axum）の API 仕様。
+    フロント（index.html） ↔ バックエンド（Rust）の契約書として維持する。
+  version: 0.3.0
 servers:
   - url: http://localhost:3000
-    description: ローカル
+    description: ローカル開発
+  - url: https://drcanvas-api.fly.dev
+    description: 本番（Fly.io）
 
-paths:
-  /health:
-    get:
-      summary: 生存確認（DB 非依存）
-      responses:
-        '200':
-          description: プロセス正常
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: string
-                    example: ok
-                  service:
-                    type: string
-                    example: quantumy-api
-
-  /api/register:
-    post:
-      summary: ユーザー登録
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterRequest'
-      responses:
-        '201':
-          description: 登録成功
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '400':
-          description: 入力不正
-        '409':
-          description: メール重複
-
-  /api/login:
-    post:
-      summary: ログイン
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/LoginRequest'
-      responses:
-        '200':
-          description: 成功（パスワード一致）
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '401':
-          description: メール不明またはパスワード不一致
-
-  /api/works/{work_key}/progress:
-    parameters:
-      - name: work_key
-        in: path
-        required: true
-        schema:
-          type: string
-    get:
-      summary: 作品進捗（最後のスプレッド）取得
-      responses:
-        '200':
-          description: 成功
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkProgressResponse'
-        '401':
-          description: 認証エラー
-    post:
-      summary: 作品進捗（最後のスプレッド）保存
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkProgressUpdateRequest'
-      responses:
-        '200':
-          description: 成功
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkProgressResponse'
-        '400':
-          description: リクエスト不正
-
+# ─────────────────────────────────────────────────────────────────────────────
+# セキュリティ定義
+# ─────────────────────────────────────────────────────────────────────────────
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  # ─── 共通スキーマ ────────────────────────────────────────────────────────
   schemas:
+
+    # ── 認証 ──────────────────────────────────────────────────────────────
     RegisterRequest:
       type: object
       required: [email, password]
@@ -111,11 +33,14 @@ components:
         email:
           type: string
           format: email
+          example: user@example.com
         password:
           type: string
           minLength: 8
+          example: password1234
         display_name:
           type: string
+          example: 博士漫画家
 
     LoginRequest:
       type: object
@@ -123,6 +48,7 @@ components:
       properties:
         email:
           type: string
+          format: email
         password:
           type: string
 
@@ -143,8 +69,10 @@ components:
         expires_in_secs:
           type: integer
           format: int64
-          description: ログイン成功時のみ。アクセストークンの有効秒数。
+          description: ログイン成功時のみ。JWT の有効秒数。
+          nullable: true
 
+    # ── 進捗 ──────────────────────────────────────────────────────────────
     WorkProgressUpdateRequest:
       type: object
       required: [last_spread_index]
@@ -163,3 +91,926 @@ components:
         last_spread_index:
           type: integer
 
+    # ── コミュニティ ───────────────────────────────────────────────────────
+    CommentItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        user_id:
+          type: string
+          format: uuid
+        display_name:
+          type: string
+        body:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CommentsResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentItem'
+
+    PostCommentRequest:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          maxLength: 1000
+          example: 量子もつれの説明がわかりやすかった！
+
+    PostCommentResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        id:
+          type: string
+          format: uuid
+
+    FavoriteResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        favorited:
+          type: boolean
+          description: true=お気に入り登録済み / false=解除済み
+
+    FavoriteItem:
+      type: object
+      properties:
+        work_key:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    FavoritesListResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        favorites:
+          type: array
+          items:
+            $ref: '#/components/schemas/FavoriteItem'
+
+    DashboardProgressItem:
+      type: object
+      properties:
+        work_key:
+          type: string
+        last_spread_index:
+          type: integer
+        updated_at:
+          type: string
+          format: date-time
+
+    DashboardResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        progress:
+          type: array
+          items:
+            $ref: '#/components/schemas/DashboardProgressItem'
+        favorites:
+          type: array
+          items:
+            $ref: '#/components/schemas/FavoriteItem'
+        total_works_read:
+          type: integer
+          format: int64
+        total_favorites:
+          type: integer
+          format: int64
+
+    # ── カタログ・作品 ────────────────────────────────────────────────────
+    CatalogWorkSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        doi:
+          type: string
+        thumbnail_url:
+          type: string
+          nullable: true
+        research_field:
+          type: string
+        category:
+          type: string
+        academic_major:
+          type: string
+        academic_minor:
+          type: string
+        cover_image_url:
+          type: string
+          nullable: true
+        price:
+          type: integer
+          format: int64
+          description: 価格（円）。0 = 無料
+        is_published:
+          type: boolean
+        content_json:
+          type: object
+          description: ページ画像 URL 等を含む自由形式 JSON
+        created_at:
+          type: string
+          format: date-time
+          nullable: true
+
+    CatalogListResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogWorkSummary'
+
+    ArtworkDetailResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        artwork:
+          $ref: '#/components/schemas/CatalogWorkSummary'
+
+    ArtworkMineResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CatalogWorkSummary'
+
+    CreateArtworkRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        doi:
+          type: string
+          nullable: true
+        thumbnail_url:
+          type: string
+          nullable: true
+        price:
+          type: integer
+          format: int64
+          default: 0
+        content_json:
+          type: object
+          nullable: true
+
+    PatchArtworkRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        doi:
+          type: string
+          nullable: true
+        thumbnail_url:
+          type: string
+          nullable: true
+        price:
+          type: integer
+          format: int64
+          nullable: true
+        content_json:
+          type: object
+          nullable: true
+        is_published:
+          type: boolean
+          nullable: true
+
+    # ── AI パイプライン ────────────────────────────────────────────────────
+    MangaCharacter:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          description: 主役 / ライバル / 師匠 など
+        description:
+          type: string
+
+    PaperOutlineRequest:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          maxLength: 80000
+          description: 論文テキスト（抄録〜全文）
+        title:
+          type: string
+          nullable: true
+
+    PaperOutlineResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        source:
+          type: string
+          enum: [openai, gemini, mock, none]
+        outline_markdown:
+          type: string
+        panel_beats:
+          type: array
+          items:
+            type: string
+          minItems: 4
+          maxItems: 4
+        theme_line:
+          type: string
+          nullable: true
+        characters:
+          type: array
+          items:
+            $ref: '#/components/schemas/MangaCharacter'
+        synopsis:
+          type: string
+          nullable: true
+        manga_tone:
+          type: string
+          nullable: true
+
+    IngestRequest:
+      type: object
+      properties:
+        text:
+          type: string
+          maxLength: 120000
+          description: 貼り付けテキスト
+        title:
+          type: string
+          nullable: true
+        doi:
+          type: string
+          nullable: true
+        manga_tone:
+          type: string
+          nullable: true
+          enum: [少年マンガ, SF, 社会派, ホラー, 恋愛]
+          description: 省略時はポップサイエンス
+
+    IngestResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        job_id:
+          type: string
+          format: uuid
+        message:
+          type: string
+
+    JobStatusResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        job_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending, running, completed, failed, not_found, error]
+        current_stage:
+          type: string
+          nullable: true
+          enum: [B1_segment, B2_chunk, B3_summarize, C3_name_generate]
+          description: 処理中のステージ。完了・待機中は null
+        error_message:
+          type: string
+          nullable: true
+        story_json:
+          type: object
+          nullable: true
+          description: 完了時のみ。最終 MangaNameStory（インライン成果物）
+        story_key:
+          type: string
+          nullable: true
+        model_used:
+          type: string
+          nullable: true
+
+    PdfTextResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        text:
+          type: string
+        truncated:
+          type: boolean
+
+    # ── 決済 ──────────────────────────────────────────────────────────────
+    CheckoutSessionRequest:
+      type: object
+      required: [artwork_id]
+      properties:
+        artwork_id:
+          type: string
+          format: uuid
+
+    CheckoutSessionResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        message:
+          type: string
+        checkout_url:
+          type: string
+          nullable: true
+          description: Stripe Checkout ページ URL
+        session_id:
+          type: string
+          nullable: true
+
+    # ── 共通エラー ─────────────────────────────────────────────────────────
+    # AppError（error.rs）が返す形式: { "error": "...", "code": "bad_request" }
+    # ※ auth 系ハンドラのみ { ok: false, message: "..." } を返す点に注意
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: エラーの詳細メッセージ
+          example: タイトルを入力してください。
+        code:
+          type: string
+          description: エラー種別コード
+          enum: [bad_request, unauthorized, forbidden, not_found, conflict, stripe, db, internal]
+          example: bad_request
+
+# ─────────────────────────────────────────────────────────────────────────────
+# パス定義
+# ─────────────────────────────────────────────────────────────────────────────
+paths:
+
+  # ── ヘルスチェック ────────────────────────────────────────────────────────
+  /health:
+    get:
+      tags: [System]
+      summary: 生存確認（DB 非依存）
+      responses:
+        '200':
+          description: プロセス正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  service:
+                    type: string
+                    example: quantumy-api
+
+  # ── 認証 ─────────────────────────────────────────────────────────────────
+  /api/register:
+    post:
+      tags: [Auth]
+      summary: ユーザー登録
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: 入力不正（メール形式 / パスワード短すぎ）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '409':
+          description: メールアドレス重複
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /api/login:
+    post:
+      tags: [Auth]
+      summary: ログイン（JWT 発行）
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: メール不明またはパスワード不一致
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  # ── 進捗 ─────────────────────────────────────────────────────────────────
+  /api/works/{work_key}/progress:
+    parameters:
+      - name: work_key
+        in: path
+        required: true
+        schema:
+          type: string
+        example: quantum-entanglement-01
+    get:
+      tags: [Progress]
+      summary: 最後に読んだスプレッド位置を取得（要 Bearer）
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkProgressResponse'
+        '401':
+          description: 認証エラー
+    post:
+      tags: [Progress]
+      summary: 最後に読んだスプレッド位置を保存（要 Bearer）
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkProgressUpdateRequest'
+      responses:
+        '200':
+          description: 保存成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkProgressResponse'
+        '400':
+          description: last_spread_index が負
+        '401':
+          description: 認証エラー
+
+  # ── コミュニティ ──────────────────────────────────────────────────────────
+  /api/works/{work_key}/comments:
+    parameters:
+      - name: work_key
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Community]
+      summary: コメント一覧取得（認証不要）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsResponse'
+    post:
+      tags: [Community]
+      summary: コメント投稿（要 Bearer）
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostCommentRequest'
+      responses:
+        '201':
+          description: 投稿成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PostCommentResponse'
+        '400':
+          description: body が空または長すぎ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/works/{work_key}/favorite:
+    parameters:
+      - name: work_key
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags: [Community]
+      summary: お気に入り状態を取得（要 Bearer）
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteResponse'
+        '401':
+          description: 認証エラー
+    post:
+      tags: [Community]
+      summary: お気に入りをトグル（要 Bearer）
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: トグル成功（favorited=true で登録、false で解除）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoriteResponse'
+        '401':
+          description: 認証エラー
+
+  /api/users/me/favorites:
+    get:
+      tags: [Community]
+      summary: 自分のお気に入り一覧（要 Bearer）
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FavoritesListResponse'
+        '401':
+          description: 認証エラー
+
+  /api/users/me/dashboard:
+    get:
+      tags: [Community]
+      summary: 読書サマリー（進捗＋お気に入り集計）（要 Bearer）
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardResponse'
+        '401':
+          description: 認証エラー
+
+  # ── カタログ（公開） ─────────────────────────────────────────────────────
+  /api/catalog/works:
+    get:
+      tags: [Catalog]
+      summary: 公開作品一覧（認証不要）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogListResponse'
+
+  /api/catalog/works/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Catalog]
+      summary: 公開作品詳細（認証不要）
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtworkDetailResponse'
+        '404':
+          description: 作品が見つからない
+
+  # ── 著者スタジオ（要 Bearer） ─────────────────────────────────────────────
+  /api/artworks:
+    post:
+      tags: [Studio]
+      summary: 作品を新規作成（要 Bearer）
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateArtworkRequest'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtworkDetailResponse'
+        '400':
+          description: 入力不正（タイトル空など）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/artworks/mine:
+    get:
+      tags: [Studio]
+      summary: 自分の作品一覧（要 Bearer）
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtworkMineResponse'
+        '401':
+          description: 認証エラー
+
+  /api/artworks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    patch:
+      tags: [Studio]
+      summary: 作品を更新（要 Bearer・自分の作品のみ）
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchArtworkRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtworkDetailResponse'
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 他ユーザーの作品への操作
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 作品が見つからない
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ── AI — レガシー単発エンドポイント ─────────────────────────────────────
+  /api/ai/paper-outline:
+    post:
+      tags: [AI]
+      summary: |
+        論文テキスト→漫画ネーム案（同期・MVP用レガシー）
+        ⚠️ 新規実装は /api/ai/ingest（非同期パイプライン）を推奨
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaperOutlineRequest'
+      responses:
+        '200':
+          description: 成功（OPENAI_API_KEY 未設定時はモック）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaperOutlineResponse'
+        '400':
+          description: text が空または 80000 文字超
+
+  # ── AI — 非同期パイプライン（B1→B2→B3→C3） ────────────────────────────
+  /api/ai/ingest:
+    post:
+      tags: [AI]
+      summary: |
+        論文テキストを受け取り非同期ジョブを作成（即返却）
+        - 重複排除: 同一テキスト×同一トーンの完了ジョブを再利用
+        - GET /api/ai/jobs/:id でポーリング
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngestRequest'
+      responses:
+        '202':
+          description: ジョブ受付成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestResponse'
+        '200':
+          description: 同一テキストの完了済みジョブを再利用
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IngestResponse'
+        '400':
+          description: text が空または 120000 文字超
+
+  /api/ai/jobs/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [AI]
+      summary: |
+        ジョブの進捗・結果を取得（ポーリング用）
+        - status が completed かつ story_json あり → 漫画ネーム案取得完了
+        - フロントは 3〜5 秒間隔でポーリング推奨
+      responses:
+        '200':
+          description: 成功（not_found / error も 200 で返る場合あり）
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatusResponse'
+        '404':
+          description: ジョブが見つからない
+
+  /api/ai/pdf-text:
+    post:
+      tags: [AI]
+      summary: |
+        PDF アップロード→テキスト抽出（テキストレイヤー付き PDF のみ）
+        - Content-Type: application/pdf で生バイナリを POST する（multipart 不使用）
+        - スキャン PDF（画像のみ）は未対応
+        - アプリ層上限: 20MB
+      requestBody:
+        required: true
+        content:
+          application/pdf:
+            schema:
+              type: string
+              format: binary
+              description: PDF ファイルの生バイナリ（%PDF マジックバイト必須）
+      responses:
+        '200':
+          description: 抽出成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PdfTextResponse'
+        '400':
+          description: 空ファイル / PDF 以外 / テキストレイヤーなし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: ファイルサイズ超過（20MB 上限）
+
+  # ── 決済 ─────────────────────────────────────────────────────────────────
+  /api/checkout/session:
+    post:
+      tags: [Checkout]
+      summary: Stripe Checkout セッション URL を発行（要 Bearer）
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutSessionRequest'
+      responses:
+        '200':
+          description: Checkout URL 発行成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutSessionResponse'
+        '400':
+          description: artwork_id 不正
+        '401':
+          description: 認証エラー
+        '404':
+          description: 作品が見つからない
+
+  /api/webhooks/stripe:
+    post:
+      tags: [Checkout]
+      summary: |
+        Stripe Webhook（Stripe サーバー → API サーバー専用）
+        - Stripe-Signature ヘッダで HMAC-SHA256 署名検証
+        - checkout.session.completed → artwork_purchases を paid に更新
+      parameters:
+        - name: Stripe-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Stripe イベントオブジェクト（生 JSON）
+      responses:
+        '200':
+          description: 処理成功
+        '400':
+          description: 署名検証失敗

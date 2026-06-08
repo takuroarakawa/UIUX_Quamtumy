@@ -132,7 +132,21 @@
 
 ---
 
-## 6. まとめ
+## 6. 技術構成・実装状況（社内メモ）
+
+*融資書の本体とは別枠の、開発・運用向けメモです。*
+
+| 領域 | 採用技術 | 状況（概要） |
+|------|----------|----------------|
+| フロント | Vercel 静的ホスティング、`index.html` + React CDN | 作品一覧・リーダー・認証 UI・進捗（ゲストは localStorage、ログイン後は API） |
+| API | Fly.io 上の Rust（Axum）+ PostgreSQL（Neon） | 登録・ログイン・JWT・進捗 API 稼働。レート制限・CORS allowlist |
+| 決済 | Stripe（予定） | DB マイグレーションに `artworks` / 購入テーブル案あり。アプリ接続は [docs/STRIPE.md](docs/STRIPE.md) の順で実装予定 |
+| 論文 AI | OpenAI API 任意（`OPENAI_API_KEY`） | `POST /api/ai/paper-outline` でネーム案（未設定時はモック）。詳細は [docs/PAPER_TO_MANGA_AI.md](docs/PAPER_TO_MANGA_AI.md) |
+| 運用 | Fly / Neon / ローカル secrets | [docs/OPERATIONS.md](docs/OPERATIONS.md) |
+
+---
+
+## 7. まとめ
 
 合同会社YUKAWAは、**日本のSTEAM教育とITの遅れを、マンガと高パフォーマンスな技術で打破する**ことを目指し、博士号保持者らが研究をマンガで発表できるプラットフォーム「Doctor Canvas」を運営します。
 
@@ -146,3 +160,5 @@
 ---
 
 *本草案は創業計画書のたたき台です。公庫所定の書式に転記する際は、必要に応じて文言・数値・日付を調整してください。*
+
+※ 章番号: 旧「6. まとめ」は上記のとおり **「7. まとめ」** に繰り下げ、**「6. 技術構成・実装状況」** を挿入しています。

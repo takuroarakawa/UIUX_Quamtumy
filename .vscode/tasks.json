@@ -1,0 +1,109 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Quantumy: UI プレビュー (http://127.0.0.1:5173) — Node",
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "type": "shell",
+      "command": "npx --yes serve@14 . -l 5173 --no-clipboard",
+      "windows": {
+        "command": "npx.cmd --yes serve@14 . -l 5173 --no-clipboard"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Quantumy: UI プレビュー — Python（python が通る場合のみ）",
+      "type": "shell",
+      "command": "python -m http.server 5173",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Dr. CANVAS: paper-manga ツール (http://127.0.0.1:5174)",
+      "type": "shell",
+      "command": "python server.py",
+      "windows": {
+        "command": "python server.py"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/tools/paper-manga-name"
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "dedicated",
+        "focus": false
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Dr. CANVAS: Viewer を開く",
+      "type": "shell",
+      "command": "Start-Sleep 1; Start-Process 'http://127.0.0.1:5174/viewer.html'",
+      "windows": {
+        "command": "Start-Sleep 1; Start-Process 'http://127.0.0.1:5174/viewer.html'"
+      },
+      "dependsOn": ["Dr. CANVAS: paper-manga ツール (http://127.0.0.1:5174)"],
+      "dependsOrder": "parallel",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared",
+        "close": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Quantumy: API (backend cargo run)",
+      "type": "shell",
+      "command": "cargo run",
+      "windows": {
+        "command": "cargo.exe run"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}/backend",
+        "env": {
+          "RUST_LOG": "info,tower_http=debug"
+        }
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      },
+      "problemMatcher": [
+        {
+          "pattern": {
+            "regexp": "^error",
+            "file": 1,
+            "line": 2,
+            "message": 3
+          },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "Compiling",
+            "endsPattern": "listening on"
+          }
+        }
+      ]
+    }
+  ]
+}
