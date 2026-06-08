@@ -1194,25 +1194,35 @@ pub async fn get_job_status(
     State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> impl IntoResponse {
-    // 【なぜビューを使うか】
-    // 「最新の C3_name_generate artifact」を毎回サブクエリで書くのは冗長。
-    // v_job_name_result ビューに DISTINCT ON でカプセル化しておけば、
-    // 将来リトライが増えても「最新1件」の意味が DB 側で保証される。
-    let row = sqlx::query!(
+    // 【なぜ query() を使うか】
+    // sqlx::query!() マクロはビルド時に DB への接続が必要（コンパイル時検査）。
+    // Docker ビルド環境（Render など）では DB に繋がらないため、
+    // ランタイム検査の sqlx::query() を使う。
+    #[derive(sqlx::FromRow)]
+    struct JobRow {
+        status: String,
+        current_stage: Option<String>,
+        error_message: Option<String>,
+        story_json: Option<serde_json::Value>,
+        story_key: Option<String>,
+        model_used: Option<String>,
+    }
+
+    let row = sqlx::query_as::<_, JobRow>(
         r#"
         SELECT
             j.status,
             j.current_stage,
             j.error_message,
-            r.story_json   AS "story_json: serde_json::Value",
+            r.story_json,
             r.story_key,
             r.model_used
         FROM ai_jobs j
         LEFT JOIN v_job_name_result r ON r.job_id = j.id
         WHERE j.id = $1
         "#,
-        id
     )
+    .bind(id)
     .fetch_optional(&state.pool)
     .await;
 
