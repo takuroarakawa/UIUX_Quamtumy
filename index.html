@@ -1058,11 +1058,11 @@
                                 }
                                 const trimmed = fullText.trim();
                                 if (!trimmed) throw new Error("テキストレイヤーが見つかりません（スキャンPDFは未対応）");
-                                const truncated = trimmed.length > 80000;
-                                setTryPastedText(truncated ? trimmed.slice(0, 80000) : trimmed);
+                                const truncated = trimmed.length > 100000;
+                                setTryPastedText(truncated ? trimmed.slice(0, 100000) : trimmed);
                                 setTryPdfInfo(
                                   truncated
-                                    ? `先頭 80000 文字まで取り込みました（${pdf.numPages}ページ・ブラウザ内処理）。続けて「ネーム案を生成」を押してください。`
+                                    ? `先頭 100,000 文字まで取り込みました（${pdf.numPages}ページ・ブラウザ内処理）。続けて「ネーム案を生成」を押してください。`
                                     : `PDF からテキストを取り込みました（${pdf.numPages}ページ・ブラウザ内処理）。続けて「ネーム案を生成」を押してください。`
                                 );
                               } catch (clientErr) {
@@ -1089,7 +1089,7 @@
                                   setTryPastedText(data.text || "");
                                   setTryPdfInfo(
                                     data.truncated
-                                      ? "先頭 80000 文字まで取り込みました（サーバー処理）。続けて「ネーム案を生成」を押してください。"
+                                      ? "先頭 100,000 文字まで取り込みました（サーバー処理）。続けて「ネーム案を生成」を押してください。"
                                       : "PDF からテキストを取り込みました（サーバー処理）。続けて「ネーム案を生成」を押してください。"
                                   );
                                 } catch (serverErr) {

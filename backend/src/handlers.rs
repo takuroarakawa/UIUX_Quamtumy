@@ -576,13 +576,14 @@ pub async fn ingest_job(
         )
             .into_response();
     }
-    if text.len() > 80_000 {
+    // バイト数ではなく文字数で比較（Unicode 多バイト文字対応）
+    if text.chars().count() > 120_000 {
         return (
             StatusCode::BAD_REQUEST,
             Json(IngestResponse {
                 ok: false,
                 job_id: Uuid::nil(),
-                message: "text が長すぎます（上限 80,000 文字）。".into(),
+                message: "text が長すぎます（上限 120,000 文字）。フロントで短くしてから送信してください。".into(),
             }),
         )
             .into_response();
