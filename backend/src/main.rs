@@ -74,6 +74,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .await?;
     tracing::info!("マイグレーション完了");
 
+    let has_gemini = std::env::var("GEMINI_API_KEY").map(|k| !k.trim().is_empty()).unwrap_or(false);
+    let has_openai = std::env::var("OPENAI_API_KEY").map(|k| !k.trim().is_empty()).unwrap_or(false);
+    tracing::info!("AI keys — gemini={} openai={}", has_gemini, has_openai);
+
     let state = AppState { pool };
 
     // Webhook は Stripe サーバーからの POST のみ（レート制限の外に置く）

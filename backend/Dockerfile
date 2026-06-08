@@ -11,6 +11,7 @@ COPY Cargo.toml Cargo.lock ./
 COPY src ./src
 COPY migrations ./migrations
 
+# cache-bust: 2026-06-08-v2
 RUN cargo build --release
 
 FROM debian:bookworm-slim
