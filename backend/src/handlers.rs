@@ -357,6 +357,10 @@ fn mock_paper_outline(text: &str) -> PaperOutlineResponse {
             "核: 方法と結果".into(),
             "余韻: 次の問い".into(),
         ],
+        theme_line: None,
+        characters: vec![],
+        synopsis: None,
+        manga_tone: None,
     }
 }
 
@@ -399,12 +403,19 @@ impl GeminiResponse {
     }
 }
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Default)]
 struct OutlineJson {
     #[serde(default)]
     outline_markdown: String,
     #[serde(default)]
     panel_beats: Vec<String>,
+    // C1/C2 拡張フィールド
+    #[serde(default)]
+    theme_line: Option<String>,
+    #[serde(default)]
+    characters: Vec<crate::models::MangaCharacter>,
+    #[serde(default)]
+    synopsis: Option<String>,
 }
 
 async fn try_openai_outline(title: Option<&str>, text: &str) -> Option<PaperOutlineResponse> {
@@ -477,6 +488,7 @@ async fn try_openai_outline(title: Option<&str>, text: &str) -> Option<PaperOutl
         source: "openai".into(),
         outline_markdown: outline.outline_markdown,
         panel_beats: outline.panel_beats,
+        theme_line: None, characters: vec![], synopsis: None, manga_tone: None,
     })
 }
 
@@ -495,6 +507,7 @@ pub async fn paper_outline(
                 source: "none".into(),
                 outline_markdown: String::new(),
                 panel_beats: vec![],
+                theme_line: None, characters: vec![], synopsis: None, manga_tone: None,
             }),
         )
             .into_response();
@@ -508,6 +521,7 @@ pub async fn paper_outline(
                 source: "none".into(),
                 outline_markdown: String::new(),
                 panel_beats: vec![],
+                theme_line: None, characters: vec![], synopsis: None, manga_tone: None,
             }),
         )
             .into_response();
@@ -595,7 +609,9 @@ pub async fn ingest_job(
     // ── 重複排除: 同一テキストの完了済みジョブを再利用 ─────────────────────
     // 【なぜハッシュか】テキスト本文（最大80k文字）を毎回 DB 比較するのはコスト大。
     // SHA-256 の 64 文字で高速に一致検索できる。
-    let hash = format!("{:x}", Sha256::digest(text.as_bytes()));
+    // トーンが異なれば別ジョブとして扱う（同一テキスト×別トーン = 別結果）
+    let hash_input = format!("{}:{}", text, payload.manga_tone.as_deref().unwrap_or("default"));
+    let hash = format!("{:x}", Sha256::digest(hash_input.as_bytes()));
 
     let existing: Option<Uuid> = sqlx::query_scalar(
         r#"SELECT j.id FROM ai_jobs j
@@ -660,8 +676,9 @@ pub async fn ingest_job(
     // 「最短の縦スライス」として採用。レスポンスを待たせない点は本番と同じ。
     let pool = state.pool.clone();
     let title = payload.title.clone();
+    let manga_tone = payload.manga_tone.clone();
     tokio::spawn(async move {
-        run_pipeline(pool, job_id, text, title).await;
+        run_pipeline(pool, job_id, text, title, manga_tone).await;
     });
 
     (
@@ -951,8 +968,24 @@ async fn try_gemini_summarize(chunks: &[String], title: Option<&str>) -> Option<
     })
 }
 
-/// C3 Gemini 実装 — paper_brief → MangaNameStory
-async fn try_gemini_narrate(brief: &PaperBrief, title: Option<&str>) -> Option<PaperOutlineResponse> {
+/// トーン別の創作指示文を返す
+fn tone_instruction(tone: &str) -> &'static str {
+    match tone {
+        "少年マンガ" => "熱血・友情・努力・成長のトーンで描く。研究者を若き天才ライバルとして設定し、台詞は短く感情的に。「諦めるな！」「これが俺たちの答えだ！」のような熱い表現を使う。",
+        "SF" => "SF 的・宇宙規模の視点で描く。分子・タンパク質を異星人や機械生命体として擬人化。冷静で知的、宇宙の神秘を感じさせるトーン。",
+        "社会派" => "社会問題・医療・がん患者の視点を前面に出す。研究の社会的インパクトを中心に据え、患者・医師・家族の感情を描く。問題提起を大切に。",
+        "ホラー" => "細胞の異変・がん化・制御不能な分子の恐怖を描く。静かで不気味なトーン。日常の中に忍び込む恐怖、科学が解明できない「何か」の存在感。",
+        "恋愛" => "分子・タンパク質を擬人化し「本来いるべき場所を離れた逸脱者」を禁じられた恋として描く。甘くせつなく、科学的真実を純愛の比喩で表現する。",
+        _ => "客観的かつ分かりやすいポップサイエンスのトーンで描く。専門知識がない読者にも伝わるよう平易に。",
+    }
+}
+
+/// C1+C2+C3 統合 Gemini 実装 — paper_brief + tone → 完全 MangaStory
+async fn try_gemini_narrate(
+    brief: &PaperBrief,
+    title: Option<&str>,
+    manga_tone: Option<&str>,
+) -> Option<PaperOutlineResponse> {
     let key = std::env::var("GEMINI_API_KEY").ok()?;
     if key.trim().is_empty() { return None; }
     let model = std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-2.5-flash".into());
@@ -960,22 +993,32 @@ async fn try_gemini_narrate(brief: &PaperBrief, title: Option<&str>) -> Option<P
         .timeout(std::time::Duration::from_secs(120))
         .build().ok()?;
     let title_line = title.map(|t| format!("論文タイトル: {}\n", t)).unwrap_or_default();
+    let tone = manga_tone.unwrap_or("ポップサイエンス");
+    let tone_instr = tone_instruction(tone);
     let prompt = format!(
-        r#"{}以下は論文の構造化要約です。日本語で「研究マンガ」のネーム案を返してください。
-厳密なJSONのみを出力（前後に説明文を付けない）。キーは次の2つ:
-- "outline_markdown": Markdown（見出しと箇条書きで4〜8行程度）
-- "panel_beats": ちょうど4要素の string 配列（導入→対比→核→余韻の順）
+        r#"あなたは学術論文を漫画化する編集者です。以下の論文要約を元に、指定トーンで漫画企画書を日本語で作成してください。
+厳密なJSONのみ出力（前後に説明文・マークダウン記号なし）。以下の全キーを含めること:
 
-【論文要約】
+- "theme_line": 漫画のテーマを一行で（30文字以内）
+- "characters": 2〜4名の配列 [{{"name":"名前","role":"役割（主役/ライバル等）","description":"外見・性格・科学的意味20文字"}}]
+- "synopsis": 3幕構成の粗筋（日本語、150〜300文字。第1幕→第2幕→第3幕と明示）
+- "outline_markdown": Markdownの構成案（見出しと箇条書き、4〜8行）
+- "panel_beats": ちょうど4要素の string 配列（導入→対比→核→余韻。各30〜60文字）
+
+【漫画トーン: {}】
+{}
+
+{}【論文要約】
 問題: {}
 手法: {}
 結果: {}
 限界: {}
 総括: {}"#,
-        title_line,
+        tone, tone_instr, title_line,
         brief.problem, brief.method, brief.key_result, brief.limitation, brief.summary
     );
     let content = gemini_generate(&client, &key, &model, &prompt, true).await?;
+    tracing::info!("[C3] Gemini 生レスポンス先頭200文字: {}", &content.chars().take(200).collect::<String>());
     let outline: OutlineJson = serde_json::from_str(&content).ok()?;
     if outline.panel_beats.is_empty() { return None; }
     Some(PaperOutlineResponse {
@@ -984,6 +1027,10 @@ async fn try_gemini_narrate(brief: &PaperBrief, title: Option<&str>) -> Option<P
         source: "gemini".into(),
         outline_markdown: outline.outline_markdown,
         panel_beats: outline.panel_beats,
+        theme_line: outline.theme_line,
+        characters: outline.characters,
+        synopsis: outline.synopsis,
+        manga_tone: Some(tone.to_string()),
     })
 }
 
@@ -1104,27 +1151,28 @@ async fn try_openai_summarize(chunks: &[String], title: Option<&str>) -> Option<
 // ─────────────────────────────────────────────────────────────────────────────
 
 /// C3: paper_brief と title から OpenAI ネームを生成する（失敗時 None）
-async fn try_openai_narrate(brief: &PaperBrief, title: Option<&str>) -> Option<PaperOutlineResponse> {
+async fn try_openai_narrate(
+    brief: &PaperBrief,
+    title: Option<&str>,
+    manga_tone: Option<&str>,
+) -> Option<PaperOutlineResponse> {
     let key = std::env::var("OPENAI_API_KEY").ok()?;
     if key.trim().is_empty() {
         return None;
     }
     let model = std::env::var("OPENAI_MODEL").unwrap_or_else(|_| "gpt-4o-mini".into());
     let title_line = title.map(|t| format!("論文タイトル: {}\n", t)).unwrap_or_default();
+    let tone = manga_tone.unwrap_or("ポップサイエンス");
+    let tone_instr = tone_instruction(tone);
     let prompt = format!(
-        r#"{}以下は論文の構造化要約です。日本語で「研究マンガ」のネーム案を返してください。
-厳密なJSONのみを出力（前後に説明文を付けない）。キーは次の2つ:
-- "outline_markdown": Markdown（見出しと箇条書きで4〜8行程度）
-- "panel_beats": ちょうど4要素の string 配列（導入→対比→核→余韻の順）
+        r#"学術論文を漫画化する編集者として、以下の論文要約から{tone}スタイルの漫画企画書を日本語で作成してください。
+厳密なJSONのみを出力。キー: "theme_line"(一行テーマ), "characters"(配列[name,role,description]), "synopsis"(粗筋), "outline_markdown"(Markdown), "panel_beats"(4要素配列)
 
-【論文要約】
-問題: {}
-手法: {}
-結果: {}
-限界: {}
-総括: {}"#,
-        title_line,
-        brief.problem, brief.method, brief.key_result, brief.limitation, brief.summary
+【トーン指示】{tone_instr}
+{title_line}
+【論文要約】問題:{problem} 手法:{method} 結果:{result} 総括:{summary}"#,
+        tone=tone, tone_instr=tone_instr, title_line=title_line,
+        problem=brief.problem, method=brief.method, result=brief.key_result, summary=brief.summary
     );
 
     let client = reqwest::Client::builder()
@@ -1159,6 +1207,10 @@ async fn try_openai_narrate(brief: &PaperBrief, title: Option<&str>) -> Option<P
         source: "openai".into(),
         outline_markdown: outline.outline_markdown,
         panel_beats: outline.panel_beats,
+        theme_line: outline.theme_line,
+        characters: outline.characters,
+        synopsis: outline.synopsis,
+        manga_tone: Some(tone.to_string()),
     })
 }
 
@@ -1169,6 +1221,15 @@ fn mock_narrate(brief: &PaperBrief) -> PaperOutlineResponse {
         ok: true,
         message: "ok".into(),
         source: "mock".into(),
+        theme_line: Some(format!("研究の最前線: {}", brief.key_result.chars().take(20).collect::<String>())),
+        characters: vec![],
+        synopsis: Some(format!(
+            "第1幕: {}\n第2幕: {}\n第3幕: {}",
+            brief.problem.chars().take(80).collect::<String>(),
+            brief.method.chars().take(80).collect::<String>(),
+            brief.key_result.chars().take(80).collect::<String>(),
+        )),
+        manga_tone: None,
         outline_markdown: format!(
             "## 研究マンガ ネーム案（モック）\n\n> {}\n\n\
              1. **導入** — {}\n\
@@ -1242,6 +1303,7 @@ async fn run_pipeline(
     job_id: Uuid,
     text: String,
     title: Option<String>,
+    manga_tone: Option<String>,
 ) {
     // ── API キー診断ログ ────────────────────────────────────────────────
     let has_gemini = std::env::var("GEMINI_API_KEY")
@@ -1299,15 +1361,20 @@ async fn run_pipeline(
     // raw text（最大 80k 文字）ではなく B3 が抽出した構造化要約（〜1k 文字）を
     // 渡すことで、LLM は「何を物語るか」に集中でき品質・コストが改善する。
     update_stage(&pool, job_id, "C3_name_generate").await;
-    let result = if let Some(r) = try_gemini_narrate(&brief, title.as_deref()).await {
+    let tone_ref = manga_tone.as_deref();
+    let result = if let Some(r) = try_gemini_narrate(&brief, title.as_deref(), tone_ref).await {
         r
-    } else if let Some(r) = try_openai_narrate(&brief, title.as_deref()).await {
+    } else if let Some(r) = try_openai_narrate(&brief, title.as_deref(), tone_ref).await {
         r
     } else {
         mock_narrate(&brief)
     };
 
     let artifact_json = serde_json::json!({
+        "theme_line": result.theme_line,
+        "characters": result.characters,
+        "synopsis": result.synopsis,
+        "manga_tone": result.manga_tone,
         "outline_markdown": result.outline_markdown,
         "panel_beats": result.panel_beats,
         "source": result.source,

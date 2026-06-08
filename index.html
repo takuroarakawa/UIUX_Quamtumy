@@ -767,6 +767,7 @@
         const [pipeCurrentStage, setPipeCurrentStage] = useState(null);
         const [pipeResult, setPipeResult] = useState(null);
         const [pipeTitle, setPipeTitle] = useState("");
+        const [mangaTone, setMangaTone] = useState("少年マンガ");
 
         // ステージ進捗をラベルと進捗率に変換する
         const PIPELINE_STAGES = [
@@ -962,8 +963,47 @@
                 </div>
 
                 <p style={{ margin: "0 0 1rem 0", color: "rgba(234,248,239,0.6)", lineHeight: 1.7, fontSize: "0.88rem" }}>
-                  テキスト貼り付けまたは PDF をアップロード。B1（セクション分割）→ B2（チャンク）→ B3（要約）→ C3（ネーム生成）の順に処理します。
+                  テキスト貼り付けまたは PDF をアップロード。B1→B2→B3→C3 の順に処理します。
                 </p>
+
+                {/* ── 漫画トーン セレクタ ──────────────────────────────── */}
+                <div style={{ marginBottom: "1.1rem" }}>
+                  <div style={{ fontWeight: 900, color: "rgba(167,243,208,0.9)", fontSize: "0.82rem", marginBottom: "0.5rem", letterSpacing: "0.05em" }}>
+                    🎨 漫画トーン
+                  </div>
+                  <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                    {[
+                      { key: "少年マンガ", emoji: "🔥", label: "少年" },
+                      { key: "SF",         emoji: "🚀", label: "SF" },
+                      { key: "社会派",     emoji: "📰", label: "社会派" },
+                      { key: "ホラー",     emoji: "👻", label: "ホラー" },
+                      { key: "恋愛",       emoji: "💕", label: "恋愛" },
+                    ].map(({ key, emoji, label }) => (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setMangaTone(key)}
+                        style={{
+                          padding: "0.35rem 0.8rem",
+                          borderRadius: "99px",
+                          border: mangaTone === key
+                            ? "1.5px solid #22c55e"
+                            : "1.5px solid rgba(34,197,94,0.3)",
+                          background: mangaTone === key
+                            ? "rgba(34,197,94,0.28)"
+                            : "rgba(34,197,94,0.07)",
+                          color: mangaTone === key ? "#86efac" : "rgba(234,248,239,0.65)",
+                          fontWeight: mangaTone === key ? 900 : 700,
+                          fontSize: "0.85rem",
+                          cursor: "pointer",
+                          transition: "all 0.15s",
+                        }}
+                      >
+                        {emoji} {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
                 <div style={{ marginTop: "1rem" }}>
                   <div style={{ fontWeight: 1000, color: "#eaf8ef", marginBottom: "0.45rem" }}>抄録・本文の抜粋を貼り付け（必須）</div>
@@ -1150,7 +1190,7 @@
                           const res = await fetch(apiUrl("/api/ai/ingest"), {
                             method: "POST",
                             headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ text, title: tryFileName || null }),
+                            body: JSON.stringify({ text, title: tryFileName || null, manga_tone: mangaTone }),
                           });
                           let data = {};
                           try { data = await res.json(); } catch { /* ignore */ }
@@ -1263,10 +1303,81 @@
                     {/* ── 結果カード（完了後） ──────────────────────── */}
                     {tryStage === "done" && pipeResult && (
                       <div style={{ marginTop: "1rem" }}>
-                        {/* コマ beats カード */}
+
+                        {/* ① テーマ一行カード */}
+                        {pipeResult.theme_line && (
+                          <div style={{
+                            marginBottom: "0.75rem", padding: "0.75rem 1rem",
+                            background: "linear-gradient(135deg, rgba(34,197,94,0.18), rgba(16,163,74,0.10))",
+                            border: "1.5px solid rgba(34,197,94,0.5)",
+                            borderRadius: "0.9rem",
+                          }}>
+                            <div style={{ fontSize: "0.7rem", fontWeight: 900, color: "rgba(167,243,208,0.7)", marginBottom: 4, letterSpacing: "0.06em" }}>
+                              🎨 テーマ {pipeResult.manga_tone ? `（${pipeResult.manga_tone}）` : ""}
+                            </div>
+                            <div style={{ fontSize: "1.05rem", fontWeight: 1000, color: "#eaf8ef", lineHeight: 1.45 }}>
+                              {pipeResult.theme_line}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ② キャラクターカード */}
+                        {Array.isArray(pipeResult.characters) && pipeResult.characters.length > 0 && (
+                          <div style={{ marginBottom: "0.75rem" }}>
+                            <div style={{ fontWeight: 900, color: "rgba(167,243,208,0.85)", fontSize: "0.8rem", marginBottom: "0.45rem", letterSpacing: "0.05em" }}>
+                              👥 登場キャラクター
+                            </div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem" }}>
+                              {pipeResult.characters.map((ch, i) => (
+                                <div key={i} style={{
+                                  display: "flex", gap: "0.6rem", alignItems: "flex-start",
+                                  background: "rgba(168,85,247,0.10)",
+                                  border: "1px solid rgba(168,85,247,0.3)",
+                                  borderRadius: "0.7rem", padding: "0.5rem 0.7rem",
+                                }}>
+                                  <span style={{ fontSize: "1rem", lineHeight: 1.4, minWidth: 22 }}>🧬</span>
+                                  <div>
+                                    <div style={{ fontSize: "0.82rem", fontWeight: 900, color: "#e9d5ff", lineHeight: 1.3 }}>
+                                      {ch.name}
+                                      <span style={{ fontSize: "0.72rem", fontWeight: 700, color: "rgba(233,213,255,0.6)", marginLeft: 6 }}>
+                                        {ch.role}
+                                      </span>
+                                    </div>
+                                    {ch.description && (
+                                      <div style={{ fontSize: "0.78rem", color: "rgba(233,213,255,0.75)", marginTop: 2, lineHeight: 1.4 }}>
+                                        {ch.description}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ③ 粗筋カード */}
+                        {pipeResult.synopsis && (
+                          <div style={{ marginBottom: "0.75rem" }}>
+                            <div style={{ fontWeight: 900, color: "rgba(167,243,208,0.85)", fontSize: "0.8rem", marginBottom: "0.45rem", letterSpacing: "0.05em" }}>
+                              📖 粗筋（3幕構成）
+                            </div>
+                            <div style={{
+                              padding: "0.75rem 0.9rem",
+                              background: "rgba(30,64,175,0.15)",
+                              border: "1px solid rgba(59,130,246,0.35)",
+                              borderRadius: "0.8rem",
+                              color: "#bfdbfe", fontSize: "0.88rem", lineHeight: 1.75,
+                              whiteSpace: "pre-wrap",
+                            }}>
+                              {pipeResult.synopsis}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ④ コマ beats カード */}
                         <div style={{ marginBottom: "0.75rem" }}>
-                          <div style={{ fontWeight: 1000, color: "#eaf8ef", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
-                            ▶ ネーム構成（4拍）
+                          <div style={{ fontWeight: 900, color: "rgba(167,243,208,0.85)", fontSize: "0.8rem", marginBottom: "0.45rem", letterSpacing: "0.05em" }}>
+                            🎬 ネーム構成（4拍）
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: "0.45rem" }}>
                             {(Array.isArray(pipeResult.panel_beats) ? pipeResult.panel_beats : []).map((beat, i) => {
@@ -1327,11 +1438,18 @@
                           <span style={{
                             fontSize: "0.75rem", fontWeight: 700, padding: "0.2rem 0.55rem",
                             borderRadius: "99px",
-                            background: pipeResult.source === "openai" ? "rgba(34,197,94,0.25)" : "rgba(255,255,255,0.12)",
-                            color: pipeResult.source === "openai" ? "#86efac" : "rgba(234,248,239,0.55)",
+                            background: pipeResult.source === "gemini"
+                              ? "rgba(234,179,8,0.22)"
+                              : pipeResult.source === "openai"
+                              ? "rgba(34,197,94,0.25)"
+                              : "rgba(255,255,255,0.12)",
+                            color: pipeResult.source === "gemini"
+                              ? "#fde68a"
+                              : pipeResult.source === "openai" ? "#86efac" : "rgba(234,248,239,0.55)",
                             border: "1px solid rgba(34,197,94,0.3)",
                           }}>
-                            {pipeResult.source === "openai" ? "✦ OpenAI" : "⚙ mock"}
+                            {pipeResult.source === "gemini" ? "✦ Gemini"
+                             : pipeResult.source === "openai" ? "✦ OpenAI" : "⚙ mock"}
                           </span>
                           <button
                             onClick={onDemo}

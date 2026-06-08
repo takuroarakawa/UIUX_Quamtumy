@@ -108,6 +108,14 @@ pub struct PaperOutlineRequest {
     pub title: Option<String>,
 }
 
+/// 漫画キャラクター（C1/C2 ステージで生成）
+#[derive(Debug, Serialize, serde::Deserialize, Clone, Default)]
+pub struct MangaCharacter {
+    pub name: String,
+    pub role: String,
+    pub description: String,
+}
+
 #[derive(Debug, Serialize)]
 pub struct PaperOutlineResponse {
     pub ok: bool,
@@ -115,6 +123,18 @@ pub struct PaperOutlineResponse {
     pub source: String,
     pub outline_markdown: String,
     pub panel_beats: Vec<String>,
+    /// 漫画テーマ一行（C1）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub theme_line: Option<String>,
+    /// 登場キャラクター（C2）
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub characters: Vec<MangaCharacter>,
+    /// 粗筋3幕（C2）
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub synopsis: Option<String>,
+    /// 使用した漫画トーン
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub manga_tone: Option<String>,
 }
 
 /// POST /api/checkout/session — Stripe Checkout（要ログイン）
@@ -281,6 +301,9 @@ pub struct IngestRequest {
     pub text: Option<String>,
     pub title: Option<String>,
     pub doi: Option<String>,
+    /// 漫画化トーン: "少年マンガ" | "SF" | "社会派" | "ホラー" | "恋愛"
+    #[serde(default)]
+    pub manga_tone: Option<String>,
 }
 
 /// POST /api/ai/ingest レスポンス — job_id を即返す
