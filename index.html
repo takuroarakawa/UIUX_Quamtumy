@@ -22,6 +22,8 @@
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
+    <!-- PDF.js: ブラウザ内 PDF テキスト抽出（サーバー不要・コールドスタート回避） -->
+    <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
   </head>
   <body>
     <div id="root"></div>
@@ -989,7 +991,7 @@
 
                 <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", marginTop: "1.25rem" }}>
                   <div style={{ flex: "1 1 320px", minWidth: 260, background: "rgba(34,197,94,0.08)", borderRadius: "1rem", padding: "1rem", border: "1px dashed rgba(34,197,94,0.35)" }}>
-                    <div style={{ fontWeight: 1000, color: "#eaf8ef", marginBottom: "0.5rem" }}>参考: ファイル（.txt 自動 / PDF は API で抽出）</div>
+                    <div style={{ fontWeight: 1000, color: "#eaf8ef", marginBottom: "0.5rem" }}>参考: ファイル（.txt / PDF 自動抽出）</div>
                     <input
                       ref={tryFileInputRef}
                       type="file"
@@ -1027,32 +1029,62 @@
                               setTryError("");
                               setTryPdfInfo("");
                               try {
-                                // multipart を使わず生バイナリで送信（multer 解析エラー回避）
+                                // ① PDF.js でブラウザ内テキスト抽出（サーバー不要・即時）
                                 const arrayBuf = await f.arrayBuffer();
-                                const res = await fetch(apiUrl("/api/ai/pdf-text"), {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/pdf" },
-                                  body: arrayBuf,
-                                });
-                                const data = await res.json().catch(() => ({}));
-                                if (!res.ok || !data.ok) {
-                                  throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+                                const pdfjsLib = window.pdfjsLib;
+                                if (!pdfjsLib) throw new Error("PDF.js が読み込まれていません");
+                                pdfjsLib.GlobalWorkerOptions.workerSrc =
+                                  "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+                                const pdf = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
+                                let fullText = "";
+                                for (let i = 1; i <= pdf.numPages; i++) {
+                                  const page = await pdf.getPage(i);
+                                  const tc = await page.getTextContent();
+                                  const pageText = tc.items.map((item) => item.str).join(" ");
+                                  fullText += pageText + "\n";
                                 }
-                                setTryPastedText(data.text || "");
+                                const trimmed = fullText.trim();
+                                if (!trimmed) throw new Error("テキストレイヤーが見つかりません（スキャンPDFは未対応）");
+                                const truncated = trimmed.length > 80000;
+                                setTryPastedText(truncated ? trimmed.slice(0, 80000) : trimmed);
                                 setTryPdfInfo(
-                                  data.truncated
-                                    ? "先頭 80000 文字まで取り込みました。続けて「ネーム案を生成」を押してください。"
-                                    : "PDF からテキストを取り込みました。続けて「ネーム案を生成」を押してください。"
+                                  truncated
+                                    ? "先頭 80000 文字まで取り込みました（ブラウザ内処理）。続けて「ネーム案を生成」を押してください。"
+                                    : "PDF からテキストを取り込みました（ブラウザ内処理）。続けて「ネーム案を生成」を押してください。"
                                 );
-                              } catch (err) {
-                                const isNet =
-                                  err?.name === "TypeError" ||
-                                  /fetch|Failed to fetch|NetworkError/i.test(String(err?.message || ""));
-                                setTryError(
-                                  isNet
-                                    ? "PDF API に接続できません。#auth で API 接続先を確認してください。"
-                                    : err?.message || "PDF 抽出に失敗しました。"
-                                );
+                              } catch (clientErr) {
+                                // ② PDF.js が失敗した場合はサーバー API にフォールバック
+                                console.warn("PDF.js 失敗、サーバーへフォールバック:", clientErr);
+                                try {
+                                  const input2 = tryFileInputRef.current;
+                                  const f2 = input2?.files?.[0];
+                                  if (!f2) throw clientErr;
+                                  const arrayBuf2 = await f2.arrayBuffer();
+                                  const res = await fetch(apiUrl("/api/ai/pdf-text"), {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/pdf" },
+                                    body: arrayBuf2,
+                                  });
+                                  const data = await res.json().catch(() => ({}));
+                                  if (!res.ok || !data.ok) {
+                                    throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
+                                  }
+                                  setTryPastedText(data.text || "");
+                                  setTryPdfInfo(
+                                    data.truncated
+                                      ? "先頭 80000 文字まで取り込みました（サーバー処理）。続けて「ネーム案を生成」を押してください。"
+                                      : "PDF からテキストを取り込みました（サーバー処理）。続けて「ネーム案を生成」を押してください。"
+                                  );
+                                } catch (serverErr) {
+                                  const isNet =
+                                    serverErr?.name === "TypeError" ||
+                                    /fetch|Failed to fetch|NetworkError/i.test(String(serverErr?.message || ""));
+                                  setTryError(
+                                    isNet
+                                      ? `ブラウザ抽出失敗: ${clientErr?.message || "不明"} / API にも接続できません。`
+                                      : serverErr?.message || "PDF 抽出に失敗しました。"
+                                  );
+                                }
                               } finally {
                                 setTryPdfBusy(false);
                               }
@@ -1068,7 +1100,7 @@
                               cursor: tryPdfBusy ? "wait" : "pointer",
                             }}
                           >
-                            {tryPdfBusy ? "PDF 抽出中…" : "PDF からテキスト抽出（サーバー）"}
+                            {tryPdfBusy ? "PDF 解析中…" : "PDF テキスト抽出（ブラウザ内）"}
                           </button>
                         </div>
                       )}
