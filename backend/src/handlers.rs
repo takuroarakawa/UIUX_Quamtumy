@@ -837,44 +837,60 @@ async fn b3_summarize(chunks: &[String], title: Option<&str>) -> PaperBrief {
 
 /// B3 モック実装 — 各チャンクの冒頭文を抽出して構造化する
 fn mock_summarize(chunks: &[String], title: Option<&str>) -> PaperBrief {
-    // チャンクから最初の非空行を最大 N 文字まで抽出するヘルパー
+    // チャンクから最初の 200 文字を抽出するヘルパー
     let extract_head = |chunk: &str, max: usize| -> String {
         chunk
             .lines()
-            .find(|l| l.len() > 20)
+            .find(|l| l.trim().len() > 20)
             .unwrap_or(chunk)
             .chars()
             .take(max)
             .collect::<String>()
     };
 
-    let problem = chunks
-        .iter()
-        .find(|c| c.contains("INTRODUCTION") || c.contains("BACKGROUND"))
-        .map(|c| extract_head(c, 200))
-        .unwrap_or_else(|| extract_head(chunks.first().map(String::as_str).unwrap_or(""), 200));
+    // 大文字・小文字どちらも検出できるよう upper() で比較
+    let find_chunk = |keywords: &[&str]| -> Option<&String> {
+        chunks.iter().find(|c| {
+            let up = c.to_uppercase();
+            keywords.iter().any(|k| up.contains(&k.to_uppercase()))
+        })
+    };
 
-    let method = chunks
-        .iter()
-        .find(|c| c.contains("METHOD") || c.contains("APPROACH") || c.contains("EXPERIMENT"))
-        .map(|c| extract_head(c, 200))
-        .unwrap_or_else(|| "手法の記述が見つかりませんでした。".into());
+    // 先頭チャンクは通常 Abstract/Introduction が含まれるので問題の記述に使う
+    let first_chunk = chunks.first().map(String::as_str).unwrap_or("");
 
-    let key_result = chunks
-        .iter()
-        .find(|c| c.contains("RESULT") || c.contains("FINDING"))
+    let problem = find_chunk(&["INTRODUCTION", "BACKGROUND", "PROBLEM", "HYPOTHESIS", "HALLMARK", "EVIDENCE"])
         .map(|c| extract_head(c, 200))
-        .unwrap_or_else(|| "結果の記述が見つかりませんでした。".into());
+        .unwrap_or_else(|| extract_head(first_chunk, 200));
 
-    let limitation = chunks
-        .iter()
-        .find(|c| c.contains("DISCUSSION") || c.contains("CONCLUSION") || c.contains("LIMITATION"))
+    let method = find_chunk(&["METHOD", "APPROACH", "PROTOCOL", "EXPERIMENT", "FRACTIONATION", "SEQUENCING", "ASSAY"])
         .map(|c| extract_head(c, 200))
-        .unwrap_or_else(|| "考察・限界の記述が見つかりませんでした。".into());
+        .unwrap_or_else(|| {
+            // 中盤チャンクから取得を試みる
+            chunks.get(chunks.len() / 2)
+                .map(|c| extract_head(c, 200))
+                .unwrap_or_else(|| "論文の手法セクション（Methods）が見つかりませんでした。".into())
+        });
+
+    let key_result = find_chunk(&["RESULT", "FINDING", "REVEAL", "DEMONSTRATE", "SHOW", "IDENTIFY", "DETECT"])
+        .map(|c| extract_head(c, 200))
+        .unwrap_or_else(|| {
+            chunks.get(chunks.len() * 2 / 3)
+                .map(|c| extract_head(c, 200))
+                .unwrap_or_else(|| "論文の結果セクション（Results）が見つかりませんでした。".into())
+        });
+
+    let limitation = find_chunk(&["DISCUSSION", "CONCLUSION", "LIMITATION", "FUTURE", "CAVEAT", "HOWEVER"])
+        .map(|c| extract_head(c, 200))
+        .unwrap_or_else(|| {
+            chunks.last()
+                .map(|c| extract_head(c, 200))
+                .unwrap_or_else(|| "論文の考察セクション（Discussion）が見つかりませんでした。".into())
+        });
 
     let title_str = title.unwrap_or("（無題）");
     let summary = format!(
-        "「{}」の概要（モック）: {} / 手法: {} / 結果: {}",
+        "「{}」のモック要約。問題: {}。手法: {}。結果: {}。",
         title_str,
         &problem.chars().take(80).collect::<String>(),
         &method.chars().take(80).collect::<String>(),
@@ -908,6 +924,13 @@ async fn gemini_generate(client: &reqwest::Client, key: &str, model: &str, promp
 }
 
 /// B3 Gemini 実装 — Map → Reduce
+/// B3 Gemini 実装 — Single-Shot 方式（API 呼び出し1回で Map+Reduce を完結）
+///
+/// 【なぜ Single-Shot か】
+/// 旧 Map-Reduce 方式はチャンク数+1回のAPI呼び出しをするため
+/// 無料枠（15 RPM）を即座に超過し 429 を招く。
+/// 冒頭 4 チャンク（論文の Abstract〜Introduction が含まれる）を
+/// 連結して単一プロンプトに渡すことで、呼び出し回数を 1回 に削減する。
 async fn try_gemini_summarize(chunks: &[String], title: Option<&str>) -> Option<PaperBrief> {
     let key = std::env::var("GEMINI_API_KEY").ok()?;
     if key.trim().is_empty() { return None; }
@@ -916,36 +939,30 @@ async fn try_gemini_summarize(chunks: &[String], title: Option<&str>) -> Option<
         .timeout(std::time::Duration::from_secs(120))
         .build().ok()?;
 
-    // Map: 各チャンクを要約
-    let mut chunk_summaries: Vec<String> = Vec::new();
-    for chunk in chunks.iter().take(8) {
-        let prompt = format!(
-            "以下の論文抜粋から、問題・手法・結果・限界の要点を日本語で2〜4文で抽出してください。\
-            マークダウンや説明文は不要。要点のみ箇条書きで。\n\n{}", chunk
-        );
-        if let Some(text) = gemini_generate(&client, &key, &model, &prompt, false).await {
-            chunk_summaries.push(text);
-        }
-    }
-    if chunk_summaries.is_empty() { return None; }
+    // 冒頭 4 チャンクを連結（Abstract + Introduction が通常含まれる）
+    // 各チャンク先頭 2000 文字に制限して合計 ~8000 文字に抑える
+    let combined: String = chunks.iter().take(4).enumerate()
+        .map(|(i, c)| format!("[パート{}]\n{}", i + 1, c.chars().take(2000).collect::<String>()))
+        .collect::<Vec<_>>()
+        .join("\n\n");
 
-    // Reduce: 構造化 brief に集約
-    let combined = chunk_summaries.join("\n\n---\n\n");
     let title_line = title.map(|t| format!("論文タイトル: {}\n\n", t)).unwrap_or_default();
-    let reduce_prompt = format!(
-        r#"{}以下は論文各部の要約です。これを統合し、厳密なJSONのみを出力してください。
-キーは次の5つ（すべて日本語で）:
-- "problem": 解こうとしている問題・ギャップ（1〜2文）
+    let prompt = format!(
+        r#"{}以下は学術論文の冒頭部分です。厳密なJSONのみを出力（前後に説明文なし）。
+キーは次の5つ（すべて日本語で記述）:
+- "problem": 解こうとしている問題・研究ギャップ（1〜2文）
 - "method": 採用した手法・アプローチ（1〜2文）
 - "key_result": 主要な結果・発見（1〜2文）
-- "limitation": 限界・今後の課題（1〜2文）
+- "limitation": 限界・今後の課題（1文）
 - "summary": 上記4つを1段落にまとめた総合要約（3〜5文）
 
-【各部の要約】
+【論文テキスト冒頭】
 {}"#,
         title_line, combined
     );
-    let content = gemini_generate(&client, &key, &model, &reduce_prompt, true).await?;
+
+    let content = gemini_generate(&client, &key, &model, &prompt, true).await?;
+    tracing::info!("[B3] Gemini 1-shot 成功: {}文字", content.len());
 
     #[derive(serde::Deserialize)]
     struct BriefJson {
@@ -1357,10 +1374,12 @@ async fn run_pipeline(
     tracing::info!("[job {}] B3 完了: source={}", job_id, brief.source);
 
     // ── C3: ネーム生成 ──────────────────────────────────────────────────
-    // 【なぜ brief を入力にするか】
-    // raw text（最大 80k 文字）ではなく B3 が抽出した構造化要約（〜1k 文字）を
-    // 渡すことで、LLM は「何を物語るか」に集中でき品質・コストが改善する。
+    // B3→C3 間に短いウェイトを入れて Gemini 無料枠レート制限（15 RPM）を回避する。
+    // B3 が gemini 成功した直後は 1 分内の残 RPM が少ないため 5 秒待つ。
     update_stage(&pool, job_id, "C3_name_generate").await;
+    if brief.source == "gemini" {
+        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+    }
     let tone_ref = manga_tone.as_deref();
     let result = if let Some(r) = try_gemini_narrate(&brief, title.as_deref(), tone_ref).await {
         r
