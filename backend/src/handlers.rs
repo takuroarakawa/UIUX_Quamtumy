@@ -375,6 +375,30 @@ struct OpenAiMessage {
     content: String,
 }
 
+// ── Gemini API レスポンス構造体 ──────────────────────────────────────────────
+#[derive(serde::Deserialize)]
+struct GeminiResponse {
+    candidates: Vec<GeminiCandidate>,
+}
+#[derive(serde::Deserialize)]
+struct GeminiCandidate {
+    content: GeminiContent,
+}
+#[derive(serde::Deserialize)]
+struct GeminiContent {
+    parts: Vec<GeminiPart>,
+}
+#[derive(serde::Deserialize)]
+struct GeminiPart {
+    text: String,
+}
+
+impl GeminiResponse {
+    fn text(&self) -> Option<&str> {
+        self.candidates.first()?.content.parts.first().map(|p| p.text.as_str())
+    }
+}
+
 #[derive(serde::Deserialize)]
 struct OutlineJson {
     #[serde(default)]
@@ -776,8 +800,11 @@ struct PaperBrief {
     source: String,
 }
 
-/// B3: チャンク配列からPaperBriefを生成する（OpenAI 未設定ならモック）
+/// B3: チャンク配列からPaperBriefを生成する（Gemini → OpenAI → mock の優先順）
 async fn b3_summarize(chunks: &[String], title: Option<&str>) -> PaperBrief {
+    if let Some(brief) = try_gemini_summarize(chunks, title).await {
+        return brief;
+    }
     if let Some(brief) = try_openai_summarize(chunks, title).await {
         return brief;
     }
@@ -831,6 +858,126 @@ fn mock_summarize(chunks: &[String], title: Option<&str>) -> PaperBrief {
     );
 
     PaperBrief { problem, method, key_result, limitation, summary, source: "mock".into() }
+}
+
+/// Gemini API への共通ヘルパー（テキスト入力 → テキスト出力）
+async fn gemini_generate(client: &reqwest::Client, key: &str, model: &str, prompt: &str, json_mode: bool) -> Option<String> {
+    let url = format!(
+        "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
+        model, key
+    );
+    let mut config = serde_json::json!({});
+    if json_mode {
+        config = serde_json::json!({ "responseMimeType": "application/json" });
+    }
+    let body = serde_json::json!({
+        "contents": [{ "parts": [{ "text": prompt }] }],
+        "generationConfig": config,
+    });
+    let res = client.post(&url).json(&body).send().await.ok()?;
+    if !res.status().is_success() {
+        tracing::warn!("Gemini http {}", res.status());
+        return None;
+    }
+    let parsed: GeminiResponse = res.json().await.ok()?;
+    parsed.text().map(|s| s.trim().to_string())
+}
+
+/// B3 Gemini 実装 — Map → Reduce
+async fn try_gemini_summarize(chunks: &[String], title: Option<&str>) -> Option<PaperBrief> {
+    let key = std::env::var("GEMINI_API_KEY").ok()?;
+    if key.trim().is_empty() { return None; }
+    let model = std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-2.5-flash".into());
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(120))
+        .build().ok()?;
+
+    // Map: 各チャンクを要約
+    let mut chunk_summaries: Vec<String> = Vec::new();
+    for chunk in chunks.iter().take(8) {
+        let prompt = format!(
+            "以下の論文抜粋から、問題・手法・結果・限界の要点を日本語で2〜4文で抽出してください。\
+            マークダウンや説明文は不要。要点のみ箇条書きで。\n\n{}", chunk
+        );
+        if let Some(text) = gemini_generate(&client, &key, &model, &prompt, false).await {
+            chunk_summaries.push(text);
+        }
+    }
+    if chunk_summaries.is_empty() { return None; }
+
+    // Reduce: 構造化 brief に集約
+    let combined = chunk_summaries.join("\n\n---\n\n");
+    let title_line = title.map(|t| format!("論文タイトル: {}\n\n", t)).unwrap_or_default();
+    let reduce_prompt = format!(
+        r#"{}以下は論文各部の要約です。これを統合し、厳密なJSONのみを出力してください。
+キーは次の5つ（すべて日本語で）:
+- "problem": 解こうとしている問題・ギャップ（1〜2文）
+- "method": 採用した手法・アプローチ（1〜2文）
+- "key_result": 主要な結果・発見（1〜2文）
+- "limitation": 限界・今後の課題（1〜2文）
+- "summary": 上記4つを1段落にまとめた総合要約（3〜5文）
+
+【各部の要約】
+{}"#,
+        title_line, combined
+    );
+    let content = gemini_generate(&client, &key, &model, &reduce_prompt, true).await?;
+
+    #[derive(serde::Deserialize)]
+    struct BriefJson {
+        #[serde(default)] problem: String,
+        #[serde(default)] method: String,
+        #[serde(default)] key_result: String,
+        #[serde(default)] limitation: String,
+        #[serde(default)] summary: String,
+    }
+    let bj: BriefJson = serde_json::from_str(&content).ok()?;
+    if bj.summary.is_empty() { return None; }
+
+    Some(PaperBrief {
+        problem: bj.problem,
+        method: bj.method,
+        key_result: bj.key_result,
+        limitation: bj.limitation,
+        summary: bj.summary,
+        source: "gemini".into(),
+    })
+}
+
+/// C3 Gemini 実装 — paper_brief → MangaNameStory
+async fn try_gemini_narrate(brief: &PaperBrief, title: Option<&str>) -> Option<PaperOutlineResponse> {
+    let key = std::env::var("GEMINI_API_KEY").ok()?;
+    if key.trim().is_empty() { return None; }
+    let model = std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-2.5-flash".into());
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(120))
+        .build().ok()?;
+    let title_line = title.map(|t| format!("論文タイトル: {}\n", t)).unwrap_or_default();
+    let prompt = format!(
+        r#"{}以下は論文の構造化要約です。日本語で「研究マンガ」のネーム案を返してください。
+厳密なJSONのみを出力（前後に説明文を付けない）。キーは次の2つ:
+- "outline_markdown": Markdown（見出しと箇条書きで4〜8行程度）
+- "panel_beats": ちょうど4要素の string 配列（導入→対比→核→余韻の順）
+
+【論文要約】
+問題: {}
+手法: {}
+結果: {}
+限界: {}
+総括: {}"#,
+        title_line,
+        brief.problem, brief.method, brief.key_result, brief.limitation, brief.summary
+    );
+    let content = gemini_generate(&client, &key, &model, &prompt, true).await?;
+    let outline: OutlineJson = serde_json::from_str(&content).ok()?;
+    if outline.panel_beats.is_empty() { return None; }
+    Some(PaperOutlineResponse {
+        ok: true,
+        message: "ok".into(),
+        source: "gemini".into(),
+        outline_markdown: outline.outline_markdown,
+        panel_beats: outline.panel_beats,
+    })
 }
 
 /// B3 OpenAI 実装 — Map(各チャンクを要約) → Reduce(全要約を集約)
@@ -1136,9 +1283,13 @@ async fn run_pipeline(
     // raw text（最大 80k 文字）ではなく B3 が抽出した構造化要約（〜1k 文字）を
     // 渡すことで、LLM は「何を物語るか」に集中でき品質・コストが改善する。
     update_stage(&pool, job_id, "C3_name_generate").await;
-    let result = try_openai_narrate(&brief, title.as_deref())
-        .await
-        .unwrap_or_else(|| mock_narrate(&brief));
+    let result = if let Some(r) = try_gemini_narrate(&brief, title.as_deref()).await {
+        r
+    } else if let Some(r) = try_openai_narrate(&brief, title.as_deref()).await {
+        r
+    } else {
+        mock_narrate(&brief)
+    };
 
     let artifact_json = serde_json::json!({
         "outline_markdown": result.outline_markdown,
