@@ -131,17 +131,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .route("/health", get(handlers::health_check))
         .layer(cors.clone());
 
-    // PDF アップロードは multipart のため 30MB 制限を個別設定
-    let pdf_router = Router::new()
-        .route("/api/ai/pdf-text", post(pdf_upload::pdf_text_extract))
-        .layer(DefaultBodyLimit::max(30 * 1024 * 1024))
-        .layer(cors.clone())
-        .with_state(state.clone());
-
     let app = Router::new()
         .merge(health_router)
         .merge(webhook_router)
-        .merge(pdf_router)
         .merge(
             Router::new()
                 .route("/api/register", post(handlers::register))
@@ -170,6 +162,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .route("/api/catalog/works", get(catalog_list))
                 .route("/api/catalog/works/:id", get(catalog_get))
                 .route("/api/ai/paper-outline", post(handlers::paper_outline))
+                // PDF テキスト抽出（生バイナリ POST、Content-Type: application/pdf）
+                .route("/api/ai/pdf-text", post(pdf_upload::pdf_text_extract))
                 // AI パイプライン（Job 非同期処理）
                 .route("/api/ai/ingest", post(handlers::ingest_job))
                 .route("/api/ai/jobs/:id", get(handlers::get_job_status))
@@ -177,7 +171,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     "/api/checkout/session",
                     post(checkout::create_checkout_session),
                 )
-                .layer(DefaultBodyLimit::max(12 * 1024 * 1024))
+                .layer(DefaultBodyLimit::max(25 * 1024 * 1024))
                 .layer(GovernorLayer { config: governor_conf })
                 .layer(cors)
                 .with_state(state),

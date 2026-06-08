@@ -1027,9 +1027,13 @@
                               setTryError("");
                               setTryPdfInfo("");
                               try {
-                                const fd = new FormData();
-                                fd.append("file", f, f.name);
-                                const res = await fetch(apiUrl("/api/ai/pdf-text"), { method: "POST", body: fd });
+                                // multipart を使わず生バイナリで送信（multer 解析エラー回避）
+                                const arrayBuf = await f.arrayBuffer();
+                                const res = await fetch(apiUrl("/api/ai/pdf-text"), {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/pdf" },
+                                  body: arrayBuf,
+                                });
                                 const data = await res.json().catch(() => ({}));
                                 if (!res.ok || !data.ok) {
                                   throw new Error(data?.message || data?.error || `HTTP ${res.status}`);
