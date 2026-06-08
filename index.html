@@ -1031,17 +1031,30 @@
                               try {
                                 // ① PDF.js でブラウザ内テキスト抽出（サーバー不要・即時）
                                 const arrayBuf = await f.arrayBuffer();
+                                // ArrayBuffer を Uint8Array にコピー（worker への所有権移転を防ぐ）
+                                const uint8 = new Uint8Array(arrayBuf);
                                 const pdfjsLib = window.pdfjsLib;
-                                if (!pdfjsLib) throw new Error("PDF.js が読み込まれていません");
-                                pdfjsLib.GlobalWorkerOptions.workerSrc =
-                                  "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-                                const pdf = await pdfjsLib.getDocument({ data: arrayBuf }).promise;
+                                if (!pdfjsLib) throw new Error("PDF.js ライブラリ未ロード（ネット接続を確認）");
+                                // Worker を同一スクリプトで設定（CORS 問題回避のため blob URL 化）
+                                if (!pdfjsLib.GlobalWorkerOptions.workerSrc) {
+                                  pdfjsLib.GlobalWorkerOptions.workerSrc =
+                                    "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+                                }
+                                const loadingTask = pdfjsLib.getDocument({ data: uint8 });
+                                const pdf = await loadingTask.promise;
                                 let fullText = "";
                                 for (let i = 1; i <= pdf.numPages; i++) {
                                   const page = await pdf.getPage(i);
                                   const tc = await page.getTextContent();
-                                  const pageText = tc.items.map((item) => item.str).join(" ");
-                                  fullText += pageText + "\n";
+                                  // TextItem は str と hasEOL を持つ、TextMarkedContent は str なし
+                                  let pageText = "";
+                                  for (const item of tc.items) {
+                                    if ("str" in item) {
+                                      pageText += item.str;
+                                      pageText += item.hasEOL ? "\n" : " ";
+                                    }
+                                  }
+                                  fullText += pageText;
                                 }
                                 const trimmed = fullText.trim();
                                 if (!trimmed) throw new Error("テキストレイヤーが見つかりません（スキャンPDFは未対応）");
@@ -1049,12 +1062,16 @@
                                 setTryPastedText(truncated ? trimmed.slice(0, 80000) : trimmed);
                                 setTryPdfInfo(
                                   truncated
-                                    ? "先頭 80000 文字まで取り込みました（ブラウザ内処理）。続けて「ネーム案を生成」を押してください。"
-                                    : "PDF からテキストを取り込みました（ブラウザ内処理）。続けて「ネーム案を生成」を押してください。"
+                                    ? `先頭 80000 文字まで取り込みました（${pdf.numPages}ページ・ブラウザ内処理）。続けて「ネーム案を生成」を押してください。`
+                                    : `PDF からテキストを取り込みました（${pdf.numPages}ページ・ブラウザ内処理）。続けて「ネーム案を生成」を押してください。`
                                 );
                               } catch (clientErr) {
-                                // ② PDF.js が失敗した場合はサーバー API にフォールバック
-                                console.warn("PDF.js 失敗、サーバーへフォールバック:", clientErr);
+                                // ② PDF.js 失敗時: エラー内容を表示してサーバー API へフォールバック
+                                const clientMsg = clientErr?.message || String(clientErr);
+                                console.warn("PDF.js 失敗:", clientMsg);
+                                setTryError(`PDF.js エラー: ${clientMsg} → サーバー API を試みています…`);
+                                await new Promise(r => setTimeout(r, 800));
+                                setTryError("");
                                 try {
                                   const input2 = tryFileInputRef.current;
                                   const f2 = input2?.files?.[0];
@@ -1080,9 +1097,7 @@
                                     serverErr?.name === "TypeError" ||
                                     /fetch|Failed to fetch|NetworkError/i.test(String(serverErr?.message || ""));
                                   setTryError(
-                                    isNet
-                                      ? `ブラウザ抽出失敗: ${clientErr?.message || "不明"} / API にも接続できません。`
-                                      : serverErr?.message || "PDF 抽出に失敗しました。"
+                                    `[PDF.js] ${clientMsg} / [サーバー] ${isNet ? "到達不可" : (serverErr?.message || "失敗")}`
                                   );
                                 }
                               } finally {
