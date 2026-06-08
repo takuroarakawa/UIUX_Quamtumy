@@ -708,6 +708,28 @@ struct Section {
     body: String,
 }
 
+/// PDF テキスト前処理 — ページヘッダー/フッター・引用番号・図凡例行を除去する
+///
+/// PDF.js が学術論文から抽出したテキストには各ページに
+/// "Article https://doi.org/..." や "Nature Communications | (2026)17:1655 3" などの
+/// フッターが繰り返し含まれる。これが B3/C3 の品質を大幅に下げるため除去する。
+fn clean_pdf_text(text: &str) -> String {
+    text.lines()
+        .filter(|line| {
+            let t = line.trim();
+            if t.len() < 4 { return false; }                          // 空行・ページ番号のみ
+            if t.contains("https://doi.org/") { return false; }        // DOI フッター
+            if t.starts_with("Nature ") && t.contains(" | ") { return false; } // 雑誌名フッター
+            if t.chars().all(|c| c.is_ascii_digit() || c == '(' || c == ')' || c == ':' || c == ',' || c == ';' || c == ' ') { return false; } // 引用番号行
+            // 図・表のキャプション行（短い英数字のみの行）をスキップ
+            let words = t.split_whitespace().count();
+            if words <= 2 && t.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == ' ' || c == '.' || c == '_') { return false; }
+            true
+        })
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
 /// B1: テキストをセクションに分割する
 ///
 /// 見出し候補: 行頭が大文字の単語のみで構成される行（例: "Abstract", "1. Introduction"）
@@ -901,6 +923,7 @@ fn mock_summarize(chunks: &[String], title: Option<&str>) -> PaperBrief {
 }
 
 /// Gemini API への共通ヘルパー（テキスト入力 → テキスト出力）
+/// 429 を受け取った場合は 6 秒待って 1 回だけリトライする。
 async fn gemini_generate(client: &reqwest::Client, key: &str, model: &str, prompt: &str, json_mode: bool) -> Option<String> {
     let url = format!(
         "https://generativelanguage.googleapis.com/v1beta/models/{}:generateContent?key={}",
@@ -914,13 +937,28 @@ async fn gemini_generate(client: &reqwest::Client, key: &str, model: &str, promp
         "contents": [{ "parts": [{ "text": prompt }] }],
         "generationConfig": config,
     });
-    let res = client.post(&url).json(&body).send().await.ok()?;
-    if !res.status().is_success() {
-        tracing::warn!("Gemini http {}", res.status());
-        return None;
+
+    for attempt in 0u8..2 {
+        let res = client.post(&url).json(&body).send().await.ok()?;
+        let status = res.status();
+        if status.as_u16() == 429 {
+            if attempt == 0 {
+                tracing::warn!("Gemini 429 — 6秒待ってリトライ");
+                tokio::time::sleep(tokio::time::Duration::from_secs(6)).await;
+                continue;
+            } else {
+                tracing::warn!("Gemini 429 — リトライも失敗");
+                return None;
+            }
+        }
+        if !status.is_success() {
+            tracing::warn!("Gemini http {}", status);
+            return None;
+        }
+        let parsed: GeminiResponse = res.json().await.ok()?;
+        return parsed.text().map(|s| s.trim().to_string());
     }
-    let parsed: GeminiResponse = res.json().await.ok()?;
-    parsed.text().map(|s| s.trim().to_string())
+    None
 }
 
 /// B3 Gemini 実装 — Map → Reduce
@@ -1342,6 +1380,12 @@ async fn run_pipeline(
         tracing::error!("[job {}] status→running 更新失敗: {}", job_id, e);
         return;
     }
+
+    // ── テキスト前処理 ──────────────────────────────────────────────────
+    // PDF から抽出したテキストはページヘッダー/フッター（DOI 行・雑誌名等）を含む。
+    // これらを除去することで B3/C3 の LLM 入力品質と mock フォールバック品質が向上する。
+    let text = clean_pdf_text(&text);
+    tracing::info!("[job {}] テキスト前処理後: {} 文字", job_id, text.chars().count());
 
     // ── B1: セクション分割 ──────────────────────────────────────────────
     // 外部 API なし、純粋 Rust で完結する。失敗はありえないが、
