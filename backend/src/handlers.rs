@@ -20,7 +20,8 @@ use crate::auth::issue_token;
 use crate::error::AppError;
 use crate::models::{
     AuthResponse, IngestRequest, IngestResponse, JobStatusResponse,
-    LoginRequest, PaperOutlineRequest, PaperOutlineResponse, RefineRequest, RefineResponse,
+    LoginRequest, NameSheetRequest, NameSheetResponse,
+    PaperOutlineRequest, PaperOutlineResponse, RefineRequest, RefineResponse,
     RegisterRequest, WorkProgressResponse, WorkProgressUpdateRequest,
 };
 use crate::AppState;
@@ -1692,6 +1693,115 @@ pub async fn refine_content(
             characters: refined.characters,
             synopsis: refined.synopsis,
             panel_beats: refined.panel_beats,
+        }),
+    )
+        .into_response()
+}
+
+// POST /api/ai/namesheet  — Manga namesheet (panel layout + dialogue) generator
+pub async fn generate_namesheet(
+    State(_state): State<AppState>,
+    Json(payload): Json<NameSheetRequest>,
+) -> impl IntoResponse {
+    let key = match std::env::var("GEMINI_API_KEY")
+        .ok()
+        .filter(|k| !k.trim().is_empty())
+    {
+        Some(k) => k,
+        None => {
+            return (
+                StatusCode::SERVICE_UNAVAILABLE,
+                Json(NameSheetResponse {
+                    ok: false,
+                    message: "GEMINI_API_KEY が未設定です。Render の環境変数を確認してください。".into(),
+                    source: "none".into(),
+                    pages: vec![],
+                }),
+            )
+                .into_response();
+        }
+    };
+
+    let model = std::env::var("GEMINI_MODEL").unwrap_or_else(|_| "gemini-2.5-flash".into());
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(180))
+        .build()
+        .unwrap_or_default();
+
+    let tone = payload.tone.as_deref().unwrap_or("ポップサイエンス");
+    let chars_json = serde_json::to_string(&payload.characters).unwrap_or_else(|_| "[]".into());
+    let beats = &payload.panel_beats;
+
+    let prompt = format!(
+        "あなたはプロの漫画ネーム師です。以下の企画書をもとに、起承転結の各パートについて詳細なネーム（コマ割り・セリフ）を作成してください。\n\
+厳密なJSONのみ出力（マークダウン記号・前後の説明文なし）。\n\n\
+【企画書】\n\
+トーン: {tone}\n\
+テーマ: {theme}\n\
+キャラクター: {chars}\n\
+粗筋（3幕）: {synopsis}\n\
+ネーム構成:\n\
+  起: {b0}\n\
+  承: {b1}\n\
+  転: {b2}\n\
+  結: {b3}\n\n\
+【出力形式】4要素の配列（起→承→転→結の順）:\n\
+[\n\
+  {{\n\
+    \"beat\": \"起\",\n\
+    \"scene_direction\": \"ページ全体の雰囲気・演出メモ\",\n\
+    \"panels\": [\n\
+      {{\n\
+        \"number\": 1,\n\
+        \"layout\": \"大ゴマ\",\n\
+        \"scene\": \"コマの場面説明（背景・人物配置・表情）\",\n\
+        \"dialogue\": \"セリフまたはモノローグ（ない場合は空文字）\",\n\
+        \"direction\": \"演出指示（効果線・カメラアングルなど）\"\n\
+      }}\n\
+    ]\n\
+  }}\n\
+]\n\n\
+制約:\n\
+- 各パート3〜5コマで構成すること\n\
+- layoutは「大ゴマ」「縦長」「横長」「正方形」「小」のいずれか\n\
+- セリフはキャラクターらしい口調で書くこと\n\
+- 最終的にJSON配列のみ出力（他の文字は一切含めない）",
+        tone = tone,
+        theme = payload.theme_line.as_deref().unwrap_or(""),
+        chars = chars_json,
+        synopsis = payload.synopsis.as_deref().unwrap_or(""),
+        b0 = beats.get(0).map(String::as_str).unwrap_or(""),
+        b1 = beats.get(1).map(String::as_str).unwrap_or(""),
+        b2 = beats.get(2).map(String::as_str).unwrap_or(""),
+        b3 = beats.get(3).map(String::as_str).unwrap_or(""),
+    );
+
+    let content = match gemini_generate(&client, &key, &model, &prompt, true).await {
+        Some(c) => c,
+        None => {
+            return (
+                StatusCode::SERVICE_UNAVAILABLE,
+                Json(NameSheetResponse {
+                    ok: false,
+                    message: "Gemini API 呼び出し失敗（429 またはタイムアウト）。しばらく待ってから再試行してください。".into(),
+                    source: "none".into(),
+                    pages: vec![],
+                }),
+            )
+                .into_response();
+        }
+    };
+
+    let pages: Vec<crate::models::NamePage> = serde_json::from_str(&content).unwrap_or_default();
+    tracing::info!("[namesheet] 完了: {} ページ生成", pages.len());
+
+    (
+        StatusCode::OK,
+        Json(NameSheetResponse {
+            ok: true,
+            message: "ok".into(),
+            source: "gemini".into(),
+            pages,
         }),
     )
         .into_response()

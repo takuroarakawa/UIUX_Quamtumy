@@ -752,7 +752,7 @@
         );
       }
 
-      function HomeView({ onDemo, onTryAi, onOpenAuth, onOpenStudio, onOpenSynopsis }) {
+      function HomeView({ onDemo, onTryAi, onOpenAuth, onOpenStudio, onOpenSynopsis, onOpenNameSheet }) {
         const [tryStage, setTryStage] = useState("idle");
         const [tryFileName, setTryFileName] = useState("");
         const [tryResultText, setTryResultText] = useState("");
@@ -1473,7 +1473,13 @@
                              : pipeResult.source === "openai" ? "✦ OpenAI" : "⚙ mock"}
                           </span>
                           <button
-                            onClick={onDemo}
+                            onClick={() => onOpenNameSheet && onOpenNameSheet({
+                              tone: mangaTone,
+                              theme_line: pipeResult.theme_line,
+                              characters: pipeResult.characters || [],
+                              synopsis: pipeResult.synopsis,
+                              panel_beats: pipeResult.panel_beats || [],
+                            })}
                             style={{
                               flex: 1, minWidth: 160, padding: "0.65rem 0.9rem",
                               fontSize: "0.92rem", fontWeight: 1000, color: "#06210f",
@@ -1482,7 +1488,7 @@
                               cursor: "pointer", boxShadow: "0 4px 20px rgba(34,197,94,0.28)",
                             }}
                           >
-                            漫画として読む →
+                            📋 ネーム生成へ →
                           </button>
                         </div>
                       </div>
@@ -2764,6 +2770,196 @@
       }
 
       // ─────────────────────────────────────────────────────────────────────
+      //  NameSheetView — ネーム生成ページ（コマ割り・セリフ・演出）
+      // ─────────────────────────────────────────────────────────────────────
+      const LAYOUT_STYLE = {
+        "大ゴマ":  { flex: "2 1 100%", minHeight: 120 },
+        "横長":   { flex: "2 1 100%", minHeight: 80 },
+        "縦長":   { flex: "1 1 45%",  minHeight: 130 },
+        "正方形": { flex: "1 1 45%",  minHeight: 100 },
+        "小":     { flex: "1 1 30%",  minHeight: 70 },
+      };
+      const BEAT_COLOR = {
+        "起": { bg: "rgba(59,130,246,0.15)", border: "rgba(59,130,246,0.5)",  accent: "#93c5fd" },
+        "承": { bg: "rgba(234,179,8,0.15)",  border: "rgba(234,179,8,0.5)",   accent: "#fde68a" },
+        "転": { bg: "rgba(34,197,94,0.15)",  border: "rgba(34,197,94,0.5)",   accent: "#86efac" },
+        "結": { bg: "rgba(168,85,247,0.15)", border: "rgba(168,85,247,0.5)",  accent: "#c4b5fd" },
+      };
+
+      function NameSheetView({ initialData, onBack }) {
+        const [pages, setPages] = useState(null);
+        const [busy, setBusy] = useState(false);
+        const [error, setError] = useState("");
+        const [source, setSource] = useState("");
+        const data = initialData || {};
+
+        const generate = async () => {
+          setBusy(true); setError(""); setPages(null);
+          try {
+            const res = await fetch(apiUrl("/api/ai/namesheet"), {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tone: data.tone,
+                theme_line: data.theme_line,
+                characters: data.characters || [],
+                synopsis: data.synopsis,
+                panel_beats: data.panel_beats || [],
+              }),
+            });
+            const d = await res.json();
+            if (!d.ok) throw new Error(d.message || "生成に失敗しました");
+            setPages(d.pages);
+            setSource(d.source);
+          } catch (e) {
+            setError(e.message || "エラーが発生しました");
+          } finally { setBusy(false); }
+        };
+
+        const regenPage = async (idx) => {
+          if (!pages) return;
+          const beat = pages[idx];
+          setBusy(true); setError("");
+          try {
+            const res = await fetch(apiUrl("/api/ai/namesheet"), {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tone: data.tone,
+                theme_line: data.theme_line,
+                characters: data.characters || [],
+                synopsis: data.synopsis,
+                panel_beats: data.panel_beats || [],
+              }),
+            });
+            const d = await res.json();
+            if (!d.ok) throw new Error(d.message || "再生成に失敗しました");
+            if (d.pages?.[idx]) {
+              setPages(prev => { const next = [...prev]; next[idx] = d.pages[idx]; return next; });
+            }
+          } catch (e) { setError(e.message); }
+          finally { setBusy(false); }
+        };
+
+        // 自動生成：マウント時にデータがあれば即生成
+        useEffect(() => { if (data.panel_beats?.length) generate(); }, []);
+
+        return (
+          <div style={{ ...PAGE_BG, padding: "0 0 4rem 0" }}>
+            {/* ヘッダー */}
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
+              <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 戻る</button>
+              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>📋 ネーム生成（コマ割り）</span>
+              {source && (
+                <span style={{ marginLeft: "auto", fontSize: "0.73rem", fontWeight: 700, padding: "0.18rem 0.5rem", borderRadius: "99px", background: source === "gemini" ? "rgba(234,179,8,0.2)" : "rgba(255,255,255,0.1)", color: source === "gemini" ? "#fde68a" : "rgba(234,248,239,0.5)", border: "1px solid rgba(34,197,94,0.25)" }}>
+                  {source === "gemini" ? "✦ Gemini" : "⚙ mock"}
+                </span>
+              )}
+            </div>
+
+            <div style={{ maxWidth: 900, margin: "0 auto", padding: "1.5rem" }}>
+              {/* テーマ表示 */}
+              {data.theme_line && (
+                <div style={{ marginBottom: "1rem", padding: "0.65rem 1rem", background: "linear-gradient(135deg,rgba(34,197,94,0.15),rgba(16,163,74,0.08))", border: "1.5px solid rgba(34,197,94,0.4)", borderRadius: "0.85rem" }}>
+                  <span style={{ fontSize: "0.68rem", fontWeight: 900, color: "rgba(167,243,208,0.65)", letterSpacing: "0.06em" }}>テーマ </span>
+                  <span style={{ fontSize: "1rem", fontWeight: 1000, color: "#eaf8ef" }}>{data.theme_line}</span>
+                  {data.tone && <span style={{ marginLeft: 8, fontSize: "0.72rem", color: "rgba(167,243,208,0.5)" }}>({data.tone})</span>}
+                </div>
+              )}
+
+              {/* ローディング */}
+              {busy && (
+                <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
+                  <div style={{ fontSize: "2rem", marginBottom: "0.8rem" }}>🎨</div>
+                  <div style={{ fontSize: "1rem", color: "rgba(167,243,208,0.8)", fontWeight: 900 }}>Gemini がネームを生成中…</div>
+                  <div style={{ fontSize: "0.82rem", color: "rgba(167,243,208,0.5)", marginTop: "0.4rem" }}>起承転結 4 ページ × 3〜5 コマを生成しています（30〜60 秒）</div>
+                  <div style={{ marginTop: "1.2rem", width: 200, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.1)", overflow: "hidden", margin: "1.2rem auto 0" }}>
+                    <div style={{ height: "100%", borderRadius: 4, width: "60%", background: "linear-gradient(90deg,#22c55e,#16a34a)", animation: "pulse 1.5s ease-in-out infinite" }} />
+                  </div>
+                </div>
+              )}
+
+              {/* エラー */}
+              {error && (
+                <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "rgba(127,29,29,0.3)", border: "1px solid rgba(252,165,165,0.4)", borderRadius: "0.75rem", color: "#fca5a5", fontSize: "0.9rem" }}>
+                  {error}
+                  <button onClick={generate} style={{ marginLeft: "1rem", padding: "0.3rem 0.8rem", fontSize: "0.82rem", fontWeight: 700, background: "rgba(34,197,94,0.25)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.5rem", color: "#86efac", cursor: "pointer" }}>再試行</button>
+                </div>
+              )}
+
+              {/* ネームページ表示 */}
+              {pages && pages.map((page, pi) => {
+                const bc = BEAT_COLOR[page.beat] || BEAT_COLOR["起"];
+                return (
+                  <div key={pi} style={{ marginBottom: "1.5rem", background: bc.bg, border: `1.5px solid ${bc.border}`, borderRadius: "1rem", overflow: "hidden" }}>
+                    {/* ページヘッダー */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", padding: "0.7rem 1rem", borderBottom: `1px solid ${bc.border}` }}>
+                      <span style={{ fontWeight: 1000, fontSize: "1.5rem", color: bc.accent, minWidth: 28 }}>{page.beat}</span>
+                      <span style={{ fontSize: "0.82rem", color: "rgba(234,248,239,0.7)", flex: 1 }}>{page.scene_direction}</span>
+                      <button
+                        onClick={() => regenPage(pi)}
+                        disabled={busy}
+                        style={{ padding: "0.25rem 0.65rem", fontSize: "0.75rem", fontWeight: 700, background: "rgba(34,197,94,0.2)", border: "none", borderRadius: "0.4rem", color: "#86efac", cursor: busy ? "wait" : "pointer", opacity: busy ? 0.5 : 1 }}
+                      >
+                        ⟳ このページを再生成
+                      </button>
+                    </div>
+
+                    {/* コマ一覧 */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", padding: "0.8rem" }}>
+                      {page.panels?.map((panel, ci) => {
+                        const ls = LAYOUT_STYLE[panel.layout] || LAYOUT_STYLE["正方形"];
+                        return (
+                          <div key={ci} style={{
+                            ...ls,
+                            background: "rgba(0,0,0,0.35)", border: `1px solid ${bc.border}`, borderRadius: "0.65rem",
+                            padding: "0.7rem 0.8rem", display: "flex", flexDirection: "column", gap: "0.35rem", position: "relative",
+                          }}>
+                            {/* コマ番号・レイアウト */}
+                            <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginBottom: "0.1rem" }}>
+                              <span style={{ fontSize: "0.62rem", fontWeight: 900, color: bc.accent, background: "rgba(0,0,0,0.4)", padding: "0.1rem 0.35rem", borderRadius: "0.3rem" }}>
+                                コマ {panel.number}
+                              </span>
+                              <span style={{ fontSize: "0.6rem", color: "rgba(234,248,239,0.4)" }}>{panel.layout}</span>
+                            </div>
+
+                            {/* 場面説明 */}
+                            <div style={{ fontSize: "0.82rem", color: "#eaf8ef", fontWeight: 700, lineHeight: 1.5 }}>{panel.scene}</div>
+
+                            {/* セリフ */}
+                            {panel.dialogue && (
+                              <div style={{ marginTop: "0.25rem", padding: "0.35rem 0.5rem", background: "rgba(255,255,255,0.1)", borderLeft: `3px solid ${bc.accent}`, borderRadius: "0 0.4rem 0.4rem 0", fontSize: "0.82rem", color: bc.accent, fontStyle: "italic", lineHeight: 1.5 }}>
+                                「{panel.dialogue}」
+                              </div>
+                            )}
+
+                            {/* 演出 */}
+                            {panel.direction && (
+                              <div style={{ marginTop: "auto", fontSize: "0.72rem", color: "rgba(234,248,239,0.5)", lineHeight: 1.4 }}>
+                                📐 {panel.direction}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* 全体再生成ボタン */}
+              {(pages || error) && !busy && (
+                <button
+                  onClick={generate}
+                  style={{ width: "100%", padding: "0.85rem", fontSize: "0.95rem", fontWeight: 900, background: "rgba(34,197,94,0.2)", border: "1.5px solid rgba(34,197,94,0.4)", borderRadius: "0.85rem", color: "#86efac", cursor: "pointer", marginTop: "0.5rem" }}
+                >
+                  ⟳ ネーム全体を再生成する
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      // ─────────────────────────────────────────────────────────────────────
       //  SynopsisView — 粗筋生成ページ
       // ─────────────────────────────────────────────────────────────────────
       function SynopsisView({ onBack, onGoNamePlan }) {
@@ -2999,7 +3195,7 @@
       // ─────────────────────────────────────────────────────────────────────
       //  NamePlanView — ネーム構成ページ（起承転結）
       // ─────────────────────────────────────────────────────────────────────
-      function NamePlanView({ initialData, onBack }) {
+      function NamePlanView({ initialData, onBack, onGoNameSheet }) {
         const [data, setData] = useState(initialData || { tone: "少年マンガ", theme_line: "", characters: [], synopsis: "", panel_beats: ["", "", "", ""], source: "none" });
         const [editIdx, setEditIdx] = useState(null); // 編集中の beat インデックス
         const [editText, setEditText] = useState("");
@@ -3124,6 +3320,21 @@
 
               {/* チャット修正 */}
               <ChatRefinePanel currentData={data} onRefined={onRefined} disabled={regenBusy !== null} />
+
+              {/* ネーム生成へ */}
+              <button
+                onClick={() => onGoNameSheet && onGoNameSheet(data)}
+                disabled={!data.panel_beats?.some(b => b)}
+                style={{
+                  marginTop: "1.2rem", width: "100%", padding: "1.05rem", fontSize: "1rem", fontWeight: 1000,
+                  background: (!data.panel_beats?.some(b => b)) ? "rgba(34,197,94,0.25)" : "linear-gradient(135deg,#22c55e,#16a34a)",
+                  color: "#06210f", border: "none", borderRadius: "0.9rem",
+                  cursor: (!data.panel_beats?.some(b => b)) ? "not-allowed" : "pointer",
+                  boxShadow: "0 6px 24px rgba(34,197,94,0.3)",
+                }}
+              >
+                📋 このネーム構成でネーム生成へ →
+              </button>
             </div>
           </div>
         );
@@ -3138,6 +3349,8 @@
         const [catalogList, setCatalogList] = useState([]);
         // 粗筋ページ → ネーム構成ページ へデータを引き継ぐ state
         const [synopsisData, setSynopsisData] = useState(null);
+        // ネーム構成ページ（or HomeView の結果）→ ネーム生成ページ へ引き継ぐ state
+        const [namePlanData, setNamePlanData] = useState(null);
 
         const refreshCatalog = () => {
           fetchCatalogArtworksArray().then(setCatalogList);
@@ -3217,7 +3430,7 @@
               setRoute("manga");
               return;
             }
-            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "synopsis" || h === "nameplan") setRoute(h || "home");
+            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "synopsis" || h === "nameplan" || h === "namesheet") setRoute(h || "home");
             else setRoute("home");
           };
           window.addEventListener("popstate", onPop);
@@ -3258,8 +3471,14 @@
           page = <NamePlanView
             initialData={synopsisData}
             onBack={() => setRoute("synopsis")}
+            onGoNameSheet={(data) => { setNamePlanData(data); setRoute("namesheet"); }}
           />;
-        else page = <HomeView onDemo={onDemo} onTryAi={onTryAi} onOpenAuth={() => setRoute("auth")} onOpenStudio={() => setRoute("studio")} onOpenSynopsis={() => setRoute("synopsis")} />;
+        else if (route === "namesheet")
+          page = <NameSheetView
+            initialData={namePlanData}
+            onBack={() => setRoute(namePlanData ? "nameplan" : "home")}
+          />;
+        else page = <HomeView onDemo={onDemo} onTryAi={onTryAi} onOpenAuth={() => setRoute("auth")} onOpenStudio={() => setRoute("studio")} onOpenSynopsis={() => setRoute("synopsis")} onOpenNameSheet={(data) => { setNamePlanData(data); setRoute("namesheet"); }} />;
 
         return (
           <>

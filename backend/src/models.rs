@@ -387,6 +387,58 @@ pub struct RefineResponse {
     pub panel_beats: Vec<String>,
 }
 
+/// POST /api/ai/namesheet — ネーム生成（コマ割り・セリフ付き）
+#[derive(Debug, Deserialize)]
+pub struct NameSheetRequest {
+    #[serde(default)] pub tone: Option<String>,
+    #[serde(default)] pub theme_line: Option<String>,
+    #[serde(default)] pub characters: Vec<MangaCharacter>,
+    #[serde(default)] pub synopsis: Option<String>,
+    #[serde(default)] pub panel_beats: Vec<String>,
+}
+
+/// 1コマの内容
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct NamePanel {
+    /// コマ番号
+    pub number: u32,
+    /// レイアウト種別（大ゴマ / 縦長 / 横長 / 小 など）
+    #[serde(default)]
+    pub layout: String,
+    /// 場面説明（背景・人物配置）
+    #[serde(default)]
+    pub scene: String,
+    /// セリフまたはモノローグ（無い場合は空文字）
+    #[serde(default)]
+    pub dialogue: String,
+    /// 演出指示（効果線・アングルなど）
+    #[serde(default)]
+    pub direction: String,
+}
+
+/// 1ページ（起 / 承 / 転 / 結 の1拍 = 3〜5コマ）
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct NamePage {
+    /// 拍ラベル（起 / 承 / 転 / 結）
+    pub beat: String,
+    /// ページ全体の演出メモ
+    #[serde(default)]
+    pub scene_direction: String,
+    /// コマ一覧
+    #[serde(default)]
+    pub panels: Vec<NamePanel>,
+}
+
+/// POST /api/ai/namesheet レスポンス
+#[derive(Debug, Serialize)]
+pub struct NameSheetResponse {
+    pub ok: bool,
+    pub message: String,
+    pub source: String,
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub pages: Vec<NamePage>,
+}
+
 /// GET /api/ai/jobs/:id — ポーリング用レスポンス
 #[derive(Debug, Serialize)]
 pub struct JobStatusResponse {
