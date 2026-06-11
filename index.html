@@ -376,14 +376,27 @@
       }
 
       async function fetchCatalogArtworksArray() {
+        // ローカル投稿分（未ログイン投稿）をマージ
+        let localWorks = [];
+        try {
+          localWorks = JSON.parse(sessionStorage.getItem("drcanvas:local_works") || "[]").map(w => ({
+            id: w.id, title: w.title, description: w.description,
+            coverImageUrl: w.thumbnail || "",
+            authorName: "あなた",
+            pages: w.content_json?.pages || [],
+            content_json: w.content_json,
+            isLocal: true,
+          }));
+        } catch {}
+
         try {
           const res = await fetch(apiUrl("/api/catalog/works"));
-          if (!res.ok) return [];
+          if (!res.ok) return localWorks;
           const json = await res.json();
-          const items = json.items || [];
-          return items.map(normalizeCatalogArtwork).filter(Boolean);
+          const items = (json.items || []).map(normalizeCatalogArtwork).filter(Boolean);
+          return [...localWorks, ...items];
         } catch {
-          return [];
+          return localWorks;
         }
       }
 
@@ -2880,6 +2893,197 @@
 
       const PAGE_COUNT_OPTIONS = [8, 12, 16, 20, 24, 32]; // 後方互換のため残す
 
+      // ─────────────────────────────────────────────────────────────────────
+      //  RelationshipView — キャラクター関係図 (Step 4 / 6)
+      // ─────────────────────────────────────────────────────────────────────
+      const REL_TYPES = ["師弟", "ライバル", "友人", "恋愛", "家族", "敵対", "協力", "秘密", "憧れ", "その他"];
+      const REL_COLORS = { "師弟": "#60a5fa", "ライバル": "#f87171", "友人": "#4ade80", "恋愛": "#f472b6", "家族": "#a78bfa", "敵対": "#ef4444", "協力": "#34d399", "秘密": "#fbbf24", "憧れ": "#fb923c", "その他": "#94a3b8" };
+
+      function RelationshipView({ characters, onBack, onGoNameSheet }) {
+        const chars = characters || [];
+        const [relations, setRelations] = React.useState(() => {
+          try { return JSON.parse(sessionStorage.getItem("drcanvas:relations") || "[]"); } catch { return []; }
+        });
+        const [addFrom, setAddFrom] = React.useState(chars[0]?.name || "");
+        const [addTo, setAddTo] = React.useState(chars[1]?.name || "");
+        const [addType, setAddType] = React.useState("友人");
+        const [addNote, setAddNote] = React.useState("");
+        const [chatMsg, setChatMsg] = React.useState("");
+        const [chatBusy, setChatBusy] = React.useState(false);
+        const [chatError, setChatError] = React.useState("");
+
+        const saveRelations = (r) => {
+          setRelations(r);
+          try { sessionStorage.setItem("drcanvas:relations", JSON.stringify(r)); } catch {}
+        };
+
+        const addRelation = () => {
+          if (!addFrom || !addTo || addFrom === addTo) return;
+          const exists = relations.find(r => (r.from === addFrom && r.to === addTo) || (r.from === addTo && r.to === addFrom));
+          if (exists) return;
+          saveRelations([...relations, { from: addFrom, to: addTo, type: addType, note: addNote }]);
+          setAddNote("");
+        };
+
+        const removeRelation = (i) => saveRelations(relations.filter((_, idx) => idx !== i));
+
+        const aiSuggest = async () => {
+          setChatBusy(true); setChatError("");
+          try {
+            const res = await fetch(apiUrl("/api/ai/refine"), {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                instruction: `以下のキャラクターたちの関係性を提案してください。各キャラのロールと説明を考慮し、ドラマ的に面白い関係図を提案してください。JSON形式で関係の配列: [{from, to, type, note}] のみを返してください。\n\nキャラクター: ${JSON.stringify(chars.map(c => ({ name: c.name, role: c.role, description: c.description })))}\n\nユーザー指示: ${chatMsg}`,
+                characters: chars,
+              }),
+            });
+            const d = await res.json();
+            if (d.ok && d.message) {
+              try {
+                const jsonMatch = d.message.match(/\[[\s\S]*\]/);
+                if (jsonMatch) {
+                  const suggested = JSON.parse(jsonMatch[0]);
+                  saveRelations([...relations, ...suggested.filter(s => s.from && s.to && s.from !== s.to)]);
+                }
+              } catch {}
+            }
+          } catch (e) { setChatError(e.message); }
+          setChatBusy(false); setChatMsg("");
+        };
+
+        return (
+          <div style={{ ...PAGE_BG, padding: "0 0 4rem 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
+              <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 戻る</button>
+              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>🕸 キャラクター関係図</span>
+              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 4 / 6</span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "1.2rem", padding: "1.2rem 1.5rem", maxWidth: 1200, margin: "0 auto" }}>
+
+              {/* 左: 関係図 + 追加フォーム */}
+              <div>
+                {/* 関係グラフ（SVGで線を描画） */}
+                {chars.length >= 2 && (
+                  <div style={{ ...CARD, marginBottom: "1rem", minHeight: 260, position: "relative", overflow: "hidden" }}>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "rgba(167,243,208,0.6)", marginBottom: "0.75rem", letterSpacing: "0.05em" }}>
+                      関係マップ
+                    </div>
+                    {/* キャラクター配置（円形レイアウト） */}
+                    {(() => {
+                      const n = chars.length;
+                      const cx = 50, cy = 50, r = 35;
+                      const positions = chars.map((_, i) => ({
+                        x: cx + r * Math.cos((2 * Math.PI * i / n) - Math.PI / 2),
+                        y: cy + r * Math.sin((2 * Math.PI * i / n) - Math.PI / 2),
+                      }));
+                      return (
+                        <svg viewBox="0 0 100 100" style={{ width: "100%", height: 240 }}>
+                          {/* 関係線 */}
+                          {relations.map((rel, ri) => {
+                            const fi = chars.findIndex(c => c.name === rel.from);
+                            const ti = chars.findIndex(c => c.name === rel.to);
+                            if (fi < 0 || ti < 0) return null;
+                            const fp = positions[fi], tp = positions[ti];
+                            const color = REL_COLORS[rel.type] || "#94a3b8";
+                            const mx = (fp.x + tp.x) / 2, my = (fp.y + tp.y) / 2;
+                            return (
+                              <g key={ri}>
+                                <line x1={fp.x} y1={fp.y} x2={tp.x} y2={tp.y} stroke={color} strokeWidth="0.8" strokeOpacity="0.7" />
+                                <text x={mx} y={my - 1} textAnchor="middle" fontSize="3" fill={color} style={{ pointerEvents: "none" }}>{rel.type}</text>
+                              </g>
+                            );
+                          })}
+                          {/* キャラクターノード */}
+                          {chars.map((ch, i) => (
+                            <g key={i}>
+                              <circle cx={positions[i].x} cy={positions[i].y} r="7" fill="rgba(34,197,94,0.25)" stroke="rgba(34,197,94,0.7)" strokeWidth="0.7" />
+                              <text x={positions[i].x} y={positions[i].y + 1.2} textAnchor="middle" fontSize="3.2" fill="#eaf8ef" fontWeight="bold" style={{ pointerEvents: "none" }}>{ch.name.slice(0, 5)}</text>
+                              <text x={positions[i].x} y={positions[i].y + 10.5} textAnchor="middle" fontSize="2.5" fill="rgba(167,243,208,0.6)" style={{ pointerEvents: "none" }}>{ch.role?.slice(0, 5)}</text>
+                            </g>
+                          ))}
+                        </svg>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* 関係一覧 */}
+                {relations.length > 0 && (
+                  <div style={{ ...CARD, marginBottom: "1rem" }}>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "rgba(167,243,208,0.6)", marginBottom: "0.5rem" }}>設定済みの関係</div>
+                    {relations.map((rel, i) => (
+                      <div key={i} style={{ display: "flex", gap: "0.5rem", alignItems: "center", padding: "0.4rem 0.5rem", background: "rgba(0,0,0,0.2)", borderRadius: "0.5rem", marginBottom: "0.3rem", borderLeft: `3px solid ${REL_COLORS[rel.type] || "#94a3b8"}` }}>
+                        <span style={{ fontWeight: 900, fontSize: "0.85rem", color: "#eaf8ef" }}>{rel.from}</span>
+                        <span style={{ fontSize: "0.72rem", padding: "0.1rem 0.4rem", borderRadius: "99px", background: `${REL_COLORS[rel.type] || "#94a3b8"}33`, color: REL_COLORS[rel.type] || "#94a3b8", fontWeight: 900 }}>{rel.type}</span>
+                        <span style={{ fontWeight: 900, fontSize: "0.85rem", color: "#eaf8ef" }}>{rel.to}</span>
+                        {rel.note && <span style={{ fontSize: "0.75rem", color: "rgba(234,248,239,0.45)", flex: 1 }}>— {rel.note}</span>}
+                        <button onClick={() => removeRelation(i)} style={{ marginLeft: "auto", background: "none", border: "none", color: "rgba(252,165,165,0.6)", cursor: "pointer", fontSize: "0.8rem" }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* 関係追加フォーム */}
+                <div style={{ ...CARD, marginBottom: "1rem" }}>
+                  <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "rgba(167,243,208,0.6)", marginBottom: "0.6rem" }}>関係を追加</div>
+                  <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center", marginBottom: "0.5rem" }}>
+                    <select value={addFrom} onChange={e => setAddFrom(e.target.value)} style={{ padding: "0.4rem 0.6rem", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: "0.5rem", color: "#eaf8ef", fontSize: "0.85rem", outline: "none" }}>
+                      {chars.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                    </select>
+                    <select value={addType} onChange={e => setAddType(e.target.value)} style={{ padding: "0.4rem 0.6rem", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: "0.5rem", color: "#eaf8ef", fontSize: "0.85rem", outline: "none" }}>
+                      {REL_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                    <select value={addTo} onChange={e => setAddTo(e.target.value)} style={{ padding: "0.4rem 0.6rem", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: "0.5rem", color: "#eaf8ef", fontSize: "0.85rem", outline: "none" }}>
+                      {chars.filter(c => c.name !== addFrom).map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <input value={addNote} onChange={e => setAddNote(e.target.value)} placeholder="関係メモ（任意）" style={{ width: "100%", padding: "0.4rem 0.6rem", fontSize: "0.82rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(34,197,94,0.25)", borderRadius: "0.5rem", color: "#eaf8ef", outline: "none", boxSizing: "border-box", marginBottom: "0.5rem" }} />
+                  <button onClick={addRelation} style={{ padding: "0.45rem 1rem", fontWeight: 900, fontSize: "0.85rem", background: "linear-gradient(135deg,#22c55e,#16a34a)", border: "none", borderRadius: "0.5rem", color: "#06210f", cursor: "pointer" }}>
+                    ＋ 追加
+                  </button>
+                </div>
+
+                {/* 次へボタン */}
+                <button
+                  onClick={() => onGoNameSheet()}
+                  style={{
+                    marginTop: "0.5rem", width: "100%", padding: "1.05rem", fontSize: "1rem", fontWeight: 1000,
+                    background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                    color: "#06210f", border: "none", borderRadius: "0.9rem", cursor: "pointer",
+                    boxShadow: "0 6px 24px rgba(34,197,94,0.3)",
+                  }}
+                >
+                  📋 この関係図でネーム生成へ →
+                </button>
+              </div>
+
+              {/* 右: AI提案チャット */}
+              <div style={{ position: "sticky", top: "1rem", height: "fit-content" }}>
+                <div style={{ ...CARD, border: "1px solid rgba(34,197,94,0.25)" }}>
+                  <div style={{ fontSize: "0.75rem", fontWeight: 900, color: "rgba(167,243,208,0.8)", marginBottom: "0.5rem" }}>💬 AI 関係提案</div>
+                  <div style={{ fontSize: "0.72rem", color: "rgba(167,243,208,0.5)", marginBottom: "0.7rem", lineHeight: 1.5 }}>
+                    例: ライバル関係を追加して<br/>師弟関係を中心にして<br/>三角関係を作って
+                  </div>
+                  <textarea
+                    value={chatMsg}
+                    onChange={e => setChatMsg(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); aiSuggest(); }}}
+                    placeholder="AI に関係を提案させる…"
+                    rows={4}
+                    style={{ width: "100%", padding: "0.6rem", fontSize: "0.85rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: "0.6rem", color: "#eaf8ef", resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: "0.5rem" }}
+                  />
+                  <button onClick={aiSuggest} disabled={!chatMsg.trim() || chatBusy} style={{ width: "100%", padding: "0.6rem", fontWeight: 900, fontSize: "0.88rem", background: !chatMsg.trim() || chatBusy ? "rgba(34,197,94,0.25)" : "linear-gradient(135deg,#22c55e,#16a34a)", color: "#06210f", border: "none", borderRadius: "0.6rem", cursor: !chatMsg.trim() || chatBusy ? "not-allowed" : "pointer" }}>
+                    {chatBusy ? "提案中…" : "AI に提案させる"}
+                  </button>
+                  {chatError && <div style={{ marginTop: "0.4rem", fontSize: "0.76rem", color: "#fca5a5" }}>{chatError}</div>}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       function NameSheetView({ synopsisData, namePlanData, characters, onBack, onPublish }) {
         const sd = synopsisData || {};
         const nd = namePlanData || {};
@@ -2912,6 +3116,7 @@
             const d = await res.json();
             if (!d.ok) throw new Error(d.message || "生成に失敗しました");
             setPages(d.pages); setSource(d.source);
+            try { sessionStorage.setItem("drcanvas:namesheet_pages", JSON.stringify(d.pages)); } catch {}
           } catch (e) { setError(e.message || "エラーが発生しました"); }
           finally { setBusy(false); }
         };
@@ -3243,6 +3448,7 @@
         const [thumbnailUrl, setThumbnailUrl] = React.useState("");
         const [afterword, setAfterword] = React.useState("");
         const [submitting, setSubmitting] = React.useState(false);
+        const [submitError, setSubmitError] = React.useState("");
         const thumbRef = React.useRef(null);
 
         const CATEGORIES = ["バトル", "ファンタジー", "学園/スポーツ", "ラブコメ", "コメディ/ギャグ", "ミステリー/ホラー", "その他"];
@@ -3256,9 +3462,76 @@
         };
 
         const handleSubmit = async () => {
-          if (!title.trim()) return;
-          setSubmitting(true);
-          await new Promise(r => setTimeout(r, 800));
+          if (!title.trim() || !category) return;
+          setSubmitting(true); setSubmitError("");
+          const token = getAccessToken();
+
+          // ネームシートのページデータをsessionStorageから取得
+          let namesheetPages = [];
+          try { namesheetPages = JSON.parse(sessionStorage.getItem("drcanvas:namesheet_pages") || "[]"); } catch {}
+
+          const content_json = {
+            pages: namesheetPages.length > 0 ? namesheetPages.map((pg, i) => ({
+              pageNumber: pg.page_number,
+              beat: pg.beat,
+              imageUrl: "",
+              panels: pg.panels || [],
+            })) : [{
+              pageNumber: 1, beat: "起", imageUrl: "",
+              panels: [{ scene: synopsisData?.synopsis || "", dialogue: "", direction: "" }],
+            }],
+            synopsis: synopsisData?.synopsis || "",
+            theme_line: synopsisData?.theme_line || "",
+            characters: synopsisData?.characters || [],
+            panel_beats: namePlanData?.panel_beats || [],
+            tags: tags.split(/\s+/).filter(Boolean),
+            genre, readDir, episode: parseInt(episode) || 1,
+            afterword,
+          };
+
+          if (!token) {
+            // 未ログイン時は仮投稿（sessionStorageのみ）
+            try {
+              const drafts = JSON.parse(sessionStorage.getItem("drcanvas:local_works") || "[]");
+              const newWork = {
+                id: `local-${Date.now()}`,
+                title: title.trim(),
+                description: synopsisData?.synopsis?.slice(0, 160) || "",
+                category, genre, readDir,
+                thumbnail: thumbnailUrl || "",
+                content_json,
+                is_published: true,
+                created_at: new Date().toISOString(),
+              };
+              drafts.unshift(newWork);
+              sessionStorage.setItem("drcanvas:local_works", JSON.stringify(drafts));
+            } catch {}
+            setSubmitting(false);
+            onPublished && onPublished();
+            return;
+          }
+
+          try {
+            const res = await fetch(apiUrl("/api/artworks"), {
+              method: "POST",
+              headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                title: title.trim(),
+                description: (synopsisData?.synopsis || "").slice(0, 160),
+                content_json,
+              }),
+            });
+            const j = await res.json().catch(() => ({}));
+            if (!res.ok) { setSubmitError(j.error || "投稿に失敗しました"); setSubmitting(false); return; }
+            // 公開状態に設定
+            if (j.id) {
+              await fetch(apiUrl(`/api/artworks/${encodeURIComponent(j.id)}`), {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                body: JSON.stringify({ is_published: true }),
+              }).catch(() => {});
+            }
+          } catch (e) { setSubmitError(e.message || "ネットワークエラー"); setSubmitting(false); return; }
           setSubmitting(false);
           onPublished && onPublished();
         };
@@ -3395,7 +3668,7 @@
                 {submitting ? "投稿中…" : "📤 投稿する"}
               </button>
               <div style={{ textAlign: "center", fontSize: "0.75rem", color: "rgba(167,243,208,0.35)" }}>
-                カテゴリー選択後に投稿できます
+                {!getAccessToken() ? "（未ログイン）ローカル保存として投稿します" : "カテゴリー選択後に投稿できます"}
               </div>
             </div>
           </div>
@@ -4025,7 +4298,7 @@
               setRoute("manga");
               return;
             }
-            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "input" || h === "synopsis" || h === "nameplan" || h === "character" || h === "namesheet" || h === "publish") setRoute(h || "home");
+            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "input" || h === "synopsis" || h === "nameplan" || h === "character" || h === "relationship" || h === "namesheet" || h === "publish") setRoute(h || "home");
             else setRoute("home");
           };
           window.addEventListener("popstate", onPop);
@@ -4083,7 +4356,13 @@
             namePlanData={namePlanData}
             savedCharacters={characterData}
             onBack={() => setRoute("nameplan")}
-            onGoNameSheet={(chars) => { setCharacterData(chars); setRoute("namesheet"); }}
+            onGoNameSheet={(chars) => { setCharacterData(chars); setRoute("relationship"); }}
+          />;
+        else if (route === "relationship")
+          page = <RelationshipView
+            characters={characterData || synopsisData?.characters}
+            onBack={() => setRoute("character")}
+            onGoNameSheet={() => setRoute("namesheet")}
           />;
         else if (route === "namesheet")
           page = <NameSheetView
