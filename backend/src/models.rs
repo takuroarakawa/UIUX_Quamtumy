@@ -395,7 +395,10 @@ pub struct NameSheetRequest {
     #[serde(default)] pub characters: Vec<MangaCharacter>,
     #[serde(default)] pub synopsis: Option<String>,
     #[serde(default)] pub panel_beats: Vec<String>,
+    /// 総ページ数（デフォルト 16）
+    #[serde(default = "default_page_count")] pub page_count: u32,
 }
+fn default_page_count() -> u32 { 16 }
 
 /// 1コマの内容
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
@@ -416,15 +419,18 @@ pub struct NamePanel {
     pub direction: String,
 }
 
-/// 1ページ（起 / 承 / 転 / 結 の1拍 = 3〜5コマ）
+/// 1ページ（物理的な漫画の1ページ = 複数コマ）
 #[derive(Debug, Serialize, Deserialize, Default, Clone)]
 pub struct NamePage {
-    /// 拍ラベル（起 / 承 / 転 / 結）
+    /// ページ番号（1始まり）
+    #[serde(default)]
+    pub page_number: u32,
+    /// 属する拍（起 / 承 / 転 / 結）
     pub beat: String,
-    /// ページ全体の演出メモ
+    /// ページ全体の演出メモ・場面説明
     #[serde(default)]
     pub scene_direction: String,
-    /// コマ一覧
+    /// コマ一覧（1ページに複数コマ）
     #[serde(default)]
     pub panels: Vec<NamePanel>,
 }

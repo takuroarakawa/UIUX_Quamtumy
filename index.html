@@ -2770,6 +2770,140 @@
       }
 
       // ─────────────────────────────────────────────────────────────────────
+      //  CharacterView — キャラクター設定ページ
+      // ─────────────────────────────────────────────────────────────────────
+      function CharacterView({ synopsisData, namePlanData, savedCharacters, onBack, onGoNameSheet }) {
+        const initChars = savedCharacters || synopsisData?.characters || [];
+        const [characters, setCharacters] = useState(initChars.map(c => ({ ...c, appearance: c.appearance || "", personality: c.personality || "", motivation: c.motivation || "" })));
+        const [expandIdx, setExpandIdx] = useState(null);
+        const [refining, setRefining] = useState(null);
+
+        const updateChar = (i, field, val) => setCharacters(prev => { const a = [...prev]; a[i] = { ...a[i], [field]: val }; return a; });
+
+        const addChar = () => setCharacters(prev => [...prev, { name: "新キャラクター", role: "役割", description: "", appearance: "", personality: "", motivation: "" }]);
+        const removeChar = (i) => setCharacters(prev => prev.filter((_, idx) => idx !== i));
+
+        const aiExpand = async (i) => {
+          setRefining(i);
+          const ch = characters[i];
+          try {
+            const res = await fetch(apiUrl("/api/ai/refine"), {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tone: synopsisData?.tone,
+                instruction: `「${ch.name}」というキャラクターについて、外見・性格・動機を日本語で詳細に設定してください。現在の情報: role=${ch.role}, description=${ch.description}。他のキャラクターは変更しないでください。`,
+                theme_line: synopsisData?.theme_line,
+                characters,
+                synopsis: synopsisData?.synopsis,
+                panel_beats: namePlanData?.panel_beats || [],
+              }),
+            });
+            const d = await res.json();
+            if (d.ok && d.characters?.length) {
+              const updated = d.characters.find(c => c.name === ch.name);
+              if (updated) updateChar(i, "description", updated.description || ch.description);
+            }
+          } catch {}
+          setRefining(null);
+        };
+
+        const [chatInstruction, setChatInstruction] = useState("");
+        const [chatBusy, setChatBusy] = useState(false);
+        const [chatError, setChatError] = useState("");
+
+        const sendChat = async () => {
+          const txt = chatInstruction.trim();
+          if (!txt || chatBusy) return;
+          setChatBusy(true); setChatError("");
+          try {
+            const res = await fetch(apiUrl("/api/ai/refine"), {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                tone: synopsisData?.tone,
+                instruction: txt,
+                theme_line: synopsisData?.theme_line,
+                characters,
+                synopsis: synopsisData?.synopsis,
+                panel_beats: namePlanData?.panel_beats || [],
+              }),
+            });
+            const d = await res.json();
+            if (!d.ok) throw new Error(d.message);
+            if (d.characters?.length) setCharacters(d.characters.map(c => ({ ...c, appearance: c.appearance || "", personality: c.personality || "", motivation: c.motivation || "" })));
+            setChatInstruction("");
+          } catch (e) { setChatError(e.message || "エラー"); }
+          setChatBusy(false);
+        };
+
+        return (
+          <div style={{ ...PAGE_BG, padding: "0 0 4rem 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
+              <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 起承転結に戻る</button>
+              <span style={{ fontWeight: 900, fontSize: "1.1rem" }}>👥 キャラクター設定</span>
+              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 3 / 4</span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "1.2rem", padding: "1.2rem 1.5rem", maxWidth: 1100, margin: "0 auto" }}>
+              {/* 左: キャラクター一覧 */}
+              <div>
+                {characters.map((ch, i) => (
+                  <div key={i} style={{ ...CARD, marginBottom: "0.75rem", border: "1px solid rgba(168,85,247,0.3)" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.4rem" }}>
+                      <span style={{ fontSize: "1.1rem" }}>🧬</span>
+                      <input value={ch.name} onChange={e => updateChar(i, "name", e.target.value)} style={{ flex: 1, fontSize: "1rem", fontWeight: 900, background: "none", border: "none", color: "#e9d5ff", outline: "none" }} />
+                      <input value={ch.role} onChange={e => updateChar(i, "role", e.target.value)} style={{ width: 100, fontSize: "0.78rem", background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.25)", borderRadius: "0.4rem", color: "rgba(233,213,255,0.8)", padding: "0.15rem 0.35rem", outline: "none" }} />
+                      <button onClick={() => setExpandIdx(expandIdx === i ? null : i)} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.6)", cursor: "pointer", fontSize: "0.85rem" }}>{expandIdx === i ? "▲" : "▼"}</button>
+                      <button onClick={() => removeChar(i)} style={{ background: "none", border: "none", color: "rgba(252,165,165,0.6)", cursor: "pointer", fontSize: "0.85rem" }}>✕</button>
+                    </div>
+                    <textarea value={ch.description} onChange={e => updateChar(i, "description", e.target.value)} placeholder="キャラクター説明..." rows={2} style={{ width: "100%", fontSize: "0.82rem", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(168,85,247,0.2)", borderRadius: "0.5rem", color: "#e9d5ff", resize: "vertical", padding: "0.4rem", boxSizing: "border-box", outline: "none" }} />
+                    {expandIdx === i && (
+                      <div style={{ marginTop: "0.5rem", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem" }}>
+                        {[["appearance", "外見・ビジュアル"], ["personality", "性格"], ["motivation", "動機・目標"]].map(([field, label]) => (
+                          <div key={field} style={field === "motivation" ? { gridColumn: "1/-1" } : {}}>
+                            <div style={{ fontSize: "0.68rem", color: "rgba(167,243,208,0.6)", marginBottom: "0.2rem" }}>{label}</div>
+                            <textarea value={ch[field]} onChange={e => updateChar(i, field, e.target.value)} rows={2} style={{ width: "100%", fontSize: "0.8rem", background: "rgba(0,0,0,0.2)", border: "1px solid rgba(168,85,247,0.15)", borderRadius: "0.4rem", color: "#e9d5ff", resize: "vertical", padding: "0.35rem", boxSizing: "border-box", outline: "none" }} />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <button onClick={() => aiExpand(i)} disabled={refining !== null} style={{ marginTop: "0.5rem", padding: "0.3rem 0.75rem", fontSize: "0.78rem", fontWeight: 700, background: "rgba(168,85,247,0.2)", border: "1px solid rgba(168,85,247,0.35)", borderRadius: "0.5rem", color: "#c4b5fd", cursor: refining !== null ? "wait" : "pointer", opacity: refining === i ? 0.6 : 1 }}>
+                      {refining === i ? "✨ 生成中…" : "✨ AI で肉付け"}
+                    </button>
+                  </div>
+                ))}
+                <button onClick={addChar} style={{ width: "100%", padding: "0.65rem", fontSize: "0.9rem", fontWeight: 700, background: "rgba(168,85,247,0.1)", border: "1.5px dashed rgba(168,85,247,0.4)", borderRadius: "0.85rem", color: "#c4b5fd", cursor: "pointer", marginBottom: "0.75rem" }}>
+                  ＋ キャラクターを追加
+                </button>
+                <button
+                  onClick={() => onGoNameSheet && onGoNameSheet(characters)}
+                  style={{ width: "100%", padding: "1.05rem", fontSize: "1rem", fontWeight: 1000, background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "#06210f", border: "none", borderRadius: "0.9rem", cursor: "pointer", boxShadow: "0 6px 24px rgba(34,197,94,0.3)" }}
+                >
+                  📋 このキャラクターでネーム生成へ →
+                </button>
+              </div>
+
+              {/* 右: チャットサイドバー */}
+              <div style={{ position: "sticky", top: "1rem", height: "fit-content" }}>
+                <div style={{ ...CARD, border: "1px solid rgba(168,85,247,0.25)" }}>
+                  <div style={{ fontSize: "0.75rem", fontWeight: 900, color: "#c4b5fd", marginBottom: "0.5rem" }}>💬 キャラクター修正指示</div>
+                  <div style={{ fontSize: "0.72rem", color: "rgba(196,181,253,0.55)", marginBottom: "0.7rem", lineHeight: 1.5 }}>
+                    例: 主人公をもっと内向的にして<br/>悪役を追加して<br/>師匠キャラを女性にして
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                    <textarea value={chatInstruction} onChange={e => setChatInstruction(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }}} placeholder="修正指示を入力…" rows={4} style={{ padding: "0.65rem", fontSize: "0.88rem", background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(168,85,247,0.3)", borderRadius: "0.65rem", color: "#eaf8ef", resize: "vertical", outline: "none" }} />
+                    <button onClick={sendChat} disabled={!chatInstruction.trim() || chatBusy} style={{ padding: "0.65rem", fontWeight: 900, fontSize: "0.9rem", background: !chatInstruction.trim() || chatBusy ? "rgba(168,85,247,0.25)" : "linear-gradient(135deg,#a855f7,#7c3aed)", color: "#fff", border: "none", borderRadius: "0.65rem", cursor: !chatInstruction.trim() || chatBusy ? "not-allowed" : "pointer" }}>
+                      {chatBusy ? "生成中…" : "送信"}
+                    </button>
+                    {chatError && <div style={{ fontSize: "0.78rem", color: "#fca5a5" }}>{chatError}</div>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ─────────────────────────────────────────────────────────────────────
       //  NameSheetView — ネーム生成ページ（コマ割り・セリフ・演出）
       // ─────────────────────────────────────────────────────────────────────
       const LAYOUT_STYLE = {
@@ -2786,175 +2920,246 @@
         "結": { bg: "rgba(168,85,247,0.15)", border: "rgba(168,85,247,0.5)",  accent: "#c4b5fd" },
       };
 
-      function NameSheetView({ initialData, onBack }) {
+      const PAGE_COUNT_OPTIONS = [8, 12, 16, 20, 24, 32];
+
+      function NameSheetView({ synopsisData, namePlanData, characters, onBack, onPublish }) {
+        const sd = synopsisData || {};
+        const nd = namePlanData || {};
+        const chars = characters || sd.characters || [];
+
+        const [pageCount, setPageCount] = useState(16);
         const [pages, setPages] = useState(null);
         const [busy, setBusy] = useState(false);
         const [error, setError] = useState("");
         const [source, setSource] = useState("");
-        const data = initialData || {};
+        const [selectedPage, setSelectedPage] = useState(null); // null = gallery, number = detail
+        const [chatInstruction, setChatInstruction] = useState("");
+        const [chatBusy, setChatBusy] = useState(false);
+        const [chatError, setChatError] = useState("");
 
         const generate = async () => {
-          setBusy(true); setError(""); setPages(null);
+          setBusy(true); setError(""); setPages(null); setSelectedPage(null);
           try {
             const res = await fetch(apiUrl("/api/ai/namesheet"), {
               method: "POST", headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                tone: data.tone,
-                theme_line: data.theme_line,
-                characters: data.characters || [],
-                synopsis: data.synopsis,
-                panel_beats: data.panel_beats || [],
+                tone: sd.tone, theme_line: sd.theme_line,
+                characters: chars, synopsis: sd.synopsis,
+                panel_beats: nd.panel_beats || [],
+                page_count: pageCount,
               }),
             });
             const d = await res.json();
             if (!d.ok) throw new Error(d.message || "生成に失敗しました");
-            setPages(d.pages);
-            setSource(d.source);
-          } catch (e) {
-            setError(e.message || "エラーが発生しました");
-          } finally { setBusy(false); }
+            setPages(d.pages); setSource(d.source);
+          } catch (e) { setError(e.message || "エラーが発生しました"); }
+          finally { setBusy(false); }
         };
 
-        const regenPage = async (idx) => {
-          if (!pages) return;
-          const beat = pages[idx];
-          setBusy(true); setError("");
+        const regenCurrentPage = async () => {
+          if (selectedPage === null || !pages) return;
+          const pg = pages.find(p => p.page_number === selectedPage);
+          if (!pg) return;
+          setChatBusy(true); setChatError("");
+          try {
+            const instruction = `p.${selectedPage}（${pg.beat}）のページを、より詳細で魅力的に作り直してください。場面: ${pg.scene_direction}`;
+            const res = await fetch(apiUrl("/api/ai/refine"), {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ tone: sd.tone, instruction, theme_line: sd.theme_line, characters: chars, synopsis: sd.synopsis, panel_beats: nd.panel_beats || [] }),
+            });
+            const d = await res.json();
+            if (!d.ok) throw new Error(d.message);
+            // 単ページの refine は今後拡張。現状はチャット修正のみ使う
+          } catch (e) { setChatError(e.message || "エラー"); }
+          setChatBusy(false);
+        };
+
+        const sendPageChat = async () => {
+          const txt = chatInstruction.trim();
+          if (!txt || chatBusy || selectedPage === null) return;
+          setChatBusy(true); setChatError("");
+          const pg = pages?.find(p => p.page_number === selectedPage);
           try {
             const res = await fetch(apiUrl("/api/ai/namesheet"), {
               method: "POST", headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                tone: data.tone,
-                theme_line: data.theme_line,
-                characters: data.characters || [],
-                synopsis: data.synopsis,
-                panel_beats: data.panel_beats || [],
+                tone: sd.tone, theme_line: sd.theme_line, characters: chars,
+                synopsis: `${sd.synopsis}\n\n【p.${selectedPage}（${pg?.beat}）への修正指示】${txt}`,
+                panel_beats: nd.panel_beats || [], page_count: pageCount,
               }),
             });
             const d = await res.json();
-            if (!d.ok) throw new Error(d.message || "再生成に失敗しました");
-            if (d.pages?.[idx]) {
-              setPages(prev => { const next = [...prev]; next[idx] = d.pages[idx]; return next; });
+            if (!d.ok) throw new Error(d.message);
+            if (d.pages?.length) {
+              const newPg = d.pages.find(p => p.page_number === selectedPage);
+              if (newPg) setPages(prev => prev.map(p => p.page_number === selectedPage ? newPg : p));
             }
-          } catch (e) { setError(e.message); }
-          finally { setBusy(false); }
+            setChatInstruction("");
+          } catch (e) { setChatError(e.message || "エラー"); }
+          setChatBusy(false);
         };
 
-        // 自動生成：マウント時にデータがあれば即生成
-        useEffect(() => { if (data.panel_beats?.length) generate(); }, []);
+        const currentPage = pages?.find(p => p.page_number === selectedPage);
+        const bc = currentPage ? (BEAT_COLOR[currentPage.beat] || BEAT_COLOR["起"]) : BEAT_COLOR["起"];
 
         return (
           <div style={{ ...PAGE_BG, padding: "0 0 4rem 0" }}>
             {/* ヘッダー */}
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
-              <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 戻る</button>
-              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>📋 ネーム生成（コマ割り）</span>
-              {source && (
-                <span style={{ marginLeft: "auto", fontSize: "0.73rem", fontWeight: 700, padding: "0.18rem 0.5rem", borderRadius: "99px", background: source === "gemini" ? "rgba(234,179,8,0.2)" : "rgba(255,255,255,0.1)", color: source === "gemini" ? "#fde68a" : "rgba(234,248,239,0.5)", border: "1px solid rgba(34,197,94,0.25)" }}>
-                  {source === "gemini" ? "✦ Gemini" : "⚙ mock"}
-                </span>
-              )}
+            <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "1rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)", flexWrap: "wrap" }}>
+              <button onClick={() => selectedPage !== null ? setSelectedPage(null) : onBack()} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>
+                {selectedPage !== null ? `← ギャラリーに戻る` : "← キャラクターに戻る"}
+              </button>
+              <span style={{ fontWeight: 900, fontSize: "1.05rem" }}>
+                📋 {selectedPage !== null ? `p.${selectedPage} 詳細` : "ネームページ一覧"}
+              </span>
+              {source && <span style={{ fontSize: "0.73rem", fontWeight: 700, padding: "0.18rem 0.5rem", borderRadius: "99px", background: "rgba(234,179,8,0.2)", color: "#fde68a", border: "1px solid rgba(34,197,94,0.25)" }}>{source === "gemini" ? "✦ Gemini" : "⚙ mock"}</span>}
+              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 4 / 4</span>
             </div>
 
-            <div style={{ maxWidth: 900, margin: "0 auto", padding: "1.5rem" }}>
-              {/* テーマ表示 */}
-              {data.theme_line && (
-                <div style={{ marginBottom: "1rem", padding: "0.65rem 1rem", background: "linear-gradient(135deg,rgba(34,197,94,0.15),rgba(16,163,74,0.08))", border: "1.5px solid rgba(34,197,94,0.4)", borderRadius: "0.85rem" }}>
-                  <span style={{ fontSize: "0.68rem", fontWeight: 900, color: "rgba(167,243,208,0.65)", letterSpacing: "0.06em" }}>テーマ </span>
-                  <span style={{ fontSize: "1rem", fontWeight: 1000, color: "#eaf8ef" }}>{data.theme_line}</span>
-                  {data.tone && <span style={{ marginLeft: 8, fontSize: "0.72rem", color: "rgba(167,243,208,0.5)" }}>({data.tone})</span>}
-                </div>
-              )}
-
-              {/* ローディング */}
-              {busy && (
-                <div style={{ textAlign: "center", padding: "3rem 1rem" }}>
-                  <div style={{ fontSize: "2rem", marginBottom: "0.8rem" }}>🎨</div>
-                  <div style={{ fontSize: "1rem", color: "rgba(167,243,208,0.8)", fontWeight: 900 }}>Gemini がネームを生成中…</div>
-                  <div style={{ fontSize: "0.82rem", color: "rgba(167,243,208,0.5)", marginTop: "0.4rem" }}>起承転結 4 ページ × 3〜5 コマを生成しています（30〜60 秒）</div>
-                  <div style={{ marginTop: "1.2rem", width: 200, height: 4, borderRadius: 4, background: "rgba(255,255,255,0.1)", overflow: "hidden", margin: "1.2rem auto 0" }}>
-                    <div style={{ height: "100%", borderRadius: 4, width: "60%", background: "linear-gradient(90deg,#22c55e,#16a34a)", animation: "pulse 1.5s ease-in-out infinite" }} />
-                  </div>
-                </div>
-              )}
-
-              {/* エラー */}
-              {error && (
-                <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "rgba(127,29,29,0.3)", border: "1px solid rgba(252,165,165,0.4)", borderRadius: "0.75rem", color: "#fca5a5", fontSize: "0.9rem" }}>
-                  {error}
-                  <button onClick={generate} style={{ marginLeft: "1rem", padding: "0.3rem 0.8rem", fontSize: "0.82rem", fontWeight: 700, background: "rgba(34,197,94,0.25)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.5rem", color: "#86efac", cursor: "pointer" }}>再試行</button>
-                </div>
-              )}
-
-              {/* ネームページ表示 */}
-              {pages && pages.map((page, pi) => {
-                const bc = BEAT_COLOR[page.beat] || BEAT_COLOR["起"];
-                return (
-                  <div key={pi} style={{ marginBottom: "1.5rem", background: bc.bg, border: `1.5px solid ${bc.border}`, borderRadius: "1rem", overflow: "hidden" }}>
-                    {/* ページヘッダー */}
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.7rem", padding: "0.7rem 1rem", borderBottom: `1px solid ${bc.border}` }}>
-                      <span style={{ fontWeight: 1000, fontSize: "1.5rem", color: bc.accent, minWidth: 28 }}>{page.beat}</span>
-                      <span style={{ fontSize: "0.82rem", color: "rgba(234,248,239,0.7)", flex: 1 }}>{page.scene_direction}</span>
-                      <button
-                        onClick={() => regenPage(pi)}
-                        disabled={busy}
-                        style={{ padding: "0.25rem 0.65rem", fontSize: "0.75rem", fontWeight: 700, background: "rgba(34,197,94,0.2)", border: "none", borderRadius: "0.4rem", color: "#86efac", cursor: busy ? "wait" : "pointer", opacity: busy ? 0.5 : 1 }}
-                      >
-                        ⟳ このページを再生成
-                      </button>
-                    </div>
-
-                    {/* コマ一覧 */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem", padding: "0.8rem" }}>
-                      {page.panels?.map((panel, ci) => {
-                        const ls = LAYOUT_STYLE[panel.layout] || LAYOUT_STYLE["正方形"];
-                        return (
-                          <div key={ci} style={{
-                            ...ls,
-                            background: "rgba(0,0,0,0.35)", border: `1px solid ${bc.border}`, borderRadius: "0.65rem",
-                            padding: "0.7rem 0.8rem", display: "flex", flexDirection: "column", gap: "0.35rem", position: "relative",
-                          }}>
-                            {/* コマ番号・レイアウト */}
-                            <div style={{ display: "flex", gap: "0.4rem", alignItems: "center", marginBottom: "0.1rem" }}>
-                              <span style={{ fontSize: "0.62rem", fontWeight: 900, color: bc.accent, background: "rgba(0,0,0,0.4)", padding: "0.1rem 0.35rem", borderRadius: "0.3rem" }}>
-                                コマ {panel.number}
-                              </span>
-                              <span style={{ fontSize: "0.6rem", color: "rgba(234,248,239,0.4)" }}>{panel.layout}</span>
-                            </div>
-
-                            {/* 場面説明 */}
-                            <div style={{ fontSize: "0.82rem", color: "#eaf8ef", fontWeight: 700, lineHeight: 1.5 }}>{panel.scene}</div>
-
-                            {/* セリフ */}
-                            {panel.dialogue && (
-                              <div style={{ marginTop: "0.25rem", padding: "0.35rem 0.5rem", background: "rgba(255,255,255,0.1)", borderLeft: `3px solid ${bc.accent}`, borderRadius: "0 0.4rem 0.4rem 0", fontSize: "0.82rem", color: bc.accent, fontStyle: "italic", lineHeight: 1.5 }}>
-                                「{panel.dialogue}」
-                              </div>
-                            )}
-
-                            {/* 演出 */}
-                            {panel.direction && (
-                              <div style={{ marginTop: "auto", fontSize: "0.72rem", color: "rgba(234,248,239,0.5)", lineHeight: 1.4 }}>
-                                📐 {panel.direction}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-
-              {/* 全体再生成ボタン */}
-              {(pages || error) && !busy && (
-                <button
-                  onClick={generate}
-                  style={{ width: "100%", padding: "0.85rem", fontSize: "0.95rem", fontWeight: 900, background: "rgba(34,197,94,0.2)", border: "1.5px solid rgba(34,197,94,0.4)", borderRadius: "0.85rem", color: "#86efac", cursor: "pointer", marginTop: "0.5rem" }}
-                >
-                  ⟳ ネーム全体を再生成する
+            {/* ページ数選択 + 生成ボタン（ギャラリー表示時のみ） */}
+            {selectedPage === null && (
+              <div style={{ display: "flex", gap: "0.7rem", alignItems: "center", padding: "0.8rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.1)", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "0.82rem", color: "rgba(167,243,208,0.8)", fontWeight: 700 }}>総ページ数:</span>
+                {PAGE_COUNT_OPTIONS.map(n => (
+                  <button key={n} onClick={() => setPageCount(n)} style={{ padding: "0.3rem 0.7rem", borderRadius: "99px", border: pageCount === n ? "1.5px solid #22c55e" : "1.5px solid rgba(34,197,94,0.3)", background: pageCount === n ? "rgba(34,197,94,0.28)" : "rgba(34,197,94,0.07)", color: pageCount === n ? "#86efac" : "rgba(234,248,239,0.6)", fontWeight: pageCount === n ? 900 : 700, fontSize: "0.85rem", cursor: "pointer" }}>
+                    {n}p
+                  </button>
+                ))}
+                <button onClick={generate} disabled={busy} style={{ marginLeft: "0.5rem", padding: "0.5rem 1.2rem", fontWeight: 900, fontSize: "0.9rem", background: busy ? "rgba(34,197,94,0.3)" : "linear-gradient(135deg,#22c55e,#16a34a)", color: "#06210f", border: "none", borderRadius: "0.75rem", cursor: busy ? "wait" : "pointer" }}>
+                  {busy ? "生成中…" : pages ? "⟳ 再生成" : "🎨 ネーム生成"}
                 </button>
-              )}
-            </div>
+                {pages && (
+                  <button onClick={onPublish} style={{ marginLeft: "auto", padding: "0.5rem 1.2rem", fontWeight: 900, fontSize: "0.9rem", background: "rgba(168,85,247,0.3)", border: "1px solid rgba(168,85,247,0.5)", color: "#c4b5fd", borderRadius: "0.75rem", cursor: "pointer" }}>
+                    🚀 投稿する → 作品一覧へ
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* ローディング */}
+            {busy && (
+              <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
+                <div style={{ fontSize: "2.5rem", marginBottom: "0.8rem" }}>📖</div>
+                <div style={{ fontSize: "1rem", color: "rgba(167,243,208,0.9)", fontWeight: 900 }}>Gemini がネームを生成中…</div>
+                <div style={{ fontSize: "0.82rem", color: "rgba(167,243,208,0.5)", marginTop: "0.4rem" }}>全 {pageCount} ページ × 3〜5 コマ（30〜90 秒）</div>
+                <div style={{ margin: "1.5rem auto 0", width: 220, height: 6, borderRadius: 6, background: "rgba(255,255,255,0.1)", overflow: "hidden" }}>
+                  <div style={{ height: "100%", borderRadius: 6, width: "50%", background: "linear-gradient(90deg,#22c55e,#16a34a)", animation: "pulse 1.5s ease-in-out infinite" }} />
+                </div>
+              </div>
+            )}
+
+            {/* エラー */}
+            {error && !busy && (
+              <div style={{ margin: "1rem 1.5rem", padding: "0.75rem 1rem", background: "rgba(127,29,29,0.3)", border: "1px solid rgba(252,165,165,0.4)", borderRadius: "0.75rem", color: "#fca5a5", fontSize: "0.9rem" }}>
+                {error} <button onClick={generate} style={{ marginLeft: "1rem", padding: "0.3rem 0.8rem", fontSize: "0.82rem", fontWeight: 700, background: "rgba(34,197,94,0.25)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.5rem", color: "#86efac", cursor: "pointer" }}>再試行</button>
+              </div>
+            )}
+
+            {/* ─── ギャラリービュー ─── */}
+            {!busy && pages && selectedPage === null && (
+              <div style={{ padding: "1rem 1.5rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: "0.75rem" }}>
+                  {pages.map(pg => {
+                    const bc2 = BEAT_COLOR[pg.beat] || BEAT_COLOR["起"];
+                    return (
+                      <div key={pg.page_number} onClick={() => setSelectedPage(pg.page_number)} style={{
+                        background: bc2.bg, border: `1.5px solid ${bc2.border}`, borderRadius: "0.75rem",
+                        padding: "0.7rem", cursor: "pointer", transition: "transform 0.15s, box-shadow 0.15s",
+                      }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.03)"; e.currentTarget.style.boxShadow = `0 8px 24px ${bc2.border}`; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; e.currentTarget.style.boxShadow = "none"; }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.35rem" }}>
+                          <span style={{ fontSize: "0.65rem", fontWeight: 900, color: "rgba(234,248,239,0.5)" }}>p.{pg.page_number}</span>
+                          <span style={{ fontSize: "0.65rem", fontWeight: 900, padding: "0.1rem 0.3rem", background: bc2.bg, borderRadius: "0.25rem", color: bc2.accent }}>{pg.beat}</span>
+                        </div>
+                        <div style={{ fontSize: "0.72rem", color: "#eaf8ef", fontWeight: 700, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>
+                          {pg.scene_direction || pg.panels?.[0]?.scene || ""}
+                        </div>
+                        <div style={{ marginTop: "0.35rem", fontSize: "0.6rem", color: "rgba(234,248,239,0.4)" }}>{pg.panels?.length ?? 0} コマ</div>
+                        {/* コマ割り簡易プレビュー */}
+                        <div style={{ marginTop: "0.4rem", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2px" }}>
+                          {(pg.panels || []).slice(0, 6).map((_, ci) => (
+                            <div key={ci} style={{ height: 14, background: `${bc2.accent}30`, borderRadius: "2px" }} />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* ─── ページ詳細ビュー ─── */}
+            {!busy && pages && selectedPage !== null && currentPage && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "1rem", padding: "1rem 1.5rem", maxWidth: 1200, margin: "0 auto" }}>
+                {/* 左: ページ詳細 */}
+                <div>
+                  {/* ページナビ */}
+                  <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.8rem" }}>
+                    <button onClick={() => setSelectedPage(p => Math.max(1, p - 1))} disabled={selectedPage <= 1} style={{ padding: "0.4rem 0.8rem", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "0.5rem", color: "rgba(234,248,239,0.7)", cursor: selectedPage <= 1 ? "not-allowed" : "pointer", opacity: selectedPage <= 1 ? 0.4 : 1 }}>← 前</button>
+                    <span style={{ flex: 1, textAlign: "center", fontSize: "0.85rem", color: "rgba(167,243,208,0.7)", fontWeight: 700 }}>p.{selectedPage} / {pages.length}</span>
+                    <button onClick={() => setSelectedPage(p => Math.min(pages.length, p + 1))} disabled={selectedPage >= pages.length} style={{ padding: "0.4rem 0.8rem", background: "rgba(255,255,255,0.1)", border: "none", borderRadius: "0.5rem", color: "rgba(234,248,239,0.7)", cursor: selectedPage >= pages.length ? "not-allowed" : "pointer", opacity: selectedPage >= pages.length ? 0.4 : 1 }}>次 →</button>
+                  </div>
+
+                  {/* ページヘッダー */}
+                  <div style={{ background: bc.bg, border: `1.5px solid ${bc.border}`, borderRadius: "0.85rem", padding: "0.7rem 1rem", marginBottom: "0.7rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <span style={{ fontWeight: 1000, fontSize: "1.3rem", color: bc.accent }}>{currentPage.beat}</span>
+                    <span style={{ fontSize: "0.85rem", color: "rgba(234,248,239,0.75)", flex: 1 }}>{currentPage.scene_direction}</span>
+                  </div>
+
+                  {/* コマ一覧 */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                    {currentPage.panels?.map((panel, ci) => (
+                      <div key={ci} style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${bc.border}`, borderRadius: "0.75rem", padding: "0.8rem 0.9rem" }}>
+                        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.4rem" }}>
+                          <span style={{ fontSize: "0.65rem", fontWeight: 900, color: bc.accent, background: "rgba(0,0,0,0.4)", padding: "0.1rem 0.4rem", borderRadius: "0.3rem" }}>コマ {panel.number}</span>
+                          <span style={{ fontSize: "0.65rem", color: "rgba(234,248,239,0.45)", background: "rgba(255,255,255,0.06)", padding: "0.1rem 0.35rem", borderRadius: "0.3rem" }}>{panel.layout}</span>
+                        </div>
+                        <div style={{ fontSize: "0.9rem", color: "#eaf8ef", fontWeight: 700, lineHeight: 1.6, marginBottom: panel.dialogue ? "0.4rem" : 0 }}>{panel.scene}</div>
+                        {panel.dialogue && (
+                          <div style={{ padding: "0.4rem 0.6rem", background: "rgba(255,255,255,0.08)", borderLeft: `3px solid ${bc.accent}`, borderRadius: "0 0.5rem 0.5rem 0", fontSize: "0.88rem", color: bc.accent, fontStyle: "italic", lineHeight: 1.6 }}>
+                            「{panel.dialogue}」
+                          </div>
+                        )}
+                        {panel.direction && (
+                          <div style={{ marginTop: "0.35rem", fontSize: "0.75rem", color: "rgba(234,248,239,0.45)" }}>📐 {panel.direction}</div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 右: チャットサイドバー */}
+                <div style={{ position: "sticky", top: "1rem", height: "fit-content" }}>
+                  <div style={{ ...CARD, border: `1px solid ${bc.border}` }}>
+                    <div style={{ fontSize: "0.75rem", fontWeight: 900, color: bc.accent, marginBottom: "0.5rem" }}>💬 このページを修正</div>
+                    <div style={{ fontSize: "0.72rem", color: "rgba(234,248,239,0.45)", marginBottom: "0.7rem", lineHeight: 1.5 }}>
+                      例: セリフをもっと感情的にして<br/>コマ割りをダイナミックにして<br/>アクションシーンを追加して
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                      <textarea value={chatInstruction} onChange={e => setChatInstruction(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendPageChat(); }}} placeholder={`p.${selectedPage} への修正指示…`} rows={4} style={{ padding: "0.65rem", fontSize: "0.88rem", background: "rgba(255,255,255,0.06)", border: `1.5px solid ${bc.border}`, borderRadius: "0.65rem", color: "#eaf8ef", resize: "vertical", outline: "none" }} />
+                      <button onClick={sendPageChat} disabled={!chatInstruction.trim() || chatBusy} style={{ padding: "0.65rem", fontWeight: 900, fontSize: "0.9rem", background: !chatInstruction.trim() || chatBusy ? "rgba(34,197,94,0.25)" : "linear-gradient(135deg,#22c55e,#16a34a)", color: "#06210f", border: "none", borderRadius: "0.65rem", cursor: !chatInstruction.trim() || chatBusy ? "not-allowed" : "pointer" }}>
+                        {chatBusy ? "修正中…" : "送信"}
+                      </button>
+                      {chatError && <div style={{ fontSize: "0.78rem", color: "#fca5a5" }}>{chatError}</div>}
+                    </div>
+                  </div>
+                  <button onClick={onPublish} style={{ marginTop: "1rem", width: "100%", padding: "0.75rem", fontWeight: 900, fontSize: "0.9rem", background: "rgba(168,85,247,0.25)", border: "1px solid rgba(168,85,247,0.5)", borderRadius: "0.75rem", color: "#c4b5fd", cursor: "pointer" }}>
+                    🚀 投稿する → 作品一覧へ
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ギャラリー未生成状態 */}
+            {!busy && !pages && !error && (
+              <div style={{ textAlign: "center", padding: "4rem 1.5rem" }}>
+                <div style={{ fontSize: "3rem", marginBottom: "0.8rem" }}>📋</div>
+                <div style={{ fontSize: "1rem", color: "rgba(167,243,208,0.7)", fontWeight: 700, marginBottom: "0.5rem" }}>ページ数を選んで「ネーム生成」を押してください</div>
+                <div style={{ fontSize: "0.82rem", color: "rgba(167,243,208,0.45)" }}>Gemini が起承転結に沿った全ページのコマ割り・セリフを生成します</div>
+              </div>
+            )}
           </div>
         );
       }
@@ -2962,16 +3167,18 @@
       // ─────────────────────────────────────────────────────────────────────
       //  SynopsisView — 粗筋生成ページ
       // ─────────────────────────────────────────────────────────────────────
-      function SynopsisView({ onBack, onGoNamePlan }) {
-        const [tone, setTone] = useState("少年マンガ");
+      function SynopsisView({ onBack, onGoNamePlan, savedData }) {
+        const [tone, setTone] = useState(savedData?.tone || "少年マンガ");
         const [pastedText, setPastedText] = useState("");
+        // 前回の生成結果があれば即座に表示
+        const [result, setResultRaw] = useState(savedData || null);
+        const setResult = setResultRaw;
         const [fileName, setFileName] = useState("");
         const [pdfBusy, setPdfBusy] = useState(false);
         const [pdfInfo, setPdfInfo] = useState("");
-        const [stage, setStage] = useState("idle"); // idle | generating | done
+        const [stage, setStage] = useState(savedData ? "done" : "idle");
         const [pipeJobId, setPipeJobId] = useState(null);
         const [pipeStage, setPipeStage] = useState(null);
-        const [result, setResult] = useState(null);
         const [error, setError] = useState("");
         const fileRef = useRef(null);
 
@@ -3176,7 +3383,7 @@
                         cursor: "pointer", boxShadow: "0 6px 24px rgba(34,197,94,0.3)",
                       }}
                     >
-                      このあらすじでネーム構成へ →
+                      このあらすじで起承転結を組む →
                     </button>
                     {/* チャット修正 */}
                     <ChatRefinePanel
@@ -3195,7 +3402,7 @@
       // ─────────────────────────────────────────────────────────────────────
       //  NamePlanView — ネーム構成ページ（起承転結）
       // ─────────────────────────────────────────────────────────────────────
-      function NamePlanView({ initialData, onBack, onGoNameSheet }) {
+      function NamePlanView({ initialData, onBack, onGoCharacter }) {
         const [data, setData] = useState(initialData || { tone: "少年マンガ", theme_line: "", characters: [], synopsis: "", panel_beats: ["", "", "", ""], source: "none" });
         const [editIdx, setEditIdx] = useState(null); // 編集中の beat インデックス
         const [editText, setEditText] = useState("");
@@ -3244,10 +3451,12 @@
             <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
               <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 粗筋に戻る</button>
               <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>🎬 ネーム構成（起承転結）</span>
-              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 2 / 2</span>
+              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 2 / 4</span>
             </div>
 
-            <div style={{ maxWidth: 860, margin: "0 auto", padding: "1.5rem" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "1.2rem", padding: "1.2rem 1.5rem", maxWidth: 1200, margin: "0 auto" }}>
+            {/* ─── 左カラム: コンテンツ ─── */}
+            <div>
               {/* 粗筋サマリー（折りたたみ） */}
               {data.synopsis && (
                 <div style={{ marginBottom: "1.2rem" }}>
@@ -3319,11 +3528,9 @@
               </div>
 
               {/* チャット修正 */}
-              <ChatRefinePanel currentData={data} onRefined={onRefined} disabled={regenBusy !== null} />
-
-              {/* ネーム生成へ */}
+              {/* キャラクター設定へ */}
               <button
-                onClick={() => onGoNameSheet && onGoNameSheet(data)}
+                onClick={() => onGoCharacter && onGoCharacter(data)}
                 disabled={!data.panel_beats?.some(b => b)}
                 style={{
                   marginTop: "1.2rem", width: "100%", padding: "1.05rem", fontSize: "1rem", fontWeight: 1000,
@@ -3333,8 +3540,22 @@
                   boxShadow: "0 6px 24px rgba(34,197,94,0.3)",
                 }}
               >
-                📋 このネーム構成でネーム生成へ →
+                👥 キャラクター設定へ →
               </button>
+            </div>
+            {/* ─── 右カラム: チャットサイドバー ─── */}
+            <div style={{ position: "sticky", top: "1rem", height: "fit-content" }}>
+              <div style={{ ...CARD, border: "1px solid rgba(34,197,94,0.25)" }}>
+                <div style={{ fontSize: "0.75rem", fontWeight: 900, color: "rgba(167,243,208,0.8)", marginBottom: "0.5rem", letterSpacing: "0.06em" }}>
+                  💬 博士の修正指示
+                </div>
+                <div style={{ fontSize: "0.72rem", color: "rgba(167,243,208,0.5)", marginBottom: "0.7rem", lineHeight: 1.5 }}>
+                  例: 転をどんでん返しにして<br/>承をもっと長くして<br/>全体的にSF要素を強くして
+                </div>
+                <ChatRefinePanel currentData={data} onRefined={onRefined} disabled={regenBusy !== null} />
+              </div>
+            </div>
+            </div>
             </div>
           </div>
         );
@@ -3347,10 +3568,21 @@
         const routeRef = useRef({ route: initialNav.route, workId: initialNav.workId });
         const [checkoutBanner, setCheckoutBanner] = useState("");
         const [catalogList, setCatalogList] = useState([]);
-        // 粗筋ページ → ネーム構成ページ へデータを引き継ぐ state
-        const [synopsisData, setSynopsisData] = useState(null);
-        // ネーム構成ページ（or HomeView の結果）→ ネーム生成ページ へ引き継ぐ state
-        const [namePlanData, setNamePlanData] = useState(null);
+        // ─── ページ間データ（sessionStorage で永続化 → ブラウザバックでも復元） ─────
+        const [synopsisData, setSynopsisDataRaw] = useState(() => {
+          try { return JSON.parse(sessionStorage.getItem("drcanvas:synopsis") || "null"); } catch { return null; }
+        });
+        const setSynopsisData = (d) => { setSynopsisDataRaw(d); try { sessionStorage.setItem("drcanvas:synopsis", JSON.stringify(d)); } catch {} };
+
+        const [characterData, setCharacterDataRaw] = useState(() => {
+          try { return JSON.parse(sessionStorage.getItem("drcanvas:character") || "null"); } catch { return null; }
+        });
+        const setCharacterData = (d) => { setCharacterDataRaw(d); try { sessionStorage.setItem("drcanvas:character", JSON.stringify(d)); } catch {} };
+
+        const [namePlanData, setNamePlanDataRaw] = useState(() => {
+          try { return JSON.parse(sessionStorage.getItem("drcanvas:nameplan") || "null"); } catch { return null; }
+        });
+        const setNamePlanData = (d) => { setNamePlanDataRaw(d); try { sessionStorage.setItem("drcanvas:nameplan", JSON.stringify(d)); } catch {} };
 
         const refreshCatalog = () => {
           fetchCatalogArtworksArray().then(setCatalogList);
@@ -3430,7 +3662,7 @@
               setRoute("manga");
               return;
             }
-            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "synopsis" || h === "nameplan" || h === "namesheet") setRoute(h || "home");
+            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "synopsis" || h === "nameplan" || h === "character" || h === "namesheet") setRoute(h || "home");
             else setRoute("home");
           };
           window.addEventListener("popstate", onPop);
@@ -3466,19 +3698,31 @@
           page = <SynopsisView
             onBack={() => setRoute("home")}
             onGoNamePlan={(data) => { setSynopsisData(data); setRoute("nameplan"); }}
+            savedData={synopsisData}
           />;
         else if (route === "nameplan")
           page = <NamePlanView
             initialData={synopsisData}
             onBack={() => setRoute("synopsis")}
-            onGoNameSheet={(data) => { setNamePlanData(data); setRoute("namesheet"); }}
+            onGoCharacter={(data) => { setNamePlanData(data); setRoute("character"); }}
+          />;
+        else if (route === "character")
+          page = <CharacterView
+            synopsisData={synopsisData}
+            namePlanData={namePlanData}
+            savedCharacters={characterData}
+            onBack={() => setRoute("nameplan")}
+            onGoNameSheet={(chars) => { setCharacterData(chars); setRoute("namesheet"); }}
           />;
         else if (route === "namesheet")
           page = <NameSheetView
-            initialData={namePlanData}
-            onBack={() => setRoute(namePlanData ? "nameplan" : "home")}
+            synopsisData={synopsisData}
+            namePlanData={namePlanData}
+            characters={characterData || synopsisData?.characters}
+            onBack={() => setRoute("character")}
+            onPublish={() => setRoute("works")}
           />;
-        else page = <HomeView onDemo={onDemo} onTryAi={onTryAi} onOpenAuth={() => setRoute("auth")} onOpenStudio={() => setRoute("studio")} onOpenSynopsis={() => setRoute("synopsis")} onOpenNameSheet={(data) => { setNamePlanData(data); setRoute("namesheet"); }} />;
+        else page = <HomeView onDemo={onDemo} onTryAi={onTryAi} onOpenAuth={() => setRoute("auth")} onOpenStudio={() => setRoute("studio")} onOpenSynopsis={() => setRoute("synopsis")} onOpenNameSheet={(data) => { setNamePlanData(data); setCharacterData(null); setRoute("namesheet"); }} />;
 
         return (
           <>

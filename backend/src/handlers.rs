@@ -1731,9 +1731,16 @@ pub async fn generate_namesheet(
     let tone = payload.tone.as_deref().unwrap_or("ポップサイエンス");
     let chars_json = serde_json::to_string(&payload.characters).unwrap_or_else(|_| "[]".into());
     let beats = &payload.panel_beats;
+    let page_count = payload.page_count.max(4).min(64);
+
+    // 起承転結への配分（例: 16ページ → 4/5/4/3）
+    let p1 = (page_count as f32 * 0.25).round() as u32;
+    let p2 = (page_count as f32 * 0.55).round() as u32;
+    let p3 = (page_count as f32 * 0.82).round() as u32;
 
     let prompt = format!(
-        "あなたはプロの漫画ネーム師です。以下の企画書をもとに、起承転結の各パートについて詳細なネーム（コマ割り・セリフ）を作成してください。\n\
+        "あなたはプロの漫画ネーム師です。以下の企画書をもとに、全{pc}ページの漫画ネームを作成してください。\n\
+各ページは物理的な漫画の1ページです（複数コマで構成）。\n\
 厳密なJSONのみ出力（マークダウン記号・前後の説明文なし）。\n\n\
 【企画書】\n\
 トーン: {tone}\n\
@@ -1745,27 +1752,36 @@ pub async fn generate_namesheet(
   承: {b1}\n\
   転: {b2}\n\
   結: {b3}\n\n\
-【出力形式】4要素の配列（起→承→転→結の順）:\n\
+【ページ配分】\n\
+- p.1〜p.{p1}: 起（導入・状況設定）\n\
+- p.{p1_1}〜p.{p2}: 承（展開・対立）\n\
+- p.{p2_1}〜p.{p3}: 転（どんでん返し・核心）\n\
+- p.{p3_1}〜p.{pc}: 結（解決・余韻）\n\n\
+【出力形式】{pc}要素の配列:\n\
 [\n\
   {{\n\
+    \"page_number\": 1,\n\
     \"beat\": \"起\",\n\
-    \"scene_direction\": \"ページ全体の雰囲気・演出メモ\",\n\
+    \"scene_direction\": \"このページ全体の演出・雰囲気メモ\",\n\
     \"panels\": [\n\
       {{\n\
         \"number\": 1,\n\
         \"layout\": \"大ゴマ\",\n\
         \"scene\": \"コマの場面説明（背景・人物配置・表情）\",\n\
-        \"dialogue\": \"セリフまたはモノローグ（ない場合は空文字）\",\n\
-        \"direction\": \"演出指示（効果線・カメラアングルなど）\"\n\
+        \"dialogue\": \"セリフ（ない場合は空文字）\",\n\
+        \"direction\": \"演出指示（効果線・アングルなど）\"\n\
       }}\n\
     ]\n\
   }}\n\
 ]\n\n\
 制約:\n\
-- 各パート3〜5コマで構成すること\n\
+- 必ず{pc}ページ全て出力すること\n\
+- 1ページあたり3〜5コマ\n\
 - layoutは「大ゴマ」「縦長」「横長」「正方形」「小」のいずれか\n\
-- セリフはキャラクターらしい口調で書くこと\n\
+- セリフはキャラクターらしい口調で\n\
+- page_numberは1から{pc}まで連番\n\
 - 最終的にJSON配列のみ出力（他の文字は一切含めない）",
+        pc = page_count,
         tone = tone,
         theme = payload.theme_line.as_deref().unwrap_or(""),
         chars = chars_json,
@@ -1774,6 +1790,12 @@ pub async fn generate_namesheet(
         b1 = beats.get(1).map(String::as_str).unwrap_or(""),
         b2 = beats.get(2).map(String::as_str).unwrap_or(""),
         b3 = beats.get(3).map(String::as_str).unwrap_or(""),
+        p1 = p1,
+        p1_1 = p1 + 1,
+        p2 = p2,
+        p2_1 = p2 + 1,
+        p3 = p3,
+        p3_1 = p3 + 1,
     );
 
     let content = match gemini_generate(&client, &key, &model, &prompt, true).await {
