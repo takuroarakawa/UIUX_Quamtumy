@@ -2721,8 +2721,8 @@
         );
       }
 
-      // ─── ToneSelector 共用コンポーネント ────────────────────────────────────
-      function ToneSelector({ value, onChange }) {
+      // ─── GenreSelector 共用コンポーネント（漫画ジャンル選択） ──────────────────
+      function GenreSelector({ value, onChange }) {
         return (
           <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
             {TONE_LIST.map(({ key, emoji, label }) => (
@@ -2739,6 +2739,8 @@
           </div>
         );
       }
+      // 後方互換エイリアス
+      const ToneSelector = GenreSelector;
 
       // ─────────────────────────────────────────────────────────────────────
       //  CharacterView — キャラクター設定ページ
@@ -3828,8 +3830,57 @@
       // ─────────────────────────────────────────────────────────────────────
       //  SynopsisView — 粗筋生成ページ (Step 2)
       // ─────────────────────────────────────────────────────────────────────
+      // ─── 読み味入力コンポーネント ─────────────────────────────────────────────
+      function ReadimiInput({ yomimi, setYomimi, inputText, tone }) {
+        const [aiBusy, setAiBusy] = useState(false);
+        const [open, setOpen] = useState(!!yomimi);
+
+        const aiGenerate = async () => {
+          setAiBusy(true);
+          try {
+            const res = await fetch(apiUrl("/api/ai/refine"), {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                instruction: `以下の論文テキストと漫画ジャンル「${tone}」に合う「読み味（演出スタイル）」を3〜5行で提案してください。読み味とは、この漫画を読んだときにどんな感情・雰囲気・テンポで読者に届けるかという演出の方針です。例: 「テンポが速く疾走感があり、衝撃的な発見が怒濤のように迫ってくる読み味」「静かで哲学的、科学の深淵を静寂の中で覗くような読み味」など。論文テキスト冒頭: ${(inputText || "").slice(0, 500)}`,
+                tone, theme_line: "", characters: [], synopsis: "", panel_beats: [],
+              }),
+            });
+            const d = await res.json();
+            if (d.ok && d.message) setYomimi(d.message.slice(0, 400));
+          } catch {}
+          setAiBusy(false);
+        };
+
+        return (
+          <div style={{ marginTop: "0.85rem" }}>
+            <button onClick={() => setOpen(v => !v)} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "0.8rem", fontWeight: 900, display: "flex", alignItems: "center", gap: "0.3rem", padding: 0, marginBottom: open ? "0.5rem" : 0 }}>
+              {open ? "▲" : "▼"} 🎨 読み味・演出スタイル（任意）
+            </button>
+            {open && (
+              <div>
+                <div style={{ fontSize: "0.72rem", color: "rgba(167,243,208,0.45)", marginBottom: "0.4rem", lineHeight: 1.5 }}>
+                  この漫画を読んだときの雰囲気・テンポ・感情体験の方針を書いてください。<br/>
+                  例: 「スピード感があり、読者が息もつかせぬ展開で引き込まれる読み味」
+                </div>
+                <textarea
+                  value={yomimi}
+                  onChange={e => setYomimi(e.target.value)}
+                  placeholder="読み味を入力、またはAIに生成させる…"
+                  rows={3}
+                  style={{ width: "100%", padding: "0.6rem 0.75rem", fontSize: "0.85rem", background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(34,197,94,0.3)", borderRadius: "0.7rem", color: "#eaf8ef", resize: "vertical", outline: "none", boxSizing: "border-box" }}
+                />
+                <button onClick={aiGenerate} disabled={aiBusy} style={{ marginTop: "0.4rem", padding: "0.35rem 0.9rem", fontSize: "0.78rem", fontWeight: 700, background: "rgba(34,197,94,0.2)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.5rem", color: "#86efac", cursor: aiBusy ? "wait" : "pointer" }}>
+                  {aiBusy ? "生成中…" : "✨ AI に読み味を提案させる"}
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      }
+
       function SynopsisView({ onBack, onGoNamePlan, savedData, inputText }) {
         const [tone, setTone] = useState(savedData?.tone || "少年マンガ");
+        const [yomimi, setYomimi] = useState(savedData?.yomimi || "");
         // 前回の生成結果があれば即座に表示
         const [result, setResultRaw] = useState(savedData || null);
         const setResult = setResultRaw;
@@ -3899,29 +3950,28 @@
             {/* ヘッダー */}
             <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
               <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 戻る</button>
-              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>📖 ネーム案を生成</span>
-              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 2 / 5</span>
+              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>💡 案出し（テーマ・粗筋・キャラクター生成）</span>
+              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 2 / 6</span>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "minmax(280px,1fr) minmax(300px,1.2fr)", gap: "1.5rem", padding: "1.5rem", maxWidth: 1100, margin: "0 auto" }}>
 
-              {/* 左カラム: トーン選択 + 生成ボタン */}
+              {/* 左カラム: ジャンル・読み味・生成ボタン */}
               <div>
                 {/* 入力テキストプレビュー */}
-                {inputText && (
+                {inputText ? (
                   <div style={{ ...CARD, marginBottom: "1rem", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
                     <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "rgba(167,243,208,0.6)", marginBottom: "0.35rem", letterSpacing: "0.05em" }}>
-                      📄 入力テキスト（{inputText.length.toLocaleString()} 文字）
+                      📄 論文テキスト（{inputText.length.toLocaleString()} 文字）
                     </div>
-                    <div style={{ fontSize: "0.8rem", color: "rgba(234,248,239,0.55)", lineHeight: 1.5, maxHeight: "4.5rem", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    <div style={{ fontSize: "0.8rem", color: "rgba(234,248,239,0.55)", lineHeight: 1.5, maxHeight: "4.5rem", overflow: "hidden" }}>
                       {inputText.slice(0, 200)}…
                     </div>
                     <button onClick={onBack} style={{ marginTop: "0.4rem", fontSize: "0.72rem", background: "none", border: "none", color: "rgba(167,243,208,0.5)", cursor: "pointer", padding: 0 }}>
                       ← テキストを変更する
                     </button>
                   </div>
-                )}
-                {!inputText && (
+                ) : (
                   <div style={{ ...CARD, marginBottom: "1rem", background: "rgba(252,165,165,0.08)", border: "1px solid rgba(252,165,165,0.3)" }}>
                     <div style={{ fontSize: "0.82rem", color: "#fca5a5" }}>⚠ テキストが未入力です。前のページで論文テキストを貼り付けてください。</div>
                     <button onClick={onBack} style={{ marginTop: "0.5rem", padding: "0.4rem 0.8rem", fontSize: "0.82rem", fontWeight: 700, background: "rgba(34,197,94,0.2)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.5rem", color: "#86efac", cursor: "pointer" }}>
@@ -3930,8 +3980,12 @@
                   </div>
                 )}
 
-                <div style={{ fontWeight: 900, color: "rgba(167,243,208,0.9)", fontSize: "0.8rem", marginBottom: "0.5rem", letterSpacing: "0.06em" }}>🎨 漫画トーン</div>
-                <ToneSelector value={tone} onChange={setTone} />
+                {/* 漫画ジャンル */}
+                <div style={{ fontWeight: 900, color: "rgba(167,243,208,0.9)", fontSize: "0.8rem", marginBottom: "0.5rem", letterSpacing: "0.06em" }}>🎭 漫画ジャンル</div>
+                <GenreSelector value={tone} onChange={setTone} />
+
+                {/* 読み味（演出スタイル） */}
+                <ReadimiInput yomimi={yomimi} setYomimi={setYomimi} inputText={inputText} tone={tone} />
 
                 <button
                   onClick={generate}
@@ -3944,7 +3998,7 @@
                     boxShadow: "0 6px 24px rgba(34,197,94,0.25)",
                   }}
                 >
-                  {stage === "idle" && "🚀 粗筋を生成（AI パイプライン）"}
+                  {stage === "idle" && "🚀 案出しを開始（AI パイプライン）"}
                   {stage === "generating" && `${stageLabel} ${stagePct}%…`}
                   {stage === "done" && "⟳ 再生成する"}
                 </button>
@@ -4016,7 +4070,7 @@
                         cursor: "pointer", boxShadow: "0 6px 24px rgba(34,197,94,0.3)",
                       }}
                     >
-                      このあらすじで起承転結を組む →
+                      このあらすじでプロットを作りこむ →
                     </button>
                     {/* チャット修正 */}
                     <ChatRefinePanel
@@ -4035,6 +4089,249 @@
       // ─────────────────────────────────────────────────────────────────────
       //  NamePlanView — ネーム構成ページ（起承転結）
       // ─────────────────────────────────────────────────────────────────────
+      // ─────────────────────────────────────────────────────────────────────
+      //  PlotView — プロット（ストーリーエディター）ページ
+      // ─────────────────────────────────────────────────────────────────────
+      function PlotView({ synopsisData, onBack, onGoNamePlan }) {
+        const sd = synopsisData || {};
+        // 初期プロット: 粗筋から3幕構成を自動展開
+        const initActs = () => {
+          const s = sd.synopsis || "";
+          const parts = s.split(/第[123]幕[：:]/);
+          if (parts.length >= 4) {
+            return [
+              { id: 1, title: "第1幕（起）", body: parts[1]?.trim() || "" },
+              { id: 2, title: "第2幕（承・転）", body: parts[2]?.trim() || "" },
+              { id: 3, title: "第3幕（結）", body: parts[3]?.trim() || "" },
+            ];
+          }
+          return [
+            { id: 1, title: "第1幕（起・状況設定）", body: s.slice(0, Math.floor(s.length / 3)) },
+            { id: 2, title: "第2幕（承・転・展開）", body: s.slice(Math.floor(s.length / 3), Math.floor(s.length * 2 / 3)) },
+            { id: 3, title: "第3幕（結・解決）", body: s.slice(Math.floor(s.length * 2 / 3)) },
+          ];
+        };
+
+        const [acts, setActs] = React.useState(() => {
+          try { return JSON.parse(sessionStorage.getItem("drcanvas:plot") || "null") || initActs(); }
+          catch { return initActs(); }
+        });
+        const [selectedAct, setSelectedAct] = React.useState(null);
+        const [chatMsg, setChatMsg] = React.useState("");
+        const [chatBusy, setChatBusy] = React.useState(false);
+        const [chatError, setChatError] = React.useState("");
+        const [nextId, setNextId] = React.useState(acts.length + 1);
+
+        const saveActs = (a) => {
+          setActs(a);
+          try { sessionStorage.setItem("drcanvas:plot", JSON.stringify(a)); } catch {}
+        };
+
+        const updateAct = (id, field, val) => {
+          saveActs(acts.map(a => a.id === id ? { ...a, [field]: val } : a));
+        };
+
+        const addAct = () => {
+          const newAct = { id: nextId, title: `シーン ${nextId}`, body: "" };
+          setNextId(n => n + 1);
+          saveActs([...acts, newAct]);
+          setSelectedAct(newAct.id);
+        };
+
+        const removeAct = (id) => {
+          saveActs(acts.filter(a => a.id !== id));
+          if (selectedAct === id) setSelectedAct(null);
+        };
+
+        const moveAct = (id, dir) => {
+          const idx = acts.findIndex(a => a.id === id);
+          if (dir === -1 && idx === 0) return;
+          if (dir === 1 && idx === acts.length - 1) return;
+          const arr = [...acts];
+          [arr[idx], arr[idx + dir]] = [arr[idx + dir], arr[idx]];
+          saveActs(arr);
+        };
+
+        const sendChat = async () => {
+          if (!chatMsg.trim() || chatBusy) return;
+          setChatBusy(true); setChatError("");
+          const target = selectedAct ? acts.find(a => a.id === selectedAct) : null;
+          const instruction = target
+            ? `【「${target.title}」のプロット修正】${chatMsg}\n\n現在の内容: ${target.body}`
+            : `【プロット全体】${chatMsg}\n\n現在のプロット:\n${acts.map(a => `## ${a.title}\n${a.body}`).join("\n\n")}`;
+          try {
+            const res = await fetch(apiUrl("/api/ai/refine"), {
+              method: "POST", headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                instruction,
+                tone: sd.tone, theme_line: sd.theme_line,
+                characters: sd.characters || [], synopsis: sd.synopsis, panel_beats: sd.panel_beats || [],
+              }),
+            });
+            const d = await res.json();
+            if (d.ok && d.message) {
+              if (target) {
+                updateAct(selectedAct, "body", d.message);
+              } else {
+                // 全体修正: 各幕のJSON配列を期待
+                try {
+                  const jsonMatch = d.message.match(/\[[\s\S]*\]/);
+                  if (jsonMatch) {
+                    const parsed = JSON.parse(jsonMatch[0]);
+                    if (Array.isArray(parsed)) {
+                      saveActs(parsed.map((item, i) => ({ id: acts[i]?.id || i + 1, title: item.title || acts[i]?.title || `幕${i+1}`, body: item.body || item.content || "" })));
+                    } else {
+                      saveActs(acts.map((a, i) => ({ ...a, body: d.message })));
+                    }
+                  } else {
+                    saveActs(acts.map((a, i) => i === 0 ? { ...a, body: d.message } : a));
+                  }
+                } catch {
+                  saveActs(acts.map((a, i) => i === 0 ? { ...a, body: d.message } : a));
+                }
+              }
+            }
+          } catch (e) { setChatError(e.message); }
+          setChatBusy(false); setChatMsg("");
+        };
+
+        const currentAct = selectedAct ? acts.find(a => a.id === selectedAct) : null;
+
+        return (
+          <div style={{ ...PAGE_BG, padding: "0 0 4rem 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
+              <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 戻る</button>
+              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>📝 プロット（ストーリーエディター）</span>
+              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 3 / 6</span>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "220px 1fr 320px", gap: "1rem", padding: "1rem 1.5rem", maxWidth: 1300, margin: "0 auto" }}>
+
+              {/* 左: 幕一覧パネル（ClipStudio のシーン一覧風） */}
+              <div>
+                <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "rgba(167,243,208,0.6)", marginBottom: "0.5rem", letterSpacing: "0.05em" }}>幕・シーン一覧</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", marginBottom: "0.6rem" }}>
+                  {acts.map((act, idx) => (
+                    <div
+                      key={act.id}
+                      onClick={() => setSelectedAct(act.id)}
+                      style={{
+                        padding: "0.55rem 0.7rem", borderRadius: "0.6rem", cursor: "pointer",
+                        background: selectedAct === act.id ? "rgba(34,197,94,0.22)" : "rgba(255,255,255,0.05)",
+                        border: selectedAct === act.id ? "1.5px solid rgba(34,197,94,0.6)" : "1px solid rgba(34,197,94,0.15)",
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      <div style={{ fontSize: "0.78rem", fontWeight: 900, color: selectedAct === act.id ? "#86efac" : "rgba(234,248,239,0.7)", marginBottom: "0.15rem" }}>{act.title}</div>
+                      <div style={{ fontSize: "0.68rem", color: "rgba(234,248,239,0.35)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "100%" }}>
+                        {act.body?.slice(0, 40) || "（空）"}
+                      </div>
+                      <div style={{ display: "flex", gap: "0.2rem", marginTop: "0.3rem" }}>
+                        <button onClick={e => { e.stopPropagation(); moveAct(act.id, -1); }} disabled={idx === 0} style={{ fontSize: "0.65rem", background: "none", border: "none", color: "rgba(167,243,208,0.4)", cursor: idx === 0 ? "default" : "pointer" }}>↑</button>
+                        <button onClick={e => { e.stopPropagation(); moveAct(act.id, 1); }} disabled={idx === acts.length - 1} style={{ fontSize: "0.65rem", background: "none", border: "none", color: "rgba(167,243,208,0.4)", cursor: idx === acts.length - 1 ? "default" : "pointer" }}>↓</button>
+                        <button onClick={e => { e.stopPropagation(); removeAct(act.id); }} style={{ marginLeft: "auto", fontSize: "0.65rem", background: "none", border: "none", color: "rgba(252,165,165,0.5)", cursor: "pointer" }}>✕</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={addAct} style={{ width: "100%", padding: "0.45rem", fontSize: "0.78rem", fontWeight: 700, background: "rgba(34,197,94,0.12)", border: "1px dashed rgba(34,197,94,0.4)", borderRadius: "0.55rem", color: "#86efac", cursor: "pointer" }}>
+                  ＋ 幕/シーンを追加
+                </button>
+
+                {/* テーマ表示 */}
+                {sd.theme_line && (
+                  <div style={{ marginTop: "1rem", ...CARD, background: "rgba(34,197,94,0.08)", fontSize: "0.75rem" }}>
+                    <div style={{ fontWeight: 900, color: "rgba(167,243,208,0.7)", marginBottom: "0.25rem" }}>🎨 テーマ</div>
+                    <div style={{ color: "#eaf8ef" }}>{sd.theme_line}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* 中央: テキストエディタ */}
+              <div>
+                {currentAct ? (
+                  <div style={{ height: "100%" }}>
+                    <input
+                      value={currentAct.title}
+                      onChange={e => updateAct(currentAct.id, "title", e.target.value)}
+                      style={{
+                        width: "100%", padding: "0.6rem 0.8rem", fontSize: "1rem", fontWeight: 900,
+                        background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(34,197,94,0.35)",
+                        borderRadius: "0.7rem", color: "#eaf8ef", outline: "none", boxSizing: "border-box", marginBottom: "0.6rem",
+                      }}
+                    />
+                    <textarea
+                      value={currentAct.body}
+                      onChange={e => updateAct(currentAct.id, "body", e.target.value)}
+                      placeholder="ここにこの幕のプロットを書いてください…"
+                      style={{
+                        width: "100%", height: "calc(100vh - 280px)", minHeight: "320px",
+                        padding: "0.8rem 1rem", fontSize: "0.92rem", lineHeight: 1.8,
+                        background: "rgba(255,255,255,0.04)", border: "1.5px solid rgba(34,197,94,0.25)",
+                        borderRadius: "0.85rem", color: "#eaf8ef", resize: "vertical", outline: "none",
+                        boxSizing: "border-box", fontFamily: "inherit",
+                      }}
+                    />
+                    <div style={{ fontSize: "0.72rem", color: "rgba(167,243,208,0.35)", textAlign: "right", marginTop: "0.3rem" }}>
+                      {(currentAct.body || "").length.toLocaleString()} 文字
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ height: "400px", display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: "0.8rem", color: "rgba(167,243,208,0.35)" }}>
+                    <div style={{ fontSize: "2.5rem" }}>📝</div>
+                    <div style={{ fontSize: "0.9rem" }}>左の一覧から幕を選択して編集</div>
+                  </div>
+                )}
+
+                {/* 次へボタン */}
+                <button
+                  onClick={() => onGoNamePlan()}
+                  style={{
+                    marginTop: "1rem", width: "100%", padding: "1rem", fontSize: "0.95rem", fontWeight: 1000,
+                    background: "linear-gradient(135deg,#22c55e,#16a34a)",
+                    color: "#06210f", border: "none", borderRadius: "0.9rem", cursor: "pointer",
+                    boxShadow: "0 6px 24px rgba(34,197,94,0.3)",
+                  }}
+                >
+                  起承転結（ネーム構成）へ →
+                </button>
+              </div>
+
+              {/* 右: AI チャットボット */}
+              <div style={{ position: "sticky", top: "1rem", height: "fit-content" }}>
+                <div style={{ ...CARD, border: "1px solid rgba(34,197,94,0.25)" }}>
+                  <div style={{ fontSize: "0.75rem", fontWeight: 900, color: "rgba(167,243,208,0.8)", marginBottom: "0.4rem" }}>
+                    💬 AI プロット修正
+                    {selectedAct && <span style={{ marginLeft: "0.4rem", fontSize: "0.68rem", color: "rgba(167,243,208,0.5)" }}>（「{currentAct?.title}」に適用）</span>}
+                  </div>
+                  <div style={{ fontSize: "0.7rem", color: "rgba(167,243,208,0.45)", marginBottom: "0.6rem", lineHeight: 1.5 }}>
+                    例: もっと感情的な展開にして<br/>
+                    ライバルとの衝突シーンを追加<br/>
+                    第2幕の展開を2倍の長さに
+                  </div>
+                  <textarea
+                    value={chatMsg}
+                    onChange={e => setChatMsg(e.target.value)}
+                    onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }}}
+                    placeholder="修正指示を入力… (Enter送信)"
+                    rows={5}
+                    style={{ width: "100%", padding: "0.6rem", fontSize: "0.85rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: "0.6rem", color: "#eaf8ef", resize: "vertical", outline: "none", boxSizing: "border-box", marginBottom: "0.5rem" }}
+                  />
+                  <button onClick={sendChat} disabled={!chatMsg.trim() || chatBusy} style={{ width: "100%", padding: "0.6rem", fontWeight: 900, fontSize: "0.88rem", background: !chatMsg.trim() || chatBusy ? "rgba(34,197,94,0.25)" : "linear-gradient(135deg,#22c55e,#16a34a)", color: "#06210f", border: "none", borderRadius: "0.6rem", cursor: !chatMsg.trim() || chatBusy ? "not-allowed" : "pointer" }}>
+                    {chatBusy ? "修正中…" : "送信"}
+                  </button>
+                  {chatError && <div style={{ marginTop: "0.4rem", fontSize: "0.76rem", color: "#fca5a5" }}>{chatError}</div>}
+                  <div style={{ marginTop: "0.75rem", fontSize: "0.7rem", color: "rgba(167,243,208,0.35)", lineHeight: 1.5 }}>
+                    幕を選択中: 選択幕に適用<br/>
+                    未選択: プロット全体に適用
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
       function NamePlanView({ initialData, onBack, onGoCharacter }) {
         const [data, setData] = useState(initialData || { tone: "少年マンガ", theme_line: "", characters: [], synopsis: "", panel_beats: ["", "", "", ""], source: "none" });
         const [editIdx, setEditIdx] = useState(null); // 編集中の beat インデックス
@@ -4298,7 +4595,7 @@
               setRoute("manga");
               return;
             }
-            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "input" || h === "synopsis" || h === "nameplan" || h === "character" || h === "relationship" || h === "namesheet" || h === "publish") setRoute(h || "home");
+            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "input" || h === "synopsis" || h === "plot" || h === "nameplan" || h === "character" || h === "relationship" || h === "namesheet" || h === "publish") setRoute(h || "home");
             else setRoute("home");
           };
           window.addEventListener("popstate", onPop);
@@ -4340,14 +4637,20 @@
         else if (route === "synopsis")
           page = <SynopsisView
             onBack={() => setRoute("input")}
-            onGoNamePlan={(data) => { setSynopsisData(data); setRoute("nameplan"); }}
+            onGoNamePlan={(data) => { setSynopsisData(data); setRoute("plot"); }}
             savedData={synopsisData}
             inputText={inputData?.text || ""}
+          />;
+        else if (route === "plot")
+          page = <PlotView
+            synopsisData={synopsisData}
+            onBack={() => setRoute("synopsis")}
+            onGoNamePlan={() => setRoute("nameplan")}
           />;
         else if (route === "nameplan")
           page = <NamePlanView
             initialData={synopsisData}
-            onBack={() => setRoute("synopsis")}
+            onBack={() => setRoute("plot")}
             onGoCharacter={(data) => { setNamePlanData(data); setRoute("character"); }}
           />;
         else if (route === "character")
