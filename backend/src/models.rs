@@ -445,6 +445,30 @@ pub struct NameSheetResponse {
     pub pages: Vec<NamePage>,
 }
 
+/// POST /api/ai/generate-panel リクエスト
+#[derive(Debug, Deserialize)]
+pub struct GeneratePanelRequest {
+    /// コマの場面描写
+    pub scene: String,
+    /// 台詞（フキダシ文字）
+    pub dialogue: Option<String>,
+    /// コマ演出メモ
+    pub direction: Option<String>,
+    /// 漫画ジャンル（少年マンガ / SF / etc.）
+    pub genre: Option<String>,
+    /// 追加スタイルヒント
+    pub style_hint: Option<String>,
+}
+
+/// POST /api/ai/generate-panel レスポンス
+#[derive(Debug, Serialize)]
+pub struct GeneratePanelResponse {
+    pub ok: bool,
+    pub image_url: Option<String>,
+    pub prediction_id: Option<String>,
+    pub error: Option<String>,
+}
+
 /// GET /api/ai/jobs/:id — ポーリング用レスポンス
 #[derive(Debug, Serialize)]
 pub struct JobStatusResponse {

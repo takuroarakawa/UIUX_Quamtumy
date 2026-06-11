@@ -3102,6 +3102,36 @@
         const [chatInstruction, setChatInstruction] = useState("");
         const [chatBusy, setChatBusy] = useState(false);
         const [chatError, setChatError] = useState("");
+        // コマ画像生成: { "p3_c2": { status: "loading"|"done"|"error", url, error } }
+        const [panelImages, setPanelImages] = useState(() => {
+          try { return JSON.parse(sessionStorage.getItem("drcanvas:panel_images") || "{}"); } catch { return {}; }
+        });
+
+        const generatePanelImage = async (pageNum, panelNum, panel) => {
+          const key = `p${pageNum}_c${panelNum}`;
+          setPanelImages(prev => ({ ...prev, [key]: { status: "loading" } }));
+          try {
+            const res = await fetch(apiUrl("/api/ai/generate-panel"), {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                scene: panel.scene || "",
+                dialogue: panel.dialogue || "",
+                direction: panel.direction || "",
+                genre: sd.tone || "少年マンガ",
+                style_hint: "",
+              }),
+            });
+            const d = await res.json();
+            const next = d.ok && d.image_url
+              ? { ...panelImages, [key]: { status: "done", url: d.image_url } }
+              : { ...panelImages, [key]: { status: "error", error: d.error || "生成失敗" } };
+            setPanelImages(next);
+            try { sessionStorage.setItem("drcanvas:panel_images", JSON.stringify(next)); } catch {}
+          } catch (e) {
+            setPanelImages(prev => ({ ...prev, [key]: { status: "error", error: e.message } }));
+          }
+        };
 
         const generate = async () => {
           setBusy(true); setError(""); setPages(null); setSelectedPage(null);
@@ -3352,12 +3382,22 @@
                           {pg.scene_direction || pg.panels?.[0]?.scene || ""}
                         </div>
                         <div style={{ marginTop: "0.35rem", fontSize: "0.6rem", color: "rgba(234,248,239,0.4)" }}>{pg.panels?.length ?? 0} コマ</div>
-                        {/* コマ割り簡易プレビュー */}
-                        <div style={{ marginTop: "0.4rem", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2px" }}>
-                          {(pg.panels || []).slice(0, 6).map((_, ci) => (
-                            <div key={ci} style={{ height: 14, background: `${bc2.accent}30`, borderRadius: "2px" }} />
-                          ))}
-                        </div>
+                        {/* コマ画像プレビュー or コマ割り簡易表示 */}
+                        {(() => {
+                          const firstKey = `p${pg.page_number}_c${pg.panels?.[0]?.number || 1}`;
+                          const firstImg = panelImages[firstKey];
+                          return firstImg?.status === "done" && firstImg.url ? (
+                            <div style={{ marginTop: "0.4rem", borderRadius: "0.4rem", overflow: "hidden", height: 60 }}>
+                              <img src={firstImg.url} alt="preview" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            </div>
+                          ) : (
+                            <div style={{ marginTop: "0.4rem", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "2px" }}>
+                              {(pg.panels || []).slice(0, 6).map((_, ci) => (
+                                <div key={ci} style={{ height: 14, background: `${bc2.accent}30`, borderRadius: "2px" }} />
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
                     );
                   })}
@@ -3385,23 +3425,56 @@
 
                   {/* コマ一覧 */}
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                    {currentPage.panels?.map((panel, ci) => (
-                      <div key={ci} style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${bc.border}`, borderRadius: "0.75rem", padding: "0.8rem 0.9rem" }}>
-                        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.4rem" }}>
-                          <span style={{ fontSize: "0.65rem", fontWeight: 900, color: bc.accent, background: "rgba(0,0,0,0.4)", padding: "0.1rem 0.4rem", borderRadius: "0.3rem" }}>コマ {panel.number}</span>
-                          <span style={{ fontSize: "0.65rem", color: "rgba(234,248,239,0.45)", background: "rgba(255,255,255,0.06)", padding: "0.1rem 0.35rem", borderRadius: "0.3rem" }}>{panel.layout}</span>
-                        </div>
-                        <div style={{ fontSize: "0.9rem", color: "#eaf8ef", fontWeight: 700, lineHeight: 1.6, marginBottom: panel.dialogue ? "0.4rem" : 0 }}>{panel.scene}</div>
-                        {panel.dialogue && (
-                          <div style={{ padding: "0.4rem 0.6rem", background: "rgba(255,255,255,0.08)", borderLeft: `3px solid ${bc.accent}`, borderRadius: "0 0.5rem 0.5rem 0", fontSize: "0.88rem", color: bc.accent, fontStyle: "italic", lineHeight: 1.6 }}>
-                            「{panel.dialogue}」
+                    {currentPage.panels?.map((panel, ci) => {
+                      const imgKey = `p${selectedPage}_c${panel.number || ci + 1}`;
+                      const imgState = panelImages[imgKey];
+                      return (
+                        <div key={ci} style={{ background: "rgba(0,0,0,0.3)", border: `1px solid ${bc.border}`, borderRadius: "0.75rem", padding: "0.8rem 0.9rem" }}>
+                          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", marginBottom: "0.4rem", flexWrap: "wrap" }}>
+                            <span style={{ fontSize: "0.65rem", fontWeight: 900, color: bc.accent, background: "rgba(0,0,0,0.4)", padding: "0.1rem 0.4rem", borderRadius: "0.3rem" }}>コマ {panel.number || ci + 1}</span>
+                            <span style={{ fontSize: "0.65rem", color: "rgba(234,248,239,0.45)", background: "rgba(255,255,255,0.06)", padding: "0.1rem 0.35rem", borderRadius: "0.3rem" }}>{panel.layout}</span>
+                            <button
+                              onClick={() => generatePanelImage(selectedPage, panel.number || ci + 1, panel)}
+                              disabled={imgState?.status === "loading"}
+                              style={{
+                                marginLeft: "auto", padding: "0.2rem 0.65rem", fontSize: "0.68rem", fontWeight: 700,
+                                background: imgState?.status === "done" ? "rgba(34,197,94,0.3)" : "rgba(139,92,246,0.25)",
+                                border: `1px solid ${imgState?.status === "done" ? "rgba(34,197,94,0.5)" : "rgba(139,92,246,0.5)"}`,
+                                borderRadius: "99px", color: imgState?.status === "done" ? "#86efac" : "#c4b5fd",
+                                cursor: imgState?.status === "loading" ? "wait" : "pointer",
+                              }}
+                            >
+                              {imgState?.status === "loading" ? "⌛ 生成中…" : imgState?.status === "done" ? "🔄 再生成" : "🎨 コマ絵を生成"}
+                            </button>
                           </div>
-                        )}
-                        {panel.direction && (
-                          <div style={{ marginTop: "0.35rem", fontSize: "0.75rem", color: "rgba(234,248,239,0.45)" }}>📐 {panel.direction}</div>
-                        )}
-                      </div>
-                    ))}
+                          {/* 生成済み画像 */}
+                          {imgState?.status === "done" && imgState.url && (
+                            <div style={{ marginBottom: "0.6rem", borderRadius: "0.55rem", overflow: "hidden", border: `1px solid ${bc.border}` }}>
+                              <img src={imgState.url} alt={`コマ${panel.number || ci + 1}`} style={{ width: "100%", display: "block", maxHeight: 400, objectFit: "contain", background: "#111" }} />
+                            </div>
+                          )}
+                          {imgState?.status === "loading" && (
+                            <div style={{ marginBottom: "0.5rem", height: 6, borderRadius: 6, background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                              <div style={{ height: "100%", width: "40%", background: "linear-gradient(90deg,#8b5cf6,#6d28d9)", animation: "pulse 1.5s ease-in-out infinite", borderRadius: 6 }} />
+                            </div>
+                          )}
+                          {imgState?.status === "error" && (
+                            <div style={{ marginBottom: "0.4rem", fontSize: "0.72rem", color: "#fca5a5", padding: "0.3rem 0.5rem", background: "rgba(127,29,29,0.25)", borderRadius: "0.4rem" }}>
+                              ⚠ {imgState.error}
+                            </div>
+                          )}
+                          <div style={{ fontSize: "0.9rem", color: "#eaf8ef", fontWeight: 700, lineHeight: 1.6, marginBottom: panel.dialogue ? "0.4rem" : 0 }}>{panel.scene}</div>
+                          {panel.dialogue && (
+                            <div style={{ padding: "0.4rem 0.6rem", background: "rgba(255,255,255,0.08)", borderLeft: `3px solid ${bc.accent}`, borderRadius: "0 0.5rem 0.5rem 0", fontSize: "0.88rem", color: bc.accent, fontStyle: "italic", lineHeight: 1.6 }}>
+                              「{panel.dialogue}」
+                            </div>
+                          )}
+                          {panel.direction && (
+                            <div style={{ marginTop: "0.35rem", fontSize: "0.75rem", color: "rgba(234,248,239,0.45)" }}>📐 {panel.direction}</div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

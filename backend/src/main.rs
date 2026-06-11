@@ -169,6 +169,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .route("/api/ai/jobs/:id", get(handlers::get_job_status))
                 .route("/api/ai/refine", post(handlers::refine_content))
                 .route("/api/ai/namesheet", post(handlers::generate_namesheet))
+                .route("/api/ai/generate-panel", post(handlers::generate_panel_image))
                 .route(
                     "/api/checkout/session",
                     post(checkout::create_checkout_session),

@@ -1840,3 +1840,202 @@ pub async fn generate_namesheet(
     )
         .into_response()
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  POST /api/ai/generate-panel — Replicate SDXL でコマ画像生成
+// ─────────────────────────────────────────────────────────────────────────────
+use crate::models::{GeneratePanelRequest, GeneratePanelResponse};
+
+/// ジャンル別のスタイルプロンプト
+fn genre_style_prompt(genre: &str) -> &'static str {
+    match genre {
+        "少年マンガ" => "shonen manga style, bold lineart, black and white, dynamic action pose, strong shadows, screentone shading",
+        "SF"         => "sci-fi manga, black and white, clean lineart, mechanical details, cosmic background, futuristic",
+        "社会派"     => "serious manga, black and white, realistic proportions, detailed facial expressions, urban setting",
+        "ホラー"     => "horror manga, dark ink, heavy shadows, intense close-up, unsettling atmosphere, high contrast black and white",
+        "恋愛"       => "shoujo manga style, soft lineart, flower screentone, sparkle effects, expressive large eyes, delicate lines",
+        _            => "manga panel, black and white, clean professional lineart, screentone shading, Japanese manga",
+    }
+}
+
+pub async fn generate_panel_image(
+    State(_state): State<AppState>,
+    Json(req): Json<GeneratePanelRequest>,
+) -> impl IntoResponse {
+    let api_key = match std::env::var("REPLICATE_API_TOKEN")
+        .ok()
+        .filter(|k| !k.trim().is_empty())
+    {
+        Some(k) => k,
+        None => {
+            return (
+                StatusCode::SERVICE_UNAVAILABLE,
+                Json(GeneratePanelResponse {
+                    ok: false,
+                    image_url: None,
+                    prediction_id: None,
+                    error: Some("REPLICATE_API_TOKEN が未設定です。Render の環境変数を確認してください。".into()),
+                }),
+            ).into_response();
+        }
+    };
+
+    let genre = req.genre.as_deref().unwrap_or("");
+    let style = genre_style_prompt(genre);
+    let style_extra = req.style_hint.as_deref().unwrap_or("");
+
+    let dialogue_hint = req.dialogue
+        .as_deref()
+        .filter(|d| !d.is_empty())
+        .map(|d| format!(", character speaking: {}", d))
+        .unwrap_or_default();
+
+    let prompt = format!(
+        "{style}, {scene}{dialogue_hint}{style_extra}, single manga panel, monochrome, high quality, masterpiece",
+        style = style,
+        scene = req.scene.chars().take(300).collect::<String>(),
+        dialogue_hint = dialogue_hint,
+        style_extra = if style_extra.is_empty() { String::new() } else { format!(", {}", style_extra) },
+    );
+
+    let neg_prompt = "color, realistic photo, 3d render, watermark, blurry, low quality, text overlay, multiple panels, border frame";
+
+    // Replicate SDXL — stability-ai/sdxl latest version
+    let model_version = "7762fd07cf82c948538e41f63f77d685e02b063e0f703af5bedc5b2a2f2ca4ce";
+
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(120))
+        .build()
+        .unwrap();
+
+    let predict_body = serde_json::json!({
+        "version": model_version,
+        "input": {
+            "prompt": prompt,
+            "negative_prompt": neg_prompt,
+            "width": 768,
+            "height": 1024,
+            "num_outputs": 1,
+            "num_inference_steps": 25,
+            "guidance_scale": 7.5,
+            "scheduler": "K_EULER"
+        }
+    });
+
+    // Step 1: 予測を作成
+    let create_res = match client
+        .post("https://api.replicate.com/v1/predictions")
+        .header("Authorization", format!("Token {}", api_key))
+        .header("Content-Type", "application/json")
+        .json(&predict_body)
+        .send()
+        .await
+    {
+        Ok(r) => r,
+        Err(e) => {
+            return (
+                StatusCode::BAD_GATEWAY,
+                Json(GeneratePanelResponse {
+                    ok: false, image_url: None, prediction_id: None,
+                    error: Some(format!("Replicate 接続エラー: {}", e)),
+                }),
+            ).into_response();
+        }
+    };
+
+    let create_data: serde_json::Value = match create_res.json().await {
+        Ok(d) => d,
+        Err(e) => {
+            return (
+                StatusCode::BAD_GATEWAY,
+                Json(GeneratePanelResponse {
+                    ok: false, image_url: None, prediction_id: None,
+                    error: Some(format!("Replicate レスポンス解析エラー: {}", e)),
+                }),
+            ).into_response();
+        }
+    };
+
+    let prediction_id = match create_data["id"].as_str() {
+        Some(id) => id.to_string(),
+        None => {
+            let err_msg = create_data["detail"].as_str().unwrap_or("予測IDが取得できませんでした").to_string();
+            return (
+                StatusCode::BAD_GATEWAY,
+                Json(GeneratePanelResponse {
+                    ok: false, image_url: None, prediction_id: None,
+                    error: Some(err_msg),
+                }),
+            ).into_response();
+        }
+    };
+
+    tracing::info!("[generate-panel] Replicate prediction_id={}", prediction_id);
+
+    // Step 2: 完了をポーリング（最大 90 秒 × 3秒インターバル = 30回）
+    let poll_url = format!("https://api.replicate.com/v1/predictions/{}", prediction_id);
+    for attempt in 0..30_u32 {
+        tokio::time::sleep(std::time::Duration::from_millis(if attempt < 5 { 2000 } else { 3000 })).await;
+
+        let poll_res = match client
+            .get(&poll_url)
+            .header("Authorization", format!("Token {}", api_key))
+            .send()
+            .await
+        {
+            Ok(r) => r,
+            Err(_) => continue,
+        };
+
+        let poll_data: serde_json::Value = match poll_res.json().await {
+            Ok(d) => d,
+            Err(_) => continue,
+        };
+
+        match poll_data["status"].as_str() {
+            Some("succeeded") => {
+                let image_url = poll_data["output"]
+                    .as_array()
+                    .and_then(|arr| arr.first())
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                tracing::info!("[generate-panel] 成功: {}", image_url);
+                return (
+                    StatusCode::OK,
+                    Json(GeneratePanelResponse {
+                        ok: true,
+                        image_url: Some(image_url),
+                        prediction_id: Some(prediction_id),
+                        error: None,
+                    }),
+                ).into_response();
+            }
+            Some("failed") | Some("canceled") => {
+                let err = poll_data["error"].as_str().unwrap_or("生成に失敗しました").to_string();
+                return (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(GeneratePanelResponse {
+                        ok: false, image_url: None,
+                        prediction_id: Some(prediction_id),
+                        error: Some(err),
+                    }),
+                ).into_response();
+            }
+            _ => {
+                tracing::debug!("[generate-panel] attempt={} status={:?}", attempt, poll_data["status"].as_str());
+            }
+        }
+    }
+
+    // タイムアウト — フロントエンドがポーリングできるように prediction_id を返す
+    (
+        StatusCode::ACCEPTED,
+        Json(GeneratePanelResponse {
+            ok: false,
+            image_url: None,
+            prediction_id: Some(prediction_id),
+            error: Some("タイムアウト。prediction_id で後からポーリングしてください。".into()),
+        }),
+    ).into_response()
+}
