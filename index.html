@@ -3950,7 +3950,7 @@
             {/* ヘッダー */}
             <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
               <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 戻る</button>
-              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>💡 案出し（テーマ・粗筋・キャラクター生成）</span>
+              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>💡 企画（テーマ・粗筋・キャラクター生成）</span>
               <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 2 / 6</span>
             </div>
 
@@ -3998,7 +3998,7 @@
                     boxShadow: "0 6px 24px rgba(34,197,94,0.25)",
                   }}
                 >
-                  {stage === "idle" && "🚀 案出しを開始（AI パイプライン）"}
+                  {stage === "idle" && "🚀 企画を開始（AI パイプライン）"}
                   {stage === "generating" && `${stageLabel} ${stagePct}%…`}
                   {stage === "done" && "⟳ 再生成する"}
                 </button>
