@@ -2894,7 +2894,7 @@
         "結": { bg: "rgba(168,85,247,0.15)", border: "rgba(168,85,247,0.5)",  accent: "#c4b5fd" },
       };
 
-      const PAGE_COUNT_OPTIONS = [8, 12, 16, 20, 24, 32];
+      const PAGE_COUNT_OPTIONS = [8, 12, 16, 20, 24, 32]; // 後方互換のため残す
 
       function NameSheetView({ synopsisData, namePlanData, characters, onBack, onPublish }) {
         const sd = synopsisData || {};
@@ -2902,6 +2902,7 @@
         const chars = characters || sd.characters || [];
 
         const [pageCount, setPageCount] = useState(16);
+        const [pagePickerOpen, setPagePickerOpen] = useState(false);
         const [pages, setPages] = useState(null);
         const [busy, setBusy] = useState(false);
         const [error, setError] = useState("");
@@ -2992,20 +2993,88 @@
 
             {/* ページ数選択 + 生成ボタン（ギャラリー表示時のみ） */}
             {selectedPage === null && (
-              <div style={{ display: "flex", gap: "0.7rem", alignItems: "center", padding: "0.8rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.1)", flexWrap: "wrap" }}>
-                <span style={{ fontSize: "0.82rem", color: "rgba(167,243,208,0.8)", fontWeight: 700 }}>総ページ数:</span>
-                {PAGE_COUNT_OPTIONS.map(n => (
-                  <button key={n} onClick={() => setPageCount(n)} style={{ padding: "0.3rem 0.7rem", borderRadius: "99px", border: pageCount === n ? "1.5px solid #22c55e" : "1.5px solid rgba(34,197,94,0.3)", background: pageCount === n ? "rgba(34,197,94,0.28)" : "rgba(34,197,94,0.07)", color: pageCount === n ? "#86efac" : "rgba(234,248,239,0.6)", fontWeight: pageCount === n ? 900 : 700, fontSize: "0.85rem", cursor: "pointer" }}>
-                    {n}p
+              <div style={{ padding: "0.8rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.1)" }}>
+                {/* トップ行: 現在の選択 + 生成ボタン + 投稿ボタン */}
+                <div style={{ display: "flex", gap: "0.7rem", alignItems: "center", flexWrap: "wrap" }}>
+                  {/* トグルボタン */}
+                  <button
+                    onClick={() => setPagePickerOpen(o => !o)}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "0.4rem",
+                      padding: "0.4rem 0.9rem", fontWeight: 900, fontSize: "0.88rem",
+                      background: "rgba(34,197,94,0.12)", border: "1.5px solid rgba(34,197,94,0.4)",
+                      borderRadius: "0.6rem", color: "#86efac", cursor: "pointer",
+                    }}
+                  >
+                    <span>{pagePickerOpen ? "▲" : "▼"}</span>
+                    <span>総ページ数: <strong style={{ color: "#4ade80" }}>{pageCount}P</strong></span>
                   </button>
-                ))}
-                <button onClick={generate} disabled={busy} style={{ marginLeft: "0.5rem", padding: "0.5rem 1.2rem", fontWeight: 900, fontSize: "0.9rem", background: busy ? "rgba(34,197,94,0.3)" : "linear-gradient(135deg,#22c55e,#16a34a)", color: "#06210f", border: "none", borderRadius: "0.75rem", cursor: busy ? "wait" : "pointer" }}>
-                  {busy ? "生成中…" : pages ? "⟳ 再生成" : "🎨 ネーム生成"}
-                </button>
-                {pages && (
-                  <button onClick={onPublish} style={{ marginLeft: "auto", padding: "0.5rem 1.2rem", fontWeight: 900, fontSize: "0.9rem", background: "rgba(168,85,247,0.3)", border: "1px solid rgba(168,85,247,0.5)", color: "#c4b5fd", borderRadius: "0.75rem", cursor: "pointer" }}>
-                    🚀 投稿する → 作品一覧へ
+
+                  <button onClick={generate} disabled={busy} style={{ padding: "0.5rem 1.2rem", fontWeight: 900, fontSize: "0.9rem", background: busy ? "rgba(34,197,94,0.3)" : "linear-gradient(135deg,#22c55e,#16a34a)", color: "#06210f", border: "none", borderRadius: "0.75rem", cursor: busy ? "wait" : "pointer" }}>
+                    {busy ? "生成中…" : pages ? "⟳ 再生成" : "🎨 ネーム生成"}
                   </button>
+                  {pages && (
+                    <button onClick={onPublish} style={{ marginLeft: "auto", padding: "0.5rem 1.2rem", fontWeight: 900, fontSize: "0.9rem", background: "rgba(168,85,247,0.3)", border: "1px solid rgba(168,85,247,0.5)", color: "#c4b5fd", borderRadius: "0.75rem", cursor: "pointer" }}>
+                      🚀 投稿する → 作品一覧へ
+                    </button>
+                  )}
+                </div>
+
+                {/* ページ数ピッカー（トグルで展開） */}
+                {pagePickerOpen && (
+                  <div style={{ marginTop: "0.75rem", padding: "0.85rem", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: "0.75rem" }}>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "rgba(167,243,208,0.65)", marginBottom: "0.5rem", letterSpacing: "0.05em" }}>
+                      1P〜55P（クリックで選択）
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.3rem", marginBottom: "0.75rem" }}>
+                      {Array.from({ length: 55 }, (_, i) => i + 1).map(n => (
+                        <button
+                          key={n}
+                          onClick={() => { setPageCount(n); setPagePickerOpen(false); }}
+                          style={{
+                            width: "2.4rem", height: "2.1rem", padding: 0,
+                            borderRadius: "0.4rem",
+                            border: pageCount === n ? "1.5px solid #22c55e" : "1px solid rgba(34,197,94,0.25)",
+                            background: pageCount === n ? "rgba(34,197,94,0.35)" : "rgba(34,197,94,0.07)",
+                            color: pageCount === n ? "#86efac" : "rgba(234,248,239,0.55)",
+                            fontWeight: pageCount === n ? 900 : 600,
+                            fontSize: "0.78rem", cursor: "pointer",
+                          }}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* 56P〜150P 追加 */}
+                    <div style={{ borderTop: "1px solid rgba(34,197,94,0.15)", paddingTop: "0.6rem" }}>
+                      <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "rgba(167,243,208,0.65)", marginBottom: "0.4rem", letterSpacing: "0.05em" }}>
+                        56P〜150P（カスタム入力）
+                      </div>
+                      <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                        <input
+                          type="number" min={56} max={150} defaultValue={pageCount > 55 ? pageCount : 56}
+                          id="custom-page-count"
+                          style={{
+                            width: "5rem", padding: "0.35rem 0.5rem", fontSize: "0.85rem",
+                            background: "rgba(255,255,255,0.08)", border: "1px solid rgba(34,197,94,0.35)",
+                            borderRadius: "0.4rem", color: "#eaf8ef", outline: "none",
+                          }}
+                        />
+                        <span style={{ fontSize: "0.78rem", color: "rgba(167,243,208,0.5)" }}>P</span>
+                        <button
+                          onClick={() => {
+                            const val = parseInt(document.getElementById("custom-page-count")?.value || "0");
+                            if (val >= 56 && val <= 150) { setPageCount(val); setPagePickerOpen(false); }
+                          }}
+                          style={{ padding: "0.35rem 0.8rem", fontSize: "0.82rem", fontWeight: 700, background: "rgba(34,197,94,0.2)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.4rem", color: "#86efac", cursor: "pointer" }}
+                        >
+                          適用
+                        </button>
+                        <span style={{ fontSize: "0.72rem", color: "rgba(167,243,208,0.35)" }}>（最大 150P）</span>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -3139,22 +3208,150 @@
       }
 
       // ─────────────────────────────────────────────────────────────────────
-      //  SynopsisView — 粗筋生成ページ
+      //  InputView — テキスト入力 / PDF アップロードページ (Step 1)
       // ─────────────────────────────────────────────────────────────────────
-      function SynopsisView({ onBack, onGoNamePlan, savedData }) {
+      function InputView({ onBack, onGoSynopsis, savedData }) {
+        const [text, setText] = React.useState(savedData?.text || "");
+        const [fileName, setFileName] = React.useState(savedData?.fileName || "");
+        const [pdfBusy, setPdfBusy] = React.useState(false);
+        const [pdfInfo, setPdfInfo] = React.useState("");
+        const fileRef = React.useRef(null);
+
+        // テキストが変わるたびsessionStorageに保存
+        React.useEffect(() => {
+          try { sessionStorage.setItem("drcanvas:input", JSON.stringify({ text, fileName })); } catch {}
+        }, [text, fileName]);
+
+        const handleFile = async (file) => {
+          if (!file) return;
+          setFileName(file.name); setPdfBusy(true); setPdfInfo("解析中…"); setText("");
+          try {
+            if (file.name.endsWith(".txt")) {
+              const r = new FileReader();
+              r.onload = (ev) => {
+                const t = (ev.target.result || "").slice(0, 100000);
+                setText(t); setPdfInfo(`テキストファイル（${file.name}）を読み込みました。`);
+              };
+              r.readAsText(file);
+            } else if (typeof pdfjsLib !== "undefined") {
+              pdfjsLib.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
+              const ab = await file.arrayBuffer();
+              const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(ab) }).promise;
+              let t = "";
+              for (let i = 1; i <= pdf.numPages; i++) {
+                const pg = await pdf.getPage(i);
+                const tc = await pg.getTextContent();
+                t += tc.items.map(it => it.str).join(" ") + "\n";
+              }
+              const trimmed = t.replace(/\s+/g, " ").trim();
+              const truncated = trimmed.length > 100000;
+              setText(truncated ? trimmed.slice(0, 100000) : trimmed);
+              setPdfInfo(`先頭 ${truncated ? "100,000 文字まで" : trimmed.length + " 文字"}（${pdf.numPages}ページ）を取り込みました。`);
+            } else { setPdfInfo("PDF.js 未ロード"); }
+          } catch (e) { setPdfInfo("読み取りエラー: " + e.message); }
+          finally { setPdfBusy(false); }
+        };
+
+        return (
+          <div style={{ ...PAGE_BG, padding: "0 0 4rem 0" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
+              <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 戻る</button>
+              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>📄 論文テキスト入力</span>
+              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 1 / 5</span>
+            </div>
+
+            <div style={{ maxWidth: 820, margin: "0 auto", padding: "2rem 1.5rem" }}>
+              {/* PDF / TXT 読込 */}
+              <div style={{ marginBottom: "0.6rem", fontWeight: 900, color: "rgba(167,243,208,0.9)", fontSize: "0.82rem", letterSpacing: "0.06em" }}>
+                📁 ファイルから読込（PDF / TXT）
+              </div>
+              <div style={{ display: "flex", gap: "0.6rem", alignItems: "center", marginBottom: "0.5rem", flexWrap: "wrap" }}>
+                <input
+                  ref={fileRef} type="file" accept=".pdf,.txt" style={{ display: "none" }}
+                  onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+                />
+                <button
+                  onClick={() => fileRef.current?.click()} disabled={pdfBusy}
+                  style={{ padding: "0.55rem 1.1rem", fontSize: "0.88rem", fontWeight: 700, background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.65rem", color: "#86efac", cursor: pdfBusy ? "wait" : "pointer" }}
+                >
+                  {pdfBusy ? "📄 解析中…" : "📄 PDF / TXT を選択"}
+                </button>
+                {fileName && (
+                  <span style={{ fontSize: "0.8rem", color: "rgba(167,243,208,0.7)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
+                    ✓ {fileName}
+                  </span>
+                )}
+              </div>
+              {pdfInfo && (
+                <div style={{ fontSize: "0.78rem", color: "rgba(167,243,208,0.65)", marginBottom: "0.75rem", padding: "0.4rem 0.75rem", background: "rgba(34,197,94,0.08)", borderRadius: "0.5rem", border: "1px solid rgba(34,197,94,0.2)" }}>
+                  {pdfInfo}
+                </div>
+              )}
+
+              {/* テキストエリア */}
+              <div style={{ marginBottom: "0.5rem", fontWeight: 900, color: "rgba(167,243,208,0.9)", fontSize: "0.82rem", letterSpacing: "0.06em" }}>
+                ✏️ 抄録・本文の抜粋を貼り付け（必須）
+              </div>
+              <div style={{ fontSize: "0.78rem", color: "rgba(167,243,208,0.5)", marginBottom: "0.5rem" }}>
+                論文の Abstract や段落をここに貼ってください（日本語・英語可）。PDF 自動抽出でも自動的にここに反映されます。
+              </div>
+              <textarea
+                value={text}
+                onChange={e => setText(e.target.value)}
+                placeholder="ここに論文テキストを貼り付け…"
+                rows={14}
+                style={{
+                  width: "100%", padding: "0.85rem", fontSize: "0.88rem",
+                  background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(34,197,94,0.3)",
+                  borderRadius: "0.85rem", color: "#eaf8ef", resize: "vertical", outline: "none",
+                  boxSizing: "border-box", lineHeight: 1.65,
+                }}
+              />
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.5rem" }}>
+                <span style={{ fontSize: "0.76rem", color: "rgba(167,243,208,0.4)" }}>
+                  {text.length.toLocaleString()} 文字
+                </span>
+                {text.trim() && (
+                  <button onClick={() => setText("")} style={{ fontSize: "0.76rem", background: "none", border: "none", color: "rgba(252,165,165,0.6)", cursor: "pointer" }}>
+                    クリア
+                  </button>
+                )}
+              </div>
+
+              {/* 次へボタン */}
+              <button
+                onClick={() => onGoSynopsis({ text, fileName })}
+                disabled={!text.trim()}
+                style={{
+                  marginTop: "1.5rem", width: "100%", padding: "1.1rem", fontSize: "1.05rem", fontWeight: 1000,
+                  background: !text.trim() ? "rgba(34,197,94,0.25)" : "linear-gradient(135deg,#22c55e,#16a34a)",
+                  color: "#06210f", border: "none", borderRadius: "0.9rem",
+                  cursor: !text.trim() ? "not-allowed" : "pointer",
+                  boxShadow: text.trim() ? "0 6px 24px rgba(34,197,94,0.3)" : "none",
+                }}
+              >
+                次へ → ネーム案を生成する
+              </button>
+              <div style={{ textAlign: "center", fontSize: "0.76rem", color: "rgba(167,243,208,0.35)", marginTop: "0.6rem" }}>
+                次のページでトーンを選択してから AI 生成を開始します
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // ─────────────────────────────────────────────────────────────────────
+      //  SynopsisView — 粗筋生成ページ (Step 2)
+      // ─────────────────────────────────────────────────────────────────────
+      function SynopsisView({ onBack, onGoNamePlan, savedData, inputText }) {
         const [tone, setTone] = useState(savedData?.tone || "少年マンガ");
-        const [pastedText, setPastedText] = useState("");
         // 前回の生成結果があれば即座に表示
         const [result, setResultRaw] = useState(savedData || null);
         const setResult = setResultRaw;
-        const [fileName, setFileName] = useState("");
-        const [pdfBusy, setPdfBusy] = useState(false);
-        const [pdfInfo, setPdfInfo] = useState("");
         const [stage, setStage] = useState(savedData ? "done" : "idle");
         const [pipeJobId, setPipeJobId] = useState(null);
         const [pipeStage, setPipeStage] = useState(null);
         const [error, setError] = useState("");
-        const fileRef = useRef(null);
 
         // ポーリング
         useEffect(() => {
@@ -3181,7 +3378,7 @@
         }, [pipeJobId, stage]);
 
         const generate = async () => {
-          const text = pastedText.trim();
+          const text = inputText.trim();
           if (!text) return;
           setStage("generating"); setError(""); setResult(null); setPipeJobId(null); setPipeStage(null);
           try {
@@ -3195,31 +3392,6 @@
           } catch (e) {
             setError(e.message || "APIエラー"); setStage("idle");
           }
-        };
-
-        const handlePdf = async (file) => {
-          if (!file) return;
-          setFileName(file.name); setPdfBusy(true); setPdfInfo("PDF 解析中…"); setPastedText("");
-          try {
-            if (typeof pdfjsLib !== "undefined") {
-              pdfjsLib.GlobalWorkerOptions.workerSrc = "https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js";
-              const ab = await file.arrayBuffer();
-              const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(ab) }).promise;
-              let text = "";
-              for (let i = 1; i <= pdf.numPages; i++) {
-                const pg = await pdf.getPage(i);
-                const tc = await pg.getTextContent();
-                text += tc.items.map(it => it.str).join(" ") + "\n";
-              }
-              const trimmed = text.replace(/\s+/g, " ").trim();
-              const limit = 100000;
-              const truncated = trimmed.length > limit;
-              setPastedText(truncated ? trimmed.slice(0, limit) : trimmed);
-              setPdfInfo(`先頭 ${truncated ? "100,000 文字まで" : trimmed.length + " 文字"}（${pdf.numPages}ページ）を取り込みました。`);
-            } else {
-              setPdfInfo("PDF.js 未ロード"); }
-          } catch (e) { setPdfInfo("PDF 読み取りエラー: " + e.message); }
-          finally { setPdfBusy(false); }
         };
 
         const onRefined = (data) => {
@@ -3242,52 +3414,54 @@
             {/* ヘッダー */}
             <div style={{ display: "flex", alignItems: "center", gap: "1rem", padding: "1.2rem 1.5rem", borderBottom: "1px solid rgba(34,197,94,0.15)" }}>
               <button onClick={onBack} style={{ background: "none", border: "none", color: "rgba(167,243,208,0.8)", cursor: "pointer", fontSize: "1.1rem" }}>← 戻る</button>
-              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>📖 粗筋生成</span>
-              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 1 / 2</span>
+              <span style={{ fontWeight: 900, fontSize: "1.1rem", letterSpacing: "0.04em" }}>📖 ネーム案を生成</span>
+              <span style={{ marginLeft: "auto", fontSize: "0.8rem", color: "rgba(167,243,208,0.55)" }}>Step 2 / 5</span>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "minmax(280px,1fr) minmax(300px,1.2fr)", gap: "1.5rem", padding: "1.5rem", maxWidth: 1100, margin: "0 auto" }}>
 
-              {/* 左カラム: 入力 */}
+              {/* 左カラム: トーン選択 + 生成ボタン */}
               <div>
+                {/* 入力テキストプレビュー */}
+                {inputText && (
+                  <div style={{ ...CARD, marginBottom: "1rem", background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.2)" }}>
+                    <div style={{ fontSize: "0.72rem", fontWeight: 900, color: "rgba(167,243,208,0.6)", marginBottom: "0.35rem", letterSpacing: "0.05em" }}>
+                      📄 入力テキスト（{inputText.length.toLocaleString()} 文字）
+                    </div>
+                    <div style={{ fontSize: "0.8rem", color: "rgba(234,248,239,0.55)", lineHeight: 1.5, maxHeight: "4.5rem", overflow: "hidden", textOverflow: "ellipsis" }}>
+                      {inputText.slice(0, 200)}…
+                    </div>
+                    <button onClick={onBack} style={{ marginTop: "0.4rem", fontSize: "0.72rem", background: "none", border: "none", color: "rgba(167,243,208,0.5)", cursor: "pointer", padding: 0 }}>
+                      ← テキストを変更する
+                    </button>
+                  </div>
+                )}
+                {!inputText && (
+                  <div style={{ ...CARD, marginBottom: "1rem", background: "rgba(252,165,165,0.08)", border: "1px solid rgba(252,165,165,0.3)" }}>
+                    <div style={{ fontSize: "0.82rem", color: "#fca5a5" }}>⚠ テキストが未入力です。前のページで論文テキストを貼り付けてください。</div>
+                    <button onClick={onBack} style={{ marginTop: "0.5rem", padding: "0.4rem 0.8rem", fontSize: "0.82rem", fontWeight: 700, background: "rgba(34,197,94,0.2)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.5rem", color: "#86efac", cursor: "pointer" }}>
+                      ← テキスト入力へ戻る
+                    </button>
+                  </div>
+                )}
+
                 <div style={{ fontWeight: 900, color: "rgba(167,243,208,0.9)", fontSize: "0.8rem", marginBottom: "0.5rem", letterSpacing: "0.06em" }}>🎨 漫画トーン</div>
                 <ToneSelector value={tone} onChange={setTone} />
 
-                <div style={{ marginTop: "1.1rem", fontWeight: 900, color: "rgba(167,243,208,0.9)", fontSize: "0.8rem", marginBottom: "0.45rem", letterSpacing: "0.06em" }}>📄 論文テキスト</div>
-                {/* PDF ボタン */}
-                <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                  <input ref={fileRef} type="file" accept=".pdf,.txt" style={{ display: "none" }} onChange={e => { const f = e.target.files?.[0]; if (f) { if (f.name.endsWith(".txt")) { const r = new FileReader(); r.onload = ev => { setPastedText(ev.target.result?.slice(0, 100000) || ""); setFileName(f.name); setPdfInfo(`テキストファイル（${f.name}）を読み込みました。`); }; r.readAsText(f); } else handlePdf(f); } }} />
-                  <button onClick={() => fileRef.current?.click()} disabled={pdfBusy} style={{ padding: "0.45rem 0.9rem", fontSize: "0.85rem", fontWeight: 700, background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.4)", borderRadius: "0.6rem", color: "#86efac", cursor: pdfBusy ? "wait" : "pointer" }}>
-                    {pdfBusy ? "📄 解析中…" : "📄 PDF / TXT 読込"}
-                  </button>
-                  {fileName && <span style={{ fontSize: "0.8rem", color: "rgba(167,243,208,0.65)", alignSelf: "center", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 150 }}>{fileName}</span>}
-                </div>
-                {pdfInfo && <div style={{ fontSize: "0.78rem", color: "rgba(167,243,208,0.7)", marginBottom: "0.5rem" }}>{pdfInfo}</div>}
-                <textarea
-                  value={pastedText}
-                  onChange={e => setPastedText(e.target.value)}
-                  placeholder="論文の抄録・本文を貼り付け（必須）"
-                  rows={10}
-                  style={{
-                    width: "100%", padding: "0.75rem", fontSize: "0.88rem",
-                    background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(34,197,94,0.3)",
-                    borderRadius: "0.85rem", color: "#eaf8ef", resize: "vertical", outline: "none", boxSizing: "border-box",
-                  }}
-                />
                 <button
                   onClick={generate}
-                  disabled={!pastedText.trim() || stage === "generating"}
+                  disabled={!inputText.trim() || stage === "generating"}
                   style={{
-                    marginTop: "0.7rem", width: "100%", padding: "0.95rem", fontSize: "1rem", fontWeight: 1000,
-                    background: (!pastedText.trim() || stage === "generating") ? "rgba(34,197,94,0.3)" : "linear-gradient(135deg,#22c55e,#16a34a)",
+                    marginTop: "1rem", width: "100%", padding: "0.95rem", fontSize: "1rem", fontWeight: 1000,
+                    background: (!inputText.trim() || stage === "generating") ? "rgba(34,197,94,0.3)" : "linear-gradient(135deg,#22c55e,#16a34a)",
                     color: "#06210f", border: "none", borderRadius: "0.9rem",
-                    cursor: (!pastedText.trim() || stage === "generating") ? "not-allowed" : "pointer",
+                    cursor: (!inputText.trim() || stage === "generating") ? "not-allowed" : "pointer",
                     boxShadow: "0 6px 24px rgba(34,197,94,0.25)",
                   }}
                 >
-                  {stage === "idle" && "粗筋を生成（AI パイプライン）"}
+                  {stage === "idle" && "🚀 粗筋を生成（AI パイプライン）"}
                   {stage === "generating" && `${stageLabel} ${stagePct}%…`}
-                  {stage === "done" && "再生成する"}
+                  {stage === "done" && "⟳ 再生成する"}
                 </button>
                 {stage === "generating" && (
                   <div style={{ marginTop: "0.75rem", height: 6, borderRadius: 6, background: "rgba(255,255,255,0.1)", overflow: "hidden" }}>
@@ -3539,6 +3713,7 @@
         const [route, setRoute] = useState(initialNav.route);
         const [activeWorkId, setActiveWorkId] = useState(initialNav.workId);
         const routeRef = useRef({ route: initialNav.route, workId: initialNav.workId });
+        const isPopping = useRef(false);
         const [checkoutBanner, setCheckoutBanner] = useState("");
         const [catalogList, setCatalogList] = useState([]);
         const [catalogLoading, setCatalogLoading] = useState(true);
@@ -3557,6 +3732,11 @@
           try { return JSON.parse(sessionStorage.getItem("drcanvas:nameplan") || "null"); } catch { return null; }
         });
         const setNamePlanData = (d) => { setNamePlanDataRaw(d); try { sessionStorage.setItem("drcanvas:nameplan", JSON.stringify(d)); } catch {} };
+
+        const [inputData, setInputDataRaw] = useState(() => {
+          try { return JSON.parse(sessionStorage.getItem("drcanvas:input") || "null"); } catch { return null; }
+        });
+        const setInputData = (d) => { setInputDataRaw(d); try { sessionStorage.setItem("drcanvas:input", JSON.stringify(d)); } catch {} };
 
         const refreshCatalog = () => {
           setCatalogLoading(true);
@@ -3608,8 +3788,9 @@
           setRoute("manga");
         };
 
-        // ブラウザバック対応（SPA内で1ページ戻す）
+        // ブラウザバック/フォワード対応
         useEffect(() => {
+          if (isPopping.current) { isPopping.current = false; return; }
           routeRef.current = { route, workId: activeWorkId };
           const url = route === "manga" ? `#manga/${encodeURIComponent(activeWorkId)}` : `#${route}`;
           window.history.pushState({ route, workId: activeWorkId }, "", url);
@@ -3617,6 +3798,7 @@
 
         useEffect(() => {
           const onPop = (e) => {
+            isPopping.current = true;
             const st = e.state;
             if (st && st.route) {
               setRoute(st.route);
@@ -3631,7 +3813,7 @@
               setRoute("manga");
               return;
             }
-            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "synopsis" || h === "nameplan" || h === "character" || h === "namesheet") setRoute(h || "home");
+            if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio" || h === "input" || h === "synopsis" || h === "nameplan" || h === "character" || h === "namesheet") setRoute(h || "home");
             else setRoute("home");
           };
           window.addEventListener("popstate", onPop);
@@ -3664,11 +3846,18 @@
         else if (route === "dashboard")
           page = <DashboardView mergedWorks={mergedWorks} onBackToWorks={() => setRoute("works")} onOpenManga={onOpenManga} />;
         else if (route === "studio") page = <StudioView onBack={() => setRoute("works")} onPublished={refreshCatalog} />;
+        else if (route === "input")
+          page = <InputView
+            onBack={() => setRoute("home")}
+            onGoSynopsis={(data) => { setInputData(data); setRoute("synopsis"); }}
+            savedData={inputData}
+          />;
         else if (route === "synopsis")
           page = <SynopsisView
-            onBack={() => setRoute("home")}
+            onBack={() => setRoute("input")}
             onGoNamePlan={(data) => { setSynopsisData(data); setRoute("nameplan"); }}
             savedData={synopsisData}
+            inputText={inputData?.text || ""}
           />;
         else if (route === "nameplan")
           page = <NamePlanView
@@ -3692,7 +3881,7 @@
             onBack={() => setRoute("character")}
             onPublish={() => setRoute("works")}
           />;
-        else page = <HomeView onDemo={onDemo} onTryAi={onTryAi} onOpenAuth={() => setRoute("auth")} onOpenStudio={() => setRoute("studio")} onOpenSynopsis={() => setRoute("synopsis")} onOpenNameSheet={(data) => { setNamePlanData(data); setCharacterData(null); setRoute("namesheet"); }} />;
+        else page = <HomeView onDemo={onDemo} onTryAi={onTryAi} onOpenAuth={() => setRoute("auth")} onOpenStudio={() => setRoute("studio")} onOpenSynopsis={() => setRoute("input")} onOpenNameSheet={(data) => { setNamePlanData(data); setCharacterData(null); setRoute("namesheet"); }} />;
 
         return (
           <>
