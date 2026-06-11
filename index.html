@@ -63,9 +63,6 @@
         { imageUrl: "https://dummyimage.com/600x900/ffd7c2/333&text=5", pageNumber: 5 },
       ];
 
-      // ---------------------------
-      // Works（暫定20作）
-      // ---------------------------
       const workCategoryPool = [
         "ファンタジー",
         "学園・スポーツ",
@@ -83,45 +80,6 @@
         情報科学: ["機械学習", "計算理論", "暗号", "分散システム", "HCI"],
         医学: ["内科", "外科", "精神科", "公衆衛生", "薬理"],
       };
-      const workFieldPool = [
-        "量子情報・量子もつれ",
-        "量子計算・アルゴリズム",
-        "量子暗号",
-        "統計物理・相転移",
-        "計算理論・複雑系",
-        "量子測定と情報",
-      ];
-      const workSynopsisPool = [
-        "導入で“相関の正体”を描き、対比で“古典の限界”をあぶり出し、解法で“量子の道”へ。最後は余韻として観測の意味が胸に残る。",
-        "一見バラバラの記号が、読み進めるほど物語として繋がっていく。博士が論文を“漫画の順序”へ翻訳する。",
-        "理論の芯を、コマの密度で体感する。読み終えたあと、手元のノートが自然にページをめくりたくなる。",
-        "相手を想うほど“測る”が難しくなる。測定・情報・解釈の三角形が、勢いよく崩れていく。",
-        "数式の代わりに“絵の論理”で説く。あなたの理解が、物語のテンポに同期する。",
-        "問題提起から導入、対比、そして解法へ。最後に“余韻”として残るのは問いそのもの。",
-      ];
-
-      const works = Array.from({ length: 20 }, (_, i) => {
-        const idx = i + 1;
-        const field = workFieldPool[i % workFieldPool.length];
-        const ref = references[i % references.length];
-        const category = workCategoryPool[i % workCategoryPool.length];
-        const major = academicMajorPool[i % academicMajorPool.length];
-        const minors = academicMinorPoolByMajor[major] || ["一般"];
-        const minor = minors[i % minors.length];
-        return {
-          id: `work${idx}`,
-          slug: `quantumy-doctor-canvas-${idx}`,
-          title: `Quantumy Doctor Canvas #${idx}`,
-          researchField: field,
-          category,
-          academicMajor: major,
-          academicMinor: minor,
-          doi: ref.doi,
-          description: workSynopsisPool[i % workSynopsisPool.length],
-          coverImageUrl: `https://dummyimage.com/600x800/052a12/ffffff&text=WORK%20${idx}`,
-          authorId: doctorProfile.id,
-        };
-      });
 
       function scrollToId(id) {
         const el = document.getElementById(id);
@@ -634,7 +592,7 @@
       // ── ダッシュボード画面 ──────────────────────────────────────────────
 
       function DashboardView({ onBackToWorks, onOpenManga, mergedWorks }) {
-        const workIndex = mergedWorks || works;
+        const workIndex = mergedWorks || [];
         const [data, setData] = useState(null);
         const [loading, setLoading] = useState(true);
         const isLoggedIn = !!getAccessToken();
@@ -1592,13 +1550,8 @@
             }
             setSessionTokenPresent(true);
 
-            // Guest 進捗があれば API へベストエフォート同期（小規模 MVP 向け）
-            const tokenSavedWorks = works.map(async (w) => {
-              const guest = loadLastSpreadIndexGuest(w.id);
-              if (!guest || guest <= 0) return;
-              await saveLastSpreadIndex(w.id, guest);
-            });
-            await Promise.allSettled(tokenSavedWorks);
+            // Guest 進捗があれば API へベストエフォート同期（mergedWorks は未取得のため guest 側のみ保持）
+            // NOTE: ログイン後の進捗同期は WorksView マウント時に loadLastSpreadIndex で自動実行される
 
             setMessage("ログイン成功。進捗を同期しました。");
             onAuthed();
@@ -1860,8 +1813,8 @@
         );
       }
 
-      function WorksView({ onBackToHome, onSelectWork, onOpenDashboard, onOpenStudio, mergedWorks }) {
-        const list = mergedWorks || works;
+      function WorksView({ onBackToHome, onSelectWork, onOpenDashboard, onOpenStudio, mergedWorks, catalogLoading }) {
+        const list = mergedWorks || [];
         const pageCount = mangaPages.length;
         const maxSpreadIndex = getMaxSpreadIndex(pageCount);
         const [activeCategory, setActiveCategory] = useState("ALL");
@@ -1949,6 +1902,19 @@
                 </div>
               </div>
             </div>
+
+            {catalogLoading && list.length === 0 && (
+              <div style={{ maxWidth: 1180, margin: "0 auto", padding: "2rem 1rem", textAlign: "center", color: "rgba(167,243,208,0.7)", fontSize: "0.95rem" }}>
+                <span style={{ display: "inline-block", animation: "spin 1s linear infinite", marginRight: "0.5rem" }}>⏳</span>
+                カタログを読み込み中…
+                <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+              </div>
+            )}
+            {!catalogLoading && list.length === 0 && (
+              <div style={{ maxWidth: 1180, margin: "0 auto", padding: "3rem 1rem", textAlign: "center", color: "rgba(167,243,208,0.5)", fontSize: "0.95rem" }}>
+                まだ作品がありません。スタジオから最初の作品を公開しましょう。
+              </div>
+            )}
 
             {progressBanner ? (
               <div
@@ -2252,7 +2218,7 @@
       }
 
       function MangaReaderView({ workId, onBackToWorks, onAuthorClick, mergedWorks }) {
-        const list = mergedWorks || works;
+        const list = mergedWorks || [];
         const baseWork = list.find((w) => w.id === workId);
         const [fetchedWork, setFetchedWork] = useState(null);
 
@@ -2270,7 +2236,15 @@
           return () => { alive = false; };
         }, [workId, list]);
 
-        const work = fetchedWork || baseWork || works[0];
+        const work = fetchedWork || baseWork || null;
+        if (!work) return (
+          <div style={{ minHeight: "100vh", background: "#06110b", color: "#eaf8ef", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: "1.1rem", marginBottom: "1rem", color: "rgba(167,243,208,0.7)" }}>作品を読み込み中…</div>
+              <button onClick={onBackToWorks} style={{ padding: "0.65rem 1.2rem", borderRadius: "0.85rem", background: "rgba(34,197,94,0.2)", color: "#86efac", border: "1px solid rgba(34,197,94,0.4)", cursor: "pointer", fontWeight: 900 }}>← 作品一覧に戻る</button>
+            </div>
+          </div>
+        );
         const pages = work.pages && work.pages.length > 0 ? work.pages : mangaPages;
         const pageCount = pages.length;
         const pairCount = Math.ceil(Math.max(pageCount - 1, 0) / 2);
@@ -2660,12 +2634,12 @@
         const h = (typeof window !== "undefined" ? window.location.hash : "").replace(/^#/, "");
         if (h.startsWith("manga/")) {
           const wid = decodeURIComponent(h.slice("manga/".length));
-          return { route: "manga", workId: wid || works[0].id };
+          return { route: "manga", workId: wid || "" };
         }
         if (h === "works" || h === "auth" || h === "author" || h === "home" || h === "dashboard" || h === "studio") {
-          return { route: h, workId: works[0].id };
+          return { route: h, workId: "" };
         }
-        return { route: "home", workId: works[0].id };
+        return { route: "home", workId: "" };
       }
 
       // ─── 共通スタイル定数 ───────────────────────────────────────────────────
@@ -3556,7 +3530,6 @@
               </div>
             </div>
             </div>
-            </div>
           </div>
         );
       }
@@ -3568,6 +3541,7 @@
         const routeRef = useRef({ route: initialNav.route, workId: initialNav.workId });
         const [checkoutBanner, setCheckoutBanner] = useState("");
         const [catalogList, setCatalogList] = useState([]);
+        const [catalogLoading, setCatalogLoading] = useState(true);
         // ─── ページ間データ（sessionStorage で永続化 → ブラウザバックでも復元） ─────
         const [synopsisData, setSynopsisDataRaw] = useState(() => {
           try { return JSON.parse(sessionStorage.getItem("drcanvas:synopsis") || "null"); } catch { return null; }
@@ -3585,29 +3559,24 @@
         const setNamePlanData = (d) => { setNamePlanDataRaw(d); try { sessionStorage.setItem("drcanvas:nameplan", JSON.stringify(d)); } catch {} };
 
         const refreshCatalog = () => {
-          fetchCatalogArtworksArray().then(setCatalogList);
+          setCatalogLoading(true);
+          fetchCatalogArtworksArray()
+            .then((list) => { setCatalogList(list); setCatalogLoading(false); })
+            .catch(() => setCatalogLoading(false));
         };
 
         useEffect(() => {
           refreshCatalog();
         }, []);
 
+        // API取得済み作品（重複除去）。静的フォールバックは廃止。
         const mergedWorks = useMemo(() => {
           const seen = new Set();
-          const out = [];
-          for (const w of catalogList) {
-            if (!seen.has(w.id)) {
-              seen.add(w.id);
-              out.push(w);
-            }
-          }
-          for (const w of works) {
-            if (!seen.has(w.id)) {
-              seen.add(w.id);
-              out.push(w);
-            }
-          }
-          return out;
+          return catalogList.filter((w) => {
+            if (seen.has(w.id)) return false;
+            seen.add(w.id);
+            return true;
+          });
         }, [catalogList]);
 
         useEffect(() => {
@@ -3658,7 +3627,7 @@
             const h = (window.location.hash || "").replace(/^#/, "");
             if (h.startsWith("manga/")) {
               const wid = decodeURIComponent(h.slice("manga/".length));
-              setActiveWorkId(wid || works[0].id);
+              setActiveWorkId(wid || "");
               setRoute("manga");
               return;
             }
@@ -3674,6 +3643,7 @@
           page = (
             <WorksView
               mergedWorks={mergedWorks}
+              catalogLoading={catalogLoading}
               onBackToHome={() => setRoute("home")}
               onSelectWork={onOpenManga}
               onOpenDashboard={() => setRoute("dashboard")}
