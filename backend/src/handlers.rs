@@ -1862,6 +1862,88 @@ pub async fn generate_panel_image(
     State(_state): State<AppState>,
     Json(req): Json<GeneratePanelRequest>,
 ) -> impl IntoResponse {
+    let client = reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(180))
+        .build()
+        .unwrap();
+
+    let genre = req.genre.as_deref().unwrap_or("");
+    let style = genre_style_prompt(genre);
+    let style_extra = req.style_hint.as_deref().unwrap_or("");
+    let dialogue_hint = req.dialogue
+        .as_deref()
+        .filter(|d| !d.is_empty())
+        .map(|d| format!(", character speaking: {}", d))
+        .unwrap_or_default();
+    let prompt = format!(
+        "{style}, {scene}{dialogue_hint}{style_extra}, single manga panel, monochrome, high quality, masterpiece",
+        style = style,
+        scene = req.scene.chars().take(300).collect::<String>(),
+        dialogue_hint = dialogue_hint,
+        style_extra = if style_extra.is_empty() { String::new() } else { format!(", {}", style_extra) },
+    );
+    let neg_prompt = "color, realistic photo, 3d render, watermark, blurry, low quality, text overlay, multiple panels, border frame";
+
+    // ── ローカル AUTOMATIC1111 優先（LOCAL_SD_URL が設定されていれば使う） ──
+    if let Some(local_url) = std::env::var("LOCAL_SD_URL").ok().filter(|u| !u.trim().is_empty()) {
+        tracing::info!("[generate-panel] ローカル SD モードで生成: {}", local_url);
+        let sd_body = serde_json::json!({
+            "prompt": prompt,
+            "negative_prompt": neg_prompt,
+            "steps": 20,
+            "cfg_scale": 7.0,
+            "width": 768,
+            "height": 1024,
+            "sampler_name": "DPM++ 2M",
+            "batch_size": 1,
+            "n_iter": 1
+        });
+
+        let sd_res = client
+            .post(format!("{}/sdapi/v1/txt2img", local_url.trim_end_matches('/')))
+            .json(&sd_body)
+            .send()
+            .await;
+
+        match sd_res {
+            Ok(r) => {
+                let data: serde_json::Value = match r.json().await {
+                    Ok(d) => d,
+                    Err(e) => {
+                        return (StatusCode::BAD_GATEWAY, Json(GeneratePanelResponse {
+                            ok: false, image_url: None, prediction_id: None,
+                            error: Some(format!("ローカル SD レスポンス解析エラー: {}", e)),
+                        })).into_response();
+                    }
+                };
+                let b64 = data["images"]
+                    .as_array()
+                    .and_then(|arr| arr.first())
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                if b64.is_empty() {
+                    return (StatusCode::INTERNAL_SERVER_ERROR, Json(GeneratePanelResponse {
+                        ok: false, image_url: None, prediction_id: None,
+                        error: Some("ローカル SD から画像が返りませんでした".into()),
+                    })).into_response();
+                }
+                let data_url = format!("data:image/png;base64,{}", b64);
+                return (StatusCode::OK, Json(GeneratePanelResponse {
+                    ok: true,
+                    image_url: Some(data_url),
+                    prediction_id: None,
+                    error: None,
+                })).into_response();
+            }
+            Err(e) => {
+                tracing::warn!("[generate-panel] ローカル SD に繋がらない ({})。Replicate にフォールバック", e);
+                // フォールバックして Replicate へ
+            }
+        }
+    }
+
+    // ── Replicate API（本番・ローカル SD 未設定 or 接続失敗時） ──────────────
     let api_key = match std::env::var("REPLICATE_API_TOKEN")
         .ok()
         .filter(|k| !k.trim().is_empty())
@@ -1874,39 +1956,14 @@ pub async fn generate_panel_image(
                     ok: false,
                     image_url: None,
                     prediction_id: None,
-                    error: Some("REPLICATE_API_TOKEN が未設定です。Render の環境変数を確認してください。".into()),
+                    error: Some("画像生成キーが未設定です。REPLICATE_API_TOKEN または LOCAL_SD_URL を設定してください。".into()),
                 }),
             ).into_response();
         }
     };
 
-    let genre = req.genre.as_deref().unwrap_or("");
-    let style = genre_style_prompt(genre);
-    let style_extra = req.style_hint.as_deref().unwrap_or("");
-
-    let dialogue_hint = req.dialogue
-        .as_deref()
-        .filter(|d| !d.is_empty())
-        .map(|d| format!(", character speaking: {}", d))
-        .unwrap_or_default();
-
-    let prompt = format!(
-        "{style}, {scene}{dialogue_hint}{style_extra}, single manga panel, monochrome, high quality, masterpiece",
-        style = style,
-        scene = req.scene.chars().take(300).collect::<String>(),
-        dialogue_hint = dialogue_hint,
-        style_extra = if style_extra.is_empty() { String::new() } else { format!(", {}", style_extra) },
-    );
-
-    let neg_prompt = "color, realistic photo, 3d render, watermark, blurry, low quality, text overlay, multiple panels, border frame";
-
     // Replicate SDXL — stability-ai/sdxl latest version
     let model_version = "7762fd07cf82c948538e41f63f77d685e02b063e0f703af5bedc5b2a2f2ca4ce";
-
-    let client = reqwest::Client::builder()
-        .timeout(std::time::Duration::from_secs(120))
-        .build()
-        .unwrap();
 
     let predict_body = serde_json::json!({
         "version": model_version,
